@@ -1,0 +1,62 @@
+---
+sidebar: sidebar 
+permalink: trident-get-started/quickstart.html 
+keywords: kubernetes cluster, simple installation, Kubernetes installation 
+summary: Kubernetes를 처음 사용하는 경우 Kubernetes 설치 지침을 사용하여 직접 사용해 보세요.  이 지침에서는 Trident 데모 목적으로 통합할 수 있는 기본적이고 단일 노드 클러스터를 제공합니다. 
+---
+= Trident 빠른 시작
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+몇 단계만 거치면 Trident 설치하고 스토리지 리소스 관리를 시작할 수 있습니다.  시작하기 전에 검토하세요link:requirements.html["Trident 요구 사항"] .
+
+
+NOTE: Docker의 경우 다음을 참조하세요.link:../trident-docker/deploy-docker.html["Docker용 Trident"] .
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-1.png["하나"]워커 노드 준비
+[role="quick-margin-para"]
+Kubernetes 클러스터의 모든 워커 노드는 Pod에 대해 프로비저닝한 볼륨을 마운트할 수 있어야 합니다.
+
+[role="quick-margin-para"]
+link:../trident-use/worker-node-prep.html["워커 노드 준비"]
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-2.png["둘"]Trident 설치
+[role="quick-margin-para"]
+Trident 다양한 환경과 조직에 최적화된 여러 가지 설치 방법과 모드를 제공합니다.
+
+[role="quick-margin-para"]
+link:../trident-get-started/kubernetes-deploy.html["Trident 설치"]
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-3.png["삼"]백엔드 만들기
+[role="quick-margin-para"]
+백엔드는 Trident 와 스토리지 시스템 간의 관계를 정의합니다.  이는 Trident 해당 스토리지 시스템과 통신하는 방법과 Trident 해당 스토리지 시스템에서 볼륨을 프로비저닝하는 방법을 알려줍니다.
+
+[role="quick-margin-para"]
+link:../trident-use/backends.html["백엔드 구성"]귀하의 저장 시스템을 위해
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-4.png["네"]Kubernetes StorageClass 만들기
+[role="quick-margin-para"]
+Kubernetes StorageClass 객체는 Trident 프로비저너로 지정하고 사용자 정의 가능한 속성으로 볼륨을 프로비저닝하는 스토리지 클래스를 생성할 수 있도록 합니다.  Trident Trident 프로비저너를 지정하는 Kubernetes 객체에 맞는 스토리지 클래스를 생성합니다.
+
+[role="quick-margin-para"]
+link:../trident-use/create-stor-class.html["스토리지 클래스 생성"]
+
+.image:https://raw.githubusercontent.com/NetAppDocs/common/main/media/number-5.png["다섯"]볼륨 제공
+[role="quick-margin-para"]
+_PersistentVolume_ (PV)은 Kubernetes 클러스터에서 클러스터 관리자가 프로비저닝하는 물리적 스토리지 리소스입니다.  _PersistentVolumeClaim_ (PVC)은 클러스터의 PersistentVolume에 대한 액세스 요청입니다.
+
+[role="quick-margin-para"]
+구성된 Kubernetes StorageClass를 사용하여 PV에 대한 액세스를 요청하는 PersistentVolume(PV) 및 PersistentVolumeClaim(PVC)을 만듭니다.  그런 다음 PV를 포드에 장착할 수 있습니다.
+
+[role="quick-margin-para"]
+link:../trident-use/vol-provision.html["볼륨 제공"]
+
+
+
+== 다음은 무엇인가요?
+
+이제 추가 백엔드를 추가하고, 스토리지 클래스를 관리하고, 백엔드를 관리하고, 볼륨 작업을 수행할 수 있습니다.

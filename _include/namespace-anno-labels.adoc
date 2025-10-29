@@ -1,0 +1,86 @@
+= 복원 및 장애 조치 작업 중 네임스페이스 주석 및 레이블
+:allow-uri-read: 
+
+
+
+
+== 복원 및 장애 조치 작업 중 네임스페이스 주석 및 레이블
+
+복원 및 장애 조치 작업 동안 대상 네임스페이스의 레이블과 주석은 소스 네임스페이스의 레이블과 주석과 일치하도록 만들어집니다.  대상 네임스페이스에 없는 소스 네임스페이스의 레이블이나 주석이 추가되고, 이미 존재하는 레이블이나 주석은 소스 네임스페이스의 값과 일치하도록 덮어씁니다.  대상 네임스페이스에만 존재하는 레이블이나 주석은 변경되지 않습니다.
+
+
+NOTE: Red Hat OpenShift를 사용하는 경우 OpenShift 환경에서 네임스페이스 주석의 중요한 역할을 알아두는 것이 중요합니다. 네임스페이스 주석은 복원된 포드가 OpenShift 보안 컨텍스트 제약(SCC)에 의해 정의된 적절한 권한과 보안 구성을 준수하고 권한 문제 없이 볼륨에 액세스할 수 있도록 보장합니다. 자세한 내용은 다음을 참조하세요. https://docs.redhat.com/en/documentation/openshift_container_platform/4.19/html/authentication_and_authorization/managing-pod-security-policies["OpenShift 보안 컨텍스트 제약 조건 문서"^] .
+
+Kubernetes 환경 변수를 설정하여 대상 네임스페이스의 특정 주석이 덮어쓰여지는 것을 방지할 수 있습니다. `RESTORE_SKIP_NAMESPACE_ANNOTATIONS` 복원이나 장애 조치 작업을 수행하기 전에. 예를 들어:
+
+[source, console]
+----
+helm upgrade trident-protect --set restoreSkipNamespaceAnnotations=<annotation_key_to_skip_1>,<annotation_key_to_skip_2> --reuse-values
+----
+
+NOTE: 복원 또는 장애 조치 작업을 수행할 때 지정된 모든 네임스페이스 주석 및 레이블 `restoreSkipNamespaceAnnotations` 그리고 `restoreSkipNamespaceLabels` 복구 또는 장애 조치 작업에서 제외됩니다. 이러한 설정은 Helm을 처음 설치할 때 구성되어야 합니다. 자세한 내용은 다음을 참조하세요. link:../trident-protect/trident-protect-customize-installation.html#configure-autoSupport-and-namespace-filtering-options["AutoSupport 및 네임스페이스 필터링 옵션 구성"].
+
+Helm을 사용하여 소스 애플리케이션을 설치한 경우 `--create-namespace` 깃발에는 특별한 대우가 주어집니다. `name` 라벨 키.  복구 또는 장애 조치 프로세스 중에 Trident Protect는 이 레이블을 대상 네임스페이스에 복사하지만 소스의 값이 소스 네임스페이스와 일치하는 경우 값을 대상 네임스페이스 값으로 업데이트합니다.  이 값이 소스 네임스페이스와 일치하지 않으면 변경 사항 없이 대상 네임스페이스에 복사됩니다.
+
+
+
+=== 예
+
+다음 예제에서는 각각 다른 주석과 레이블이 있는 소스 및 대상 네임스페이스를 보여줍니다.  작업 전후의 대상 네임스페이스 상태를 볼 수 있으며, 대상 네임스페이스에서 주석과 레이블이 어떻게 결합되거나 덮어쓰여지는지 확인할 수 있습니다.
+
+
+
+==== 복구 또는 장애 조치 작업 전
+
+다음 표는 복원 또는 장애 조치 작업 전의 예제 소스 및 대상 네임스페이스의 상태를 보여줍니다.
+
+[cols="1,2a,2a"]
+|===
+| 네임스페이스 | 주석 | 라벨 
+
+
+| 네임스페이스 ns-1(소스)  a| 
+* annotation.one/key: "업데이트된 값"
+* annotation.two/key: "true"
+
+ a| 
+* 환경=생산
+* 규정 준수=HIPAA
+* 이름=ns-1
+
+
+
+
+| 네임스페이스 ns-2(대상)  a| 
+* annotation.one/key: "true"
+* annotation.three/key: "false"
+
+ a| 
+* 역할=데이터베이스
+
+
+|===
+
+
+==== 복원 작업 후
+
+다음 표는 복원 또는 장애 조치 작업 후의 대상 네임스페이스의 상태를 보여줍니다.  일부 키가 추가되었고 일부는 덮어 쓰여졌으며 `name` 레이블이 대상 네임스페이스와 일치하도록 업데이트되었습니다.
+
+[cols="1,2a,2a"]
+|===
+| 네임스페이스 | 주석 | 라벨 
+
+
+| 네임스페이스 ns-2(대상)  a| 
+* annotation.one/key: "업데이트된 값"
+* annotation.two/key: "true"
+* annotation.three/key: "false"
+
+ a| 
+* 이름=ns-2
+* 규정 준수=HIPAA
+* 환경=생산
+* 역할=데이터베이스
+
+
+|===

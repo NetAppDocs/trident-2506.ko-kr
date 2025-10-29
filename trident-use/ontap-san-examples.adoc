@@ -1,0 +1,711 @@
+---
+sidebar: sidebar 
+permalink: trident-use/ontap-san-examples.html 
+keywords: map backends, storage classes, trident backend, ontap san, ontap san economy, options, storageclasses, fsx, metrocluster, ad, active directory 
+summary: Trident 설치로 ONTAP SAN 드라이버를 생성하고 사용하는 방법에 대해 알아보세요.  이 섹션에서는 백엔드 구성 예제와 백엔드를 StorageClass에 매핑하는 방법에 대한 세부 정보를 제공합니다. 
+---
+= ONTAP SAN 구성 옵션 및 예
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident 설치로 ONTAP SAN 드라이버를 생성하고 사용하는 방법을 알아보세요.  이 섹션에서는 백엔드 구성 예제와 백엔드를 StorageClass에 매핑하기 위한 세부 정보를 제공합니다.
+
+link:https://docs.netapp.com/us-en/asa-r2/get-started/learn-about.html["ASA r2 시스템"^]다른 ONTAP 시스템(ASA, AFF, FAS)과 저장 계층 구현 방식이 다릅니다.  이러한 변화는 표기된 특정 매개변수의 사용에 영향을 미칩니다. link:https://docs.netapp.com/us-en/asa-r2/learn-more/hardware-comparison.html["ASA r2 시스템과 다른 ONTAP 시스템 간의 차이점에 대해 자세히 알아보세요."^].
+
+
+NOTE: 오직 `ontap-san` 드라이버(iSCSI 및 NVMe/TCP 프로토콜 포함)는 ASA r2 시스템에서 지원됩니다.
+
+Trident 백엔드 구성에서는 시스템이 ASA r2라고 지정할 필요가 없습니다.  선택할 때 `ontap-san` 로서 `storageDriverName` Trident ASA r2 또는 기존 ONTAP 시스템을 자동으로 감지합니다.  아래 표에 나와 있는 것처럼 일부 백엔드 구성 매개변수는 ASA r2 시스템에 적용할 수 없습니다.
+
+
+
+== 백엔드 구성 옵션
+
+백엔드 구성 옵션은 다음 표를 참조하세요.
+
+[cols="1,3,2"]
+|===
+| 매개변수 | 설명 | 기본 
+
+
+| `version` |  | 항상 1 
+
+
+| `storageDriverName` | 저장 드라이버의 이름 | `ontap-san`또는 `ontap-san-economy` 
+
+
+| `backendName` | 사용자 정의 이름 또는 스토리지 백엔드 | 드라이버 이름 + "_" + dataLIF 
+
+
+| `managementLIF`  a| 
+클러스터 또는 SVM 관리 LIF의 IP 주소입니다.
+
+정규화된 도메인 이름(FQDN)을 지정할 수 있습니다.
+
+IPv6 플래그를 사용하여 Trident 설치한 경우 IPv6 주소를 사용하도록 설정할 수 있습니다.  IPv6 주소는 다음과 같이 대괄호로 정의해야 합니다. `[28e8:d9fb:a825:b7bf:69a8:d02f:9e7b:3555]` .
+
+원활한 MetroCluster 전환을 위해서는 다음을 참조하세요.<<mcc-best>> .
+
+
+NOTE: "vsadmin" 자격 증명을 사용하는 경우 `managementLIF` SVM의 자격 증명이어야 합니다. "관리자" 자격 증명을 사용하는 경우 `managementLIF` 클러스터의 것이어야 합니다.
+| "10.0.0.1", "[2001:1234:abcd::fefe]" 
+
+
+| `dataLIF` | 프로토콜 LIF의 IP 주소.  Trident IPv6 플래그를 사용하여 설치된 경우 IPv6 주소를 사용하도록 설정할 수 있습니다.  IPv6 주소는 다음과 같이 대괄호로 정의해야 합니다. `[28e8:d9fb:a825:b7bf:69a8:d02f:9e7b:3555]` .  *iSCSI에 대해서는 지정하지 마세요.*  Trident 사용link:https://docs.netapp.com/us-en/ontap/san-admin/selective-lun-map-concept.html["ONTAP 선택적 LUN 맵"^] 다중 경로 세션을 설정하는 데 필요한 iSCSI LIF를 검색합니다.  경고가 생성됩니다. `dataLIF` 명확하게 정의되어 있습니다.  *메트로클러스터는 생략합니다.* 를 참조하십시오<<mcc-best>> . | SVM에 의해 파생됨 
+
+
+| `svm` | 사용할 스토리지 가상 머신 *Metrocluster의 경우 생략* 를 참조하십시오<<mcc-best>> . | SVM의 경우 파생됨 `managementLIF` 지정됨 
+
+
+| `useCHAP` | CHAP를 사용하여 ONTAP SAN 드라이버에 대한 iSCSI를 인증합니다[부울].  로 설정 `true` Trident 백엔드에 제공된 SVM에 대한 기본 인증으로 양방향 CHAP를 구성하고 사용하도록 합니다. 참조하다 link:ontap-san-prep.html["ONTAP SAN 드라이버로 백엔드 구성을 준비합니다."] 자세한 내용은.  *FCP 또는 NVMe/TCP에서는 지원되지 않습니다.* | `false` 
+
+
+| `chapInitiatorSecret` | CHAP 개시자 비밀.  필요한 경우 `useCHAP=true` | "" 
+
+
+| `labels` | 볼륨에 적용할 임의의 JSON 형식 레이블 세트 | "" 
+
+
+| `chapTargetInitiatorSecret` | CHAP 대상 개시자 비밀.  필요한 경우 `useCHAP=true` | "" 
+
+
+| `chapUsername` | 수신 사용자 이름.  필요한 경우 `useCHAP=true` | "" 
+
+
+| `chapTargetUsername` | 대상 사용자 이름.  필요한 경우 `useCHAP=true` | "" 
+
+
+| `clientCertificate` | 클라이언트 인증서의 Base64로 인코딩된 값입니다.  인증서 기반 인증에 사용됨 | "" 
+
+
+| `clientPrivateKey` | 클라이언트 개인 키의 Base64 인코딩된 값입니다.  인증서 기반 인증에 사용됨 | "" 
+
+
+| `trustedCACertificate` | 신뢰할 수 있는 CA 인증서의 Base64로 인코딩된 값입니다. 선택 과목.  인증서 기반 인증에 사용됩니다. | "" 
+
+
+| `username` | ONTAP 클러스터와 통신하려면 사용자 이름이 필요합니다. 자격 증명 기반 인증에 사용됩니다. Active Directory 인증에 대해서는 다음을 참조하세요. link:../trident-use/ontap-san-examples.html#authenticate-trident-to-a-backend-svm-using-active-directory-credentials["Active Directory 자격 증명을 사용하여 백엔드 SVM에 Trident 인증"]. | "" 
+
+
+| `password` | ONTAP 클러스터와 통신하려면 비밀번호가 필요합니다. 자격 증명 기반 인증에 사용됩니다. Active Directory 인증에 대해서는 다음을 참조하세요. link:../trident-use/ontap-san-examples.html#authenticate-trident-to-a-backend-svm-using-active-directory-credentials["Active Directory 자격 증명을 사용하여 백엔드 SVM에 Trident 인증"]. | "" 
+
+
+| `svm` | 사용할 스토리지 가상 머신 | SVM의 경우 파생됨 `managementLIF` 지정됨 
+
+
+| `storagePrefix` | SVM에서 새로운 볼륨을 프로비저닝할 때 사용되는 접두사입니다.  나중에 수정할 수 없습니다.  이 매개변수를 업데이트하려면 새로운 백엔드를 만들어야 합니다. | `trident` 
+
+
+| `aggregate`  a| 
+프로비저닝을 위한 집계(선택 사항, 설정된 경우 SVM에 할당해야 함).  를 위해 `ontap-nas-flexgroup` 드라이버의 경우 이 옵션은 무시됩니다.  할당되지 않은 경우 사용 가능한 모든 집계를 사용하여 FlexGroup 볼륨을 프로비저닝할 수 있습니다.
+
+
+NOTE: SVM에서 집계가 업데이트되면 Trident Controller를 다시 시작하지 않고도 SVM을 폴링하여 Trident 에서 자동으로 업데이트됩니다.  Trident 에서 볼륨을 프로비저닝하기 위해 특정 집계를 구성한 경우, 집계의 이름이 변경되거나 SVM 외부로 이동하면 SVM 집계를 폴링하는 동안 백엔드가 Trident 에서 실패 상태로 전환됩니다.  백엔드를 다시 온라인 상태로 만들려면 SVM에 있는 집계로 변경하거나 집계를 완전히 제거해야 합니다.
+
+* ASA r2 시스템에 대해서는 지정하지 마세요*.
+ a| 
+""
+
+
+
+| `limitAggregateUsage` | 사용량이 이 백분율을 초과하면 프로비저닝에 실패합니다.  Amazon FSx for NetApp ONTAP 백엔드를 사용하는 경우 지정하지 마십시오. `limitAggregateUsage` .  제공된 `fsxadmin` 그리고 `vsadmin` Trident 사용하여 집계 사용량을 검색하고 제한하는 데 필요한 권한이 포함되어 있지 않습니다.  * ASA r2 시스템에 대해서는 지정하지 마세요*. | "" (기본적으로 적용되지 않음) 
+
+
+| `limitVolumeSize` | 요청된 볼륨 크기가 이 값보다 크면 프로비저닝에 실패합니다. 또한 LUN에 대해 관리하는 볼륨의 최대 크기를 제한합니다. | "" (기본적으로 적용되지 않음) 
+
+
+| `lunsPerFlexvol` | Flexvol당 최대 LUN은 [50, 200] 범위 내에 있어야 합니다. | `100` 
+
+
+| `debugTraceFlags` | 문제 해결 시 사용할 디버그 플래그입니다.  예를 들어, {"api":false, "method":true}는 문제를 해결하고 자세한 로그 덤프가 필요한 경우가 아니면 사용하지 마세요. | `null` 
+
+
+| `useREST`  a| 
+ONTAP REST API를 사용하기 위한 부울 매개변수입니다.
+
+ `useREST`설정 시 `true` , Trident 백엔드와 통신하기 위해 ONTAP REST API를 사용합니다. `false` Trident 백엔드와 통신하기 위해 ONTAPI(ZAPI) 호출을 사용합니다. 이 기능을 사용하려면 ONTAP 9.11.1 이상이 필요합니다.  또한, 사용되는 ONTAP 로그인 역할에는 다음에 대한 액세스 권한이 있어야 합니다. `ontapi` 애플리케이션.  이는 사전 정의된 것에 의해 충족됩니다. `vsadmin` 그리고 `cluster-admin` 역할.  Trident 24.06 릴리스 및 ONTAP 9.15.1 이상부터 `useREST` 로 설정됩니다 `true` 기본적으로; 변경 `useREST` 에게 `false` ONTAPI(ZAPI) 호출을 사용합니다.
+
+`useREST`NVMe/TCP에 완벽하게 적합합니다.
+
+
+NOTE: NVMe는 ONTAP REST API에서만 지원되며 ONTAPI(ZAPI)에서는 지원되지 않습니다.
+
+*지정된 경우 항상 다음으로 설정됩니다. `true` ASA r2 시스템*용.
+| `true`ONTAP 9.15.1 이상인 경우, 그렇지 않은 경우 `false` . 
+
+
+ a| 
+`sanType`
+| 선택에 사용 `iscsi` iSCSI의 경우, `nvme` NVMe/TCP 또는 `fcp` FC(Fibre Channel)를 통한 SCSI의 경우. | `iscsi`비어있는 경우 
+
+
+| `formatOptions`  a| 
+사용 `formatOptions` 명령줄 인수를 지정하려면 `mkfs` 볼륨이 포맷될 때마다 적용되는 명령입니다.  이를 통해 사용자의 선호도에 따라 볼륨을 포맷할 수 있습니다.  장치 경로를 제외하고 mkfs 명령 옵션과 비슷하게 formatOptions를 지정해야 합니다.  예: "-E nodiscard"
+
+*지원됨 `ontap-san` 그리고 `ontap-san-economy` iSCSI 프로토콜을 사용하는 드라이버.*  *또한 iSCSI 및 NVMe/TCP 프로토콜을 사용하는 ASA r2 시스템에서도 지원됩니다.*
+ a| 
+
+
+
+| `limitVolumePoolSize` | ontap-san-economy 백엔드에서 LUN을 사용할 때 요청 가능한 최대 FlexVol 크기입니다. | "" (기본적으로 적용되지 않음) 
+
+
+| `denyNewVolumePools` | 제한하다 `ontap-san-economy` 백엔드가 LUN을 포함하기 위해 새로운 FlexVol 볼륨을 생성하지 못하도록 합니다.  새로운 PV를 프로비저닝하는 데는 기존 Flexvol만 사용됩니다. |  
+|===
+
+
+=== formatOptions 사용에 대한 권장 사항
+
+Trident 포맷 과정을 신속하게 진행하기 위해 다음 옵션을 권장합니다.
+
+*-E 삭제 안 함:*
+
+* 유지, mkfs 시점에 블록을 삭제하려고 시도하지 마세요(처음에 블록을 삭제하는 것은 솔리드 스테이트 장치와 스파스/씬 프로비저닝 스토리지에서 유용합니다).  이는 더 이상 사용되지 않는 옵션인 "-K"를 대체하며 모든 파일 시스템(xfs, ext3, ext4)에 적용할 수 있습니다.
+
+
+
+
+=== Active Directory 자격 증명을 사용하여 백엔드 SVM에 Trident 인증
+
+Active Directory(AD) 자격 증명을 사용하여 백엔드 SVM에 인증하도록 Trident 구성할 수 있습니다. AD 계정이 SVM에 액세스하려면 먼저 클러스터 또는 SVM에 대한 AD 도메인 컨트롤러 액세스를 구성해야 합니다. AD 계정으로 클러스터를 관리하려면 도메인 터널을 만들어야 합니다. 참조하다 link:https://docs.netapp.com/us-en/ontap/authentication/enable-ad-users-groups-access-cluster-svm-task.html["ONTAP 에서 Active Directory 도메인 컨트롤러 액세스 구성"^] 자세한 내용은.
+
+.단계
+. 백엔드 SVM에 대한 DNS(도메인 이름 시스템) 설정을 구성합니다.
++
+`vserver services dns create -vserver <svm_name> -dns-servers <dns_server_ip1>,<dns_server_ip2>`
+
+. Active Directory에서 SVM에 대한 컴퓨터 계정을 만들려면 다음 명령을 실행하세요.
++
+`vserver active-directory create -vserver DataSVM -account-name ADSERVER1 -domain demo.netapp.com`
+
+. 이 명령을 사용하여 클러스터 또는 SVM을 관리할 AD 사용자 또는 그룹을 만듭니다.
++
+`security login create -vserver <svm_name> -user-or-group-name <ad_user_or_group> -application <application> -authentication-method domain -role vsadmin`
+
+. Trident 백엔드 구성 파일에서 다음을 설정합니다. `username` 그리고 `password` 각각 AD 사용자 또는 그룹 이름과 비밀번호에 대한 매개변수입니다.
+
+
+
+
+== 볼륨 프로비저닝을 위한 백엔드 구성 옵션
+
+다음 옵션을 사용하여 기본 프로비저닝을 제어할 수 있습니다. `defaults` 구성 섹션.  예를 들어, 아래의 구성 예를 참조하세요.
+
+[cols="1,3,2"]
+|===
+| 매개변수 | 설명 | 기본 
+
+
+| `spaceAllocation` | LUN에 대한 공간 할당 | "true" *지정된 경우 설정됨 `true` ASA r2 시스템*용. 
+
+
+| `spaceReserve` | 공간 예약 모드; "없음"(씬) 또는 "볼륨"(두꺼움).  *설정 `none` ASA r2* 시스템용. | "없음" 
+
+
+| `snapshotPolicy` | 사용할 스냅샷 정책입니다.  *설정 `none` ASA r2 시스템*용. | "없음" 
+
+
+| `qosPolicy` | 생성된 볼륨에 할당할 QoS 정책 그룹입니다.  스토리지 풀/백엔드별로 qosPolicy 또는 adaptiveQosPolicy 중 하나를 선택합니다.  Trident 에서 QoS 정책 그룹을 사용하려면 ONTAP 9.8 이상이 필요합니다.  공유되지 않는 QoS 정책 그룹을 사용해야 하며, 정책 그룹이 각 구성 요소에 개별적으로 적용되도록 해야 합니다.  공유 QoS 정책 그룹은 모든 작업 부하의 총 처리량에 대한 상한을 적용합니다. | "" 
+
+
+| `adaptiveQosPolicy` | 생성된 볼륨에 할당할 적응형 QoS 정책 그룹입니다.  스토리지 풀/백엔드당 qosPolicy 또는 adaptiveQosPolicy 중 하나를 선택하세요. | "" 
+
+
+| `snapshotReserve` | 스냅샷을 위해 예약된 볼륨의 비율입니다.  * ASA r2 시스템에 대해서는 지정하지 마세요*. | "0"이면 `snapshotPolicy` "없음"이고, 그렇지 않으면 "" 
+
+
+| `splitOnClone` | 생성 시 부모로부터 복제본을 분할합니다. | "거짓" 
+
+
+| `encryption` | 새 볼륨에서 NetApp 볼륨 암호화(NVE)를 활성화합니다. 기본값은 다음과 같습니다. `false` .  이 옵션을 사용하려면 클러스터에서 NVE에 대한 라이선스를 받고 활성화해야 합니다.  백엔드에서 NAE가 활성화된 경우 Trident 에서 프로비저닝된 모든 볼륨은 NAE가 활성화됩니다.  자세한 내용은 다음을 참조하세요.link:../trident-reco/security-reco.html["Trident NVE 및 NAE와 함께 작동하는 방식"] . | "false" *지정된 경우 설정됨 `true` ASA r2 시스템*용. 
+
+
+| `luksEncryption` | LUKS 암호화를 활성화합니다. 참조하다link:../trident-reco/security-luks.html["Linux Unified Key Setup(LUKS) 사용"] . | "" *로 설정 `false` ASA r2 시스템*용. 
+
+
+| `tieringPolicy` | "없음"을 사용하는 계층화 정책 * ASA r2 시스템에는 지정하지 마세요*. |  
+
+
+| `nameTemplate` | 사용자 정의 볼륨 이름을 만드는 템플릿입니다. | "" 
+|===
+
+
+=== 볼륨 프로비저닝 예시
+
+기본값이 정의된 예는 다음과 같습니다.
+
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+managementLIF: 10.0.0.1
+svm: trident_svm
+username: admin
+password: <password>
+labels:
+  k8scluster: dev2
+  backend: dev2-sanbackend
+storagePrefix: alternate-trident
+debugTraceFlags:
+  api: false
+  method: true
+defaults:
+  spaceReserve: volume
+  qosPolicy: standard
+  spaceAllocation: 'false'
+  snapshotPolicy: default
+  snapshotReserve: '10'
+
+----
+
+NOTE: 다음을 사용하여 생성된 모든 볼륨의 경우 `ontap-san` 드라이버, Trident LUN 메타데이터를 수용하기 위해 FlexVol 에 10%의 추가 용량을 추가합니다.  LUN은 PVC에서 사용자가 요청한 정확한 크기로 프로비저닝됩니다.  Trident FlexVol 에 10%를 추가합니다( ONTAP 에서는 사용 가능한 크기로 표시됨).  이제 사용자는 요청한 사용 가능한 용량을 얻게 됩니다.  이 변경 사항은 사용 가능한 공간이 완전히 활용되지 않는 한 LUN이 읽기 전용이 되는 것을 방지합니다.  이는 ontap-san-economy에는 적용되지 않습니다.
+
+정의하는 백엔드의 경우 `snapshotReserve` Trident 다음과 같이 볼륨의 크기를 계산합니다.
+
+[listing]
+----
+Total volume size = [(PVC requested size) / (1 - (snapshotReserve percentage) / 100)] * 1.1
+----
+Trident FlexVol 에 추가하는 10%입니다. 을 위한 `snapshotReserve` = 5%, PVC 요청 = 5GiB인 경우 총 볼륨 크기는 5.79GiB이고 사용 가능한 크기는 5.5GiB입니다.  그만큼 `volume show` 명령을 실행하면 다음 예와 비슷한 결과가 표시됩니다.
+
+image::../media/vol-show-san.png[볼륨 표시 명령의 출력을 보여줍니다.]
+
+현재 기존 볼륨에 대한 새로운 계산을 사용하려면 크기 조정만이 유일한 방법입니다.
+
+
+
+== 최소 구성 예
+
+다음 예에서는 대부분의 매개변수를 기본값으로 두는 기본 구성을 보여줍니다.  백엔드를 정의하는 가장 쉬운 방법입니다.
+
+
+NOTE: Trident 와 함께 NetApp ONTAP 에서 Amazon FSx 사용하는 경우 NetApp IP 주소 대신 LIF에 DNS 이름을 지정할 것을 권장합니다.
+
+.ONTAP SAN 예시
+[%collapsible]
+====
+이는 다음을 사용하는 기본 구성입니다. `ontap-san` 운전사.
+
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+managementLIF: 10.0.0.1
+svm: svm_iscsi
+labels:
+  k8scluster: test-cluster-1
+  backend: testcluster1-sanbackend
+username: vsadmin
+password: <password>
+----
+====
+.MetroCluster 예제
+[#mcc-best%collapsible]
+====
+전환 및 전환 중에 백엔드 정의를 수동으로 업데이트하지 않아도 되도록 백엔드를 구성할 수 있습니다.link:../trident-reco/backup.html#svm-replication-and-recovery["SVM 복제 및 복구"] .
+
+원활한 전환 및 전환을 위해 다음을 사용하여 SVM을 지정하십시오. `managementLIF` 그리고 생략하다 `svm` 매개변수. 예를 들어:
+
+[source, yaml]
+----
+version: 1
+storageDriverName: ontap-san
+managementLIF: 192.168.1.66
+username: vsadmin
+password: password
+----
+====
+.ONTAP SAN 경제 사례
+[%collapsible]
+====
+[source, yaml]
+----
+version: 1
+storageDriverName: ontap-san-economy
+managementLIF: 10.0.0.1
+svm: svm_iscsi_eco
+username: vsadmin
+password: <password>
+----
+====
+.인증서 기반 인증 예제
+[%collapsible]
+====
+이 기본 구성 예에서는 `clientCertificate` , `clientPrivateKey` , 그리고 `trustedCACertificate` (신뢰할 수 있는 CA를 사용하는 경우 선택 사항)이 채워집니다. `backend.json` 그리고 클라이언트 인증서, 개인 키, 신뢰할 수 있는 CA 인증서의 base64 인코딩 값을 각각 가져옵니다.
+
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+backendName: DefaultSANBackend
+managementLIF: 10.0.0.1
+svm: svm_iscsi
+useCHAP: true
+chapInitiatorSecret: cl9qxIm36DKyawxy
+chapTargetInitiatorSecret: rqxigXgkesIpwxyz
+chapTargetUsername: iJF4heBRT0TCwxyz
+chapUsername: uh2aNCLSd6cNwxyz
+clientCertificate: ZXR0ZXJwYXB...ICMgJ3BhcGVyc2
+clientPrivateKey: vciwKIyAgZG...0cnksIGRlc2NyaX
+trustedCACertificate: zcyBbaG...b3Igb3duIGNsYXNz
+----
+====
+.양방향 CHAP 예시
+[%collapsible]
+====
+이러한 예제는 백엔드를 생성합니다. `useCHAP` 로 설정 `true` .
+
+.ONTAP SAN CHAP 예시
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+managementLIF: 10.0.0.1
+svm: svm_iscsi
+labels:
+  k8scluster: test-cluster-1
+  backend: testcluster1-sanbackend
+useCHAP: true
+chapInitiatorSecret: cl9qxIm36DKyawxy
+chapTargetInitiatorSecret: rqxigXgkesIpwxyz
+chapTargetUsername: iJF4heBRT0TCwxyz
+chapUsername: uh2aNCLSd6cNwxyz
+username: vsadmin
+password: <password>
+----
+.ONTAP SAN 경제 CHAP 예시
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san-economy
+managementLIF: 10.0.0.1
+svm: svm_iscsi_eco
+useCHAP: true
+chapInitiatorSecret: cl9qxIm36DKyawxy
+chapTargetInitiatorSecret: rqxigXgkesIpwxyz
+chapTargetUsername: iJF4heBRT0TCwxyz
+chapUsername: uh2aNCLSd6cNwxyz
+username: vsadmin
+password: <password>
+----
+====
+.NVMe/TCP 예제
+[%collapsible]
+====
+ONTAP 백엔드에 NVMe로 구성된 SVM이 있어야 합니다.  이는 NVMe/TCP의 기본 백엔드 구성입니다.
+
+[source, yaml]
+----
+---
+version: 1
+backendName: NVMeBackend
+storageDriverName: ontap-san
+managementLIF: 10.0.0.1
+svm: svm_nvme
+username: vsadmin
+password: password
+sanType: nvme
+useREST: true
+----
+====
+.FC(FCP)를 통한 SCSI 예제
+[%collapsible]
+====
+ONTAP 백엔드에 FC가 구성된 SVM이 있어야 합니다.  이는 FC의 기본 백엔드 구성입니다.
+
+[source, yaml]
+----
+---
+version: 1
+backendName: fcp-backend
+storageDriverName: ontap-san
+managementLIF: 10.0.0.1
+svm: svm_fc
+username: vsadmin
+password: password
+sanType: fcp
+useREST: true
+----
+====
+.nameTemplate을 사용한 백엔드 구성 예
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+backendName: ontap-san-backend
+managementLIF: <ip address>
+svm: svm0
+username: <admin>
+password: <password>
+defaults:
+  nameTemplate: "{{.volume.Name}}_{{.labels.cluster}}_{{.volume.Namespace}}_{{.vo\
+    lume.RequestName}}"
+labels:
+  cluster: ClusterA
+  PVC: "{{.volume.Namespace}}_{{.volume.RequestName}}"
+----
+====
+.ontap-san-economy 드라이버에 대한 formatOptions 예제
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san-economy
+managementLIF: ""
+svm: svm1
+username: ""
+password: "!"
+storagePrefix: whelk_
+debugTraceFlags:
+  method: true
+  api: true
+defaults:
+  formatOptions: -E nodiscard
+----
+====
+
+
+== 가상 풀을 사용한 백엔드의 예
+
+이러한 샘플 백엔드 정의 파일에서는 모든 스토리지 풀에 대해 다음과 같은 특정 기본값이 설정됩니다. `spaceReserve` 없음, `spaceAllocation` 거짓이고, `encryption` 거짓.  가상 풀은 스토리지 섹션에 정의됩니다.
+
+Trident "주석" 필드에 프로비저닝 라벨을 설정합니다.  FlexVol volume 에 대한 주석이 설정되면 Trident 프로비저닝 시 가상 풀에 있는 모든 레이블을 스토리지 볼륨에 복사합니다.  편의를 위해 스토리지 관리자는 가상 풀별로 레이블을 정의하고 레이블별로 볼륨을 그룹화할 수 있습니다.
+
+이러한 예에서 일부 스토리지 풀은 자체적으로 설정합니다. `spaceReserve` , `spaceAllocation` , 그리고 `encryption` 값이 지정되고 일부 풀은 기본값을 재정의합니다.
+
+.ONTAP SAN 예시
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+managementLIF: 10.0.0.1
+svm: svm_iscsi
+useCHAP: true
+chapInitiatorSecret: cl9qxIm36DKyawxy
+chapTargetInitiatorSecret: rqxigXgkesIpwxyz
+chapTargetUsername: iJF4heBRT0TCwxyz
+chapUsername: uh2aNCLSd6cNwxyz
+username: vsadmin
+password: <password>
+defaults:
+  spaceAllocation: "false"
+  encryption: "false"
+  qosPolicy: standard
+labels:
+  store: san_store
+  kubernetes-cluster: prod-cluster-1
+region: us_east_1
+storage:
+  - labels:
+      protection: gold
+      creditpoints: "40000"
+    zone: us_east_1a
+    defaults:
+      spaceAllocation: "true"
+      encryption: "true"
+      adaptiveQosPolicy: adaptive-extreme
+  - labels:
+      protection: silver
+      creditpoints: "20000"
+    zone: us_east_1b
+    defaults:
+      spaceAllocation: "false"
+      encryption: "true"
+      qosPolicy: premium
+  - labels:
+      protection: bronze
+      creditpoints: "5000"
+    zone: us_east_1c
+    defaults:
+      spaceAllocation: "true"
+      encryption: "false"
+
+----
+====
+.ONTAP SAN 경제 사례
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san-economy
+managementLIF: 10.0.0.1
+svm: svm_iscsi_eco
+useCHAP: true
+chapInitiatorSecret: cl9qxIm36DKyawxy
+chapTargetInitiatorSecret: rqxigXgkesIpwxyz
+chapTargetUsername: iJF4heBRT0TCwxyz
+chapUsername: uh2aNCLSd6cNwxyz
+username: vsadmin
+password: <password>
+defaults:
+  spaceAllocation: "false"
+  encryption: "false"
+labels:
+  store: san_economy_store
+region: us_east_1
+storage:
+  - labels:
+      app: oracledb
+      cost: "30"
+    zone: us_east_1a
+    defaults:
+      spaceAllocation: "true"
+      encryption: "true"
+  - labels:
+      app: postgresdb
+      cost: "20"
+    zone: us_east_1b
+    defaults:
+      spaceAllocation: "false"
+      encryption: "true"
+  - labels:
+      app: mysqldb
+      cost: "10"
+    zone: us_east_1c
+    defaults:
+      spaceAllocation: "true"
+      encryption: "false"
+  - labels:
+      department: legal
+      creditpoints: "5000"
+    zone: us_east_1c
+    defaults:
+      spaceAllocation: "true"
+      encryption: "false"
+
+----
+====
+.NVMe/TCP 예제
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+sanType: nvme
+managementLIF: 10.0.0.1
+svm: nvme_svm
+username: vsadmin
+password: <password>
+useREST: true
+defaults:
+  spaceAllocation: "false"
+  encryption: "true"
+storage:
+  - labels:
+      app: testApp
+      cost: "20"
+    defaults:
+      spaceAllocation: "false"
+      encryption: "false"
+
+----
+====
+
+
+== 백엔드를 StorageClass에 매핑
+
+다음 StorageClass 정의는 다음을 참조합니다.<<가상 풀을 사용한 백엔드의 예>> .  를 사용하여 `parameters.selector` 필드에서 각 StorageClass는 볼륨을 호스팅하는 데 사용할 수 있는 가상 풀을 호출합니다.  볼륨에는 선택한 가상 풀에 정의된 측면이 있습니다.
+
+* 그만큼 `protection-gold` StorageClass는 첫 번째 가상 풀에 매핑됩니다. `ontap-san` 백엔드.  이곳은 골드 레벨의 보호를 제공하는 유일한 풀입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: protection-gold
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "protection=gold"
+  fsType: "ext4"
+----
+* 그만큼 `protection-not-gold` StorageClass는 두 번째 및 세 번째 가상 풀에 매핑됩니다. `ontap-san` 백엔드.  이것들은 금 이외의 보호 수준을 제공하는 유일한 풀입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: protection-not-gold
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "protection!=gold"
+  fsType: "ext4"
+----
+* 그만큼 `app-mysqldb` StorageClass는 세 번째 가상 풀에 매핑됩니다. `ontap-san-economy` 백엔드.  이는 mysqldb 유형 앱에 대한 스토리지 풀 구성을 제공하는 유일한 풀입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: app-mysqldb
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "app=mysqldb"
+  fsType: "ext4"
+----
+* 그만큼 `protection-silver-creditpoints-20k` StorageClass는 두 번째 가상 풀에 매핑됩니다. `ontap-san` 백엔드.  이 풀은 실버 레벨 보호와 20000 크레딧 포인트를 제공하는 유일한 풀입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: protection-silver-creditpoints-20k
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "protection=silver; creditpoints=20000"
+  fsType: "ext4"
+----
+* 그만큼 `creditpoints-5k` StorageClass는 세 번째 가상 풀에 매핑됩니다. `ontap-san` 백엔드와 네 번째 가상 풀 `ontap-san-economy` 백엔드.  5000 크레딧 포인트를 제공하는 유일한 풀 서비스입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: creditpoints-5k
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "creditpoints=5000"
+  fsType: "ext4"
+----
+* 그만큼 `my-test-app-sc` StorageClass는 다음에 매핑됩니다. `testAPP` 가상 풀 `ontap-san` 운전자와 함께 `sanType: nvme` .  이것은 유일한 풀 제공입니다 `testApp` .
++
+[source, yaml]
+----
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: my-test-app-sc
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "app=testApp"
+  fsType: "ext4"
+----
+
+
+Trident 어떤 가상 풀을 선택할지 결정하고 저장 요구 사항이 충족되는지 확인합니다.

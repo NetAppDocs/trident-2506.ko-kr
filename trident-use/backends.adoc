@@ -1,0 +1,26 @@
+---
+sidebar: sidebar 
+permalink: trident-use/backends.html 
+keywords: backends, storage system, anf, cvs for gcp, element, hci, solidfire, ontap, aff, fas, ontap select, configure backends, fsx 
+summary: 백엔드는 Trident 와 스토리지 시스템 간의 관계를 정의합니다.  이는 Trident 해당 스토리지 시스템과 통신하는 방법과 Trident 해당 스토리지 시스템에서 볼륨을 프로비저닝하는 방법을 알려줍니다. 
+---
+= 백엔드 구성
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+백엔드는 Trident 와 스토리지 시스템 간의 관계를 정의합니다.  이는 Trident 해당 스토리지 시스템과 통신하는 방법과 Trident 해당 스토리지 시스템에서 볼륨을 프로비저닝하는 방법을 알려줍니다.
+
+Trident 스토리지 클래스에서 정의한 요구 사항에 맞는 백엔드의 스토리지 풀을 자동으로 제공합니다.  스토리지 시스템의 백엔드를 구성하는 방법을 알아보세요.
+
+* link:anf.html["Azure NetApp Files 백엔드 구성"^]
+* link:gcnv.html["Google Cloud NetApp Volumes 백엔드 구성"^]
+* link:gcp.html["Google Cloud Platform 백엔드에 Cloud Volumes Service 구성"^]
+* link:element.html["NetApp HCI 또는 SolidFire 백엔드 구성"^]
+* link:ontap-nas.html["ONTAP 또는 Cloud Volumes ONTAP NAS 드라이버를 사용하여 백엔드 구성"^]
+* link:ontap-san.html["ONTAP 또는 Cloud Volumes ONTAP SAN 드라이버를 사용하여 백엔드 구성"^]
+* link:trident-fsx.html["Amazon FSx for NetApp ONTAP 과 함께 Trident 사용"^]
+

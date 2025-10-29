@@ -1,0 +1,28 @@
+---
+sidebar: sidebar 
+permalink: trident-concepts/snapshots.html 
+keywords: provisioning, Trident 
+summary: Trident 드라이버에 대한 볼륨 스냅샷을 생성하는 방법에 대해 자세히 알아보세요. 
+---
+= 볼륨 스냅샷
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident 드라이버에 대한 볼륨 스냅샷을 생성하는 방법에 대해 자세히 알아보세요.
+
+
+
+== 볼륨 스냅샷 생성에 대해 알아보세요
+
+* 를 위해 `ontap-nas` , `ontap-san` , `gcp-cvs` , 그리고 `azure-netapp-files` 드라이버, 각 영구 볼륨(PV)은 FlexVol volume 에 매핑됩니다. 결과적으로 볼륨 스냅샷은 NetApp 스냅샷으로 생성됩니다.  NetApp 스냅샷 기술은 경쟁사의 스냅샷 기술보다 더 뛰어난 안정성, 확장성, 복구 가능성 및 성능을 제공합니다.  이러한 스냅샷 복사본은 복사본을 만드는 데 필요한 시간과 저장 공간 측면에서 매우 효율적입니다.
+* 를 위해 `ontap-nas-flexgroup` 드라이버, 각 영구 볼륨(PV)은 FlexGroup 에 매핑됩니다.  결과적으로 볼륨 스냅샷은 NetApp FlexGroup 스냅샷으로 생성됩니다.  NetApp 스냅샷 기술은 경쟁사의 스냅샷 기술보다 더 뛰어난 안정성, 확장성, 복구 가능성 및 성능을 제공합니다.  이러한 스냅샷 복사본은 복사본을 만드는 데 필요한 시간과 저장 공간 측면에서 매우 효율적입니다.
+* 를 위해 `ontap-san-economy` 드라이버, PV는 공유 FlexVol 볼륨에 생성된 LUN에 매핑됩니다. PV의 VolumeSnapshot은 연관된 LUN의 FlexClone을 수행하여 구현됩니다.  ONTAP FlexClone 기술을 사용하면 아무리 큰 데이터 세트라도 거의 즉시 복사본을 생성할 수 있습니다.  복사본은 부모와 데이터 블록을 공유하므로 메타데이터에 필요한 것 외에는 저장 공간을 사용하지 않습니다.
+* 를 위해 `solidfire-san` 드라이버, 각 PV는 NetApp Element 소프트웨어/ NetApp HCI 클러스터에서 생성된 LUN에 매핑됩니다.  VolumeSnapshots는 기본 LUN의 요소 스냅샷으로 표현됩니다.  이러한 스냅샷은 특정 시점의 복사본이므로 시스템 리소스와 공간을 적게 차지합니다.
+* 작업할 때 `ontap-nas` 그리고 `ontap-san` 드라이버, ONTAP 스냅샷은 FlexVol 의 특정 시점 복사본이며 FlexVol 자체의 공간을 차지합니다.  이로 인해 스냅샷이 생성되거나 예약됨에 따라 볼륨에서 쓸 수 있는 공간의 양이 시간이 지남에 따라 줄어들 수 있습니다.  이 문제를 해결하는 간단한 방법 중 하나는 Kubernetes를 통해 볼륨 크기를 조정하여 볼륨을 늘리는 것입니다.  또 다른 옵션은 더 이상 필요하지 않은 스냅샷을 삭제하는 것입니다.  Kubernetes를 통해 생성된 VolumeSnapshot이 삭제되면 Trident 연관된 ONTAP 스냅샷을 삭제합니다.  Kubernetes를 통해 생성되지 않은 ONTAP 스냅샷도 삭제할 수 있습니다.
+
+
+Trident 사용하면 VolumeSnapshots를 사용하여 새로운 PV를 만들 수 있습니다.  이러한 스냅샷에서 PV를 만드는 작업은 지원되는 ONTAP 및 CVS 백엔드에 대한 FlexClone 기술을 사용하여 수행됩니다.  스냅샷에서 PV를 생성할 때 백업 볼륨은 스냅샷의 부모 볼륨의 FlexClone 입니다.  그만큼 `solidfire-san` 드라이버는 Element 소프트웨어 볼륨 복제본을 사용하여 스냅샷에서 PV를 생성합니다.  여기서는 Element 스냅샷에서 복제본을 만듭니다.

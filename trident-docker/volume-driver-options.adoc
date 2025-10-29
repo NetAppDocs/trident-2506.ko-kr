@@ -1,0 +1,237 @@
+---
+sidebar: sidebar 
+permalink: trident-docker/volume-driver-options.html 
+keywords: create volumes, Trident, trident for docker, docker, docker volume, driver options, ontap, element volumes, cvs, cloud volumes service on gcp, azure netapp files 
+summary: 각 스토리지 드라이버에는 서로 다른 옵션 세트가 있으며, 볼륨을 생성할 때 이를 지정하여 결과를 사용자 정의할 수 있습니다.  구성된 스토리지 시스템에 적용되는 옵션은 아래를 참조하세요. 
+---
+= 드라이버별 볼륨 옵션
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+각 스토리지 드라이버에는 서로 다른 옵션 세트가 있으며, 볼륨을 생성할 때 이를 지정하여 결과를 사용자 정의할 수 있습니다.  구성된 스토리지 시스템에 적용되는 옵션은 아래를 참조하세요.
+
+볼륨 생성 작업 중에 이러한 옵션을 사용하는 것은 간단합니다.  옵션과 값을 제공합니다. `-o` CLI 작업 중 연산자.  이는 JSON 구성 파일의 동등한 값을 재정의합니다.
+
+
+
+== ONTAP 볼륨 옵션
+
+NFS, iSCSI 및 FC에 대한 볼륨 생성 옵션은 다음과 같습니다.
+
+[cols="2*"]
+|===
+| 옵션 | 설명 
+
+
+| `size`  a| 
+볼륨 크기는 기본적으로 1GiB입니다.
+
+
+
+| `spaceReserve`  a| 
+볼륨을 얇거나 두껍게 프로비저닝하고 기본적으로 얇음이 지정됩니다.  유효한 값은 다음과 같습니다. `none` (씬 프로비저닝) 및 `volume` (두꺼운 식량).
+
+
+
+| `snapshotPolicy`  a| 
+이렇게 하면 스냅샷 정책이 원하는 값으로 설정됩니다.  기본값은 `none` 즉, 볼륨에 대한 스냅샷이 자동으로 생성되지 않습니다.  스토리지 관리자가 수정하지 않는 한, 모든 ONTAP 시스템에는 6시간마다, 2일마다, 2주마다 스냅샷을 생성하고 보관하는 "기본값"이라는 정책이 존재합니다.  스냅샷에 보존된 데이터는 다음을 탐색하여 복구할 수 있습니다. `.snapshot` 볼륨 내의 모든 디렉토리에 있는 디렉토리.
+
+
+
+| `snapshotReserve`  a| 
+이렇게 하면 스냅샷 예약이 원하는 비율로 설정됩니다.  기본값은 값이 없습니다. 즉, 스냅샷 정책을 선택한 경우 ONTAP 스냅샷 예약(일반적으로 5%)을 선택하고, 스냅샷 정책이 없는 경우 0%를 선택합니다.  모든 ONTAP 백엔드의 구성 파일에서 기본 snapshotReserve 값을 설정할 수 있으며, ontap-nas-economy를 제외한 모든 ONTAP 백엔드에 대해 볼륨 생성 옵션으로 사용할 수 있습니다.
+
+
+
+| `splitOnClone`  a| 
+볼륨을 복제할 때 ONTAP 은 복제본을 부모 볼륨에서 즉시 분리합니다.  기본값은 `false` .  볼륨 복제의 일부 사용 사례에서는 복제본을 생성하자마자 부모 볼륨에서 즉시 분리하는 것이 가장 좋습니다. 저장 효율성을 높일 기회가 거의 없기 때문입니다.  예를 들어, 빈 데이터베이스를 복제하면 시간은 크게 절약할 수 있지만 저장 공간은 거의 절약할 수 없으므로 복제본을 즉시 분할하는 것이 가장 좋습니다.
+
+
+
+| `encryption`  a| 
+새 볼륨에서 NetApp 볼륨 암호화(NVE)를 활성화합니다. 기본값은 다음과 같습니다. `false` .  이 옵션을 사용하려면 클러스터에서 NVE에 대한 라이선스를 받고 활성화해야 합니다.
+
+백엔드에서 NAE가 활성화된 경우 Trident 에서 프로비저닝된 모든 볼륨은 NAE가 활성화됩니다.
+
+자세한 내용은 다음을 참조하세요.link:../trident-reco/security-reco.html["Trident NVE 및 NAE와 함께 작동하는 방식"] .
+
+
+
+| `tieringPolicy`  a| 
+볼륨에 사용할 계층화 정책을 설정합니다.  이는 데이터가 비활성화(콜드)될 때 클라우드 계층으로 이동할지 여부를 결정합니다.
+
+|===
+다음 추가 옵션은 NFS에만 적용됩니다.
+
+[cols="2*"]
+|===
+| 옵션 | 설명 
+
+
+| `unixPermissions`  a| 
+이는 볼륨 자체에 대한 권한 집합을 제어합니다.  기본적으로 권한은 다음과 같이 설정됩니다. ``---rwxr-xr-x` 또는 숫자 표기법으로 0755, `root` 소유자가 될 것입니다.  텍스트나 숫자 형식 모두 작동합니다.
+
+
+
+| `snapshotDir`  a| 
+이것을 설정하려면 `true` 만들 것이다 `.snapshot` 볼륨에 액세스하는 클라이언트가 볼 수 있는 디렉토리입니다.  기본값은 `false` 즉, 가시성이 있다는 의미입니다. `.snapshot` 디렉토리는 기본적으로 비활성화되어 있습니다.  예를 들어 공식 MySQL 이미지와 같은 일부 이미지는 예상대로 작동하지 않습니다. `.snapshot` 디렉토리가 표시됩니다.
+
+
+
+| `exportPolicy`  a| 
+볼륨에 사용할 내보내기 정책을 설정합니다.  기본값은 `default` .
+
+
+
+| `securityStyle`  a| 
+볼륨에 액세스하는 데 사용할 보안 스타일을 설정합니다.  기본값은 `unix` .  유효한 값은 다음과 같습니다. `unix` 그리고 `mixed` .
+
+|===
+다음 추가 옵션은 iSCSI에만 적용됩니다.
+
+[cols="2*"]
+|===
+| 옵션 | 설명 
+
+
+| `fileSystemType` | iSCSI 볼륨을 포맷하는 데 사용되는 파일 시스템을 설정합니다.  기본값은 `ext4` .  유효한 값은 다음과 같습니다. `ext3` , `ext4` , 그리고 `xfs` . 
+
+
+| `spaceAllocation` | 이것을 설정하려면 `false` LUN의 공간 할당 기능을 끕니다.  기본값은 `true` 즉, ONTAP 볼륨 공간이 부족하고 볼륨의 LUN이 쓰기를 허용할 수 없을 때 호스트에 알립니다.  이 옵션을 사용하면 호스트가 데이터를 삭제할 때 ONTAP 자동으로 공간을 회수할 수도 있습니다. 
+|===
+
+
+=== 예시
+
+아래의 예를 참조하세요.
+
+* 10GiB 볼륨을 생성합니다.
++
+[listing]
+----
+docker volume create -d netapp --name demo -o size=10G -o encryption=true
+----
+* 스냅샷으로 100GiB 볼륨을 만듭니다.
++
+[listing]
+----
+docker volume create -d netapp --name demo -o size=100G -o snapshotPolicy=default -o snapshotReserve=10
+----
+* setUID 비트가 활성화된 볼륨을 생성합니다.
++
+[listing]
+----
+docker volume create -d netapp --name demo -o unixPermissions=4755
+----
+
+
+최소 볼륨 크기는 20MiB입니다.
+
+스냅샷 예약이 지정되지 않고 스냅샷 정책이 `none` Trident 0%의 스냅샷 예비금을 사용합니다.
+
+* 스냅샷 정책 및 스냅샷 예약이 없는 볼륨을 생성합니다.
++
+[listing]
+----
+docker volume create -d netapp --name my_vol --opt snapshotPolicy=none
+----
+* 스냅샷 정책이 없고 사용자 지정 스냅샷 예약이 10%인 볼륨을 만듭니다.
++
+[listing]
+----
+docker volume create -d netapp --name my_vol --opt snapshotPolicy=none --opt snapshotReserve=10
+----
+* 스냅샷 정책과 10%의 사용자 지정 스냅샷 예약으로 볼륨을 생성합니다.
++
+[listing]
+----
+docker volume create -d netapp --name my_vol --opt snapshotPolicy=myPolicy --opt snapshotReserve=10
+----
+* 스냅샷 정책으로 볼륨을 생성하고 ONTAP의 기본 스냅샷 예약(일반적으로 5%)을 수락합니다.
++
+[listing]
+----
+docker volume create -d netapp --name my_vol --opt snapshotPolicy=myPolicy
+----
+
+
+
+
+== Element 소프트웨어 볼륨 옵션
+
+Element 소프트웨어 옵션은 볼륨과 관련된 크기 및 서비스 품질(QoS) 정책을 보여줍니다.  볼륨이 생성되면 해당 볼륨과 연관된 QoS 정책이 다음을 사용하여 지정됩니다. `-o type=service_level` 명명법.
+
+Element 드라이버를 사용하여 QoS 서비스 수준을 정의하는 첫 번째 단계는 최소한 하나의 유형을 만들고 구성 파일에서 이름과 연관된 최소, 최대 및 버스트 IOPS를 지정하는 것입니다.
+
+Element 소프트웨어의 기타 볼륨 생성 옵션은 다음과 같습니다.
+
+[cols="2*"]
+|===
+| 옵션 | 설명 
+
+
+| `size`  a| 
+볼륨 크기는 기본적으로 1GiB 또는 구성 항목 ... "defaults": {"size": "5G"}입니다.
+
+
+
+| `blocksize`  a| 
+512 또는 4096을 사용하고, 기본값은 512 또는 DefaultBlockSize 구성 항목입니다.
+
+|===
+
+
+=== 예
+
+QoS 정의가 포함된 다음 샘플 구성 파일을 참조하세요.
+
+[source, json]
+----
+{
+  "Types": [
+    {
+      "Type": "Bronze",
+      "Qos": {
+        "minIOPS": 1000,
+        "maxIOPS": 2000,
+        "burstIOPS": 4000
+      }
+    },
+    {
+      "Type": "Silver",
+      "Qos": {
+        "minIOPS": 4000,
+        "maxIOPS": 6000,
+        "burstIOPS": 8000
+      }
+    },
+    {
+      "Type": "Gold",
+      "Qos": {
+        "minIOPS": 6000,
+        "maxIOPS": 8000,
+        "burstIOPS": 10000
+      }
+    }
+  ]
+}
+----
+위의 구성에서는 Bronze, Silver, Gold의 세 가지 정책 정의가 있습니다.  이러한 이름은 임의적입니다.
+
+* 10GiB Gold 볼륨을 생성합니다.
++
+[listing]
+----
+docker volume create -d solidfire --name sfGold -o type=Gold -o size=10G
+----
+* 100GiB Bronze 볼륨을 생성합니다.
++
+[listing]
+----
+docker volume create -d solidfire --name sfBronze -o type=Bronze -o size=100G
+----
+

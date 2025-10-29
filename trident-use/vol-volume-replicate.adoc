@@ -1,0 +1,327 @@
+---
+sidebar: sidebar 
+permalink: trident-use/vol-volume-replicate.html 
+keywords: snapmirror update, volume replication, TridentMirrorRelationship, TridentActionMirrorUpdate 
+summary: Trident 재해 복구를 위해 볼륨을 복제하기 위해 소스 볼륨과 대상 볼륨 간의 미러 관계 생성을 지원합니다. 
+---
+= SnapMirror 사용하여 볼륨 복제
+:allow-uri-read: 
+
+
+[role="lead"]
+Trident 재해 복구를 위한 데이터 복제를 위해 한 클러스터의 소스 볼륨과 피어링된 클러스터의 대상 볼륨 간의 미러 관계를 지원합니다.   Trident Mirror Relationship(TMR)이라고 하는 네임스페이스가 지정된 사용자 지정 리소스 정의(CRD)를 사용하여 다음 작업을 수행할 수 있습니다.
+
+* 볼륨(PVC) 간 미러 관계 생성
+* 볼륨 간 미러 관계 제거
+* 거울 속 관계를 깨세요
+* 재해 상황(장애 조치) 동안 보조 볼륨을 홍보합니다.
+* 계획된 장애 조치 또는 마이그레이션 중 클러스터 간에 애플리케이션의 손실 없는 전환을 수행합니다.
+
+
+
+
+== 복제 전제 조건
+
+시작하기 전에 다음 전제 조건이 충족되었는지 확인하세요.
+
+.ONTAP 클러스터
+* * Trident *: ONTAP 백엔드로 활용하는 소스 및 대상 Kubernetes 클러스터 모두에 Trident 버전 22.10 이상이 있어야 합니다.
+* *라이선스*: 데이터 보호 번들을 사용하는 ONTAP SnapMirror 비동기 라이선스는 소스 및 대상 ONTAP 클러스터 모두에서 활성화되어야 합니다.  참조하다 https://docs.netapp.com/us-en/ontap/data-protection/snapmirror-licensing-concept.html["ONTAP 의 SnapMirror 라이선싱 개요"^] 자세한 내용은.
++
+ONTAP 9.10.1부터 모든 라이선스는 여러 기능을 활성화하는 단일 파일인 NetApp 라이선스 파일(NLF)로 제공됩니다.  참조하다link:https://docs.netapp.com/us-en/ontap/system-admin/manage-licenses-concept.html#licenses-included-with-ontap-one["ONTAP One에 포함된 라이센스"^] 자세한 내용은.
+
++
+
+NOTE: SnapMirror 비동기 보호만 지원됩니다.
+
+
+
+.피어링
+* *클러스터 및 SVM*: ONTAP 스토리지 백엔드는 피어링되어야 합니다.  참조하다 https://docs.netapp.com/us-en/ontap-sm-classic/peering/index.html["클러스터 및 SVM 피어링 개요"^] 자세한 내용은.
++
+
+IMPORTANT: 두 ONTAP 클러스터 간 복제 관계에 사용된 SVM 이름이 고유한지 확인하세요.
+
+* * Trident 및 SVM*: 피어링된 원격 SVM은 대상 클러스터의 Trident 에서 사용할 수 있어야 합니다.
+
+
+.지원되는 드라이버
+NetApp Trident 다음 드라이버가 지원하는 스토리지 클래스를 사용하여 NetApp SnapMirror 기술을 통한 볼륨 복제를 지원합니다.** `ontap-nas` : NFS ** `ontap-san` : iSCSI ** `ontap-san` : FC ** `ontap-san` : NVMe/TCP(최소 ONTAP 버전 9.15.1 필요)
+
+
+NOTE: SnapMirror 사용한 볼륨 복제는 ASA r2 시스템에서는 지원되지 않습니다.  ASA r2 시스템에 대한 정보는 다음을 참조하세요.link:https://docs.netapp.com/us-en/asa-r2/get-started/learn-about.html["ASA r2 스토리지 시스템에 대해 알아보세요"^] .
+
+
+
+== 거울 PVC 만들기
+
+다음 단계를 따르고 CRD 예제를 사용하여 기본 볼륨과 보조 볼륨 간의 미러 관계를 만듭니다.
+
+.단계
+. 기본 Kubernetes 클러스터에서 다음 단계를 수행합니다.
++
+.. StorageClass 객체를 생성합니다. `trident.netapp.io/replication: true` 매개변수.
++
+.예
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-nas
+provisioner: csi.trident.netapp.io
+parameters:
+  backendType: "ontap-nas"
+  fsType: "nfs"
+  trident.netapp.io/replication: "true"
+----
+.. 이전에 생성한 StorageClass로 PVC를 생성합니다.
++
+.예
+[source, yaml]
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: csi-nas
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: csi-nas
+----
+.. 지역 정보를 사용하여 MirrorRelationship CR을 만듭니다.
++
+.예
+[source, yaml]
+----
+kind: TridentMirrorRelationship
+apiVersion: trident.netapp.io/v1
+metadata:
+  name: csi-nas
+spec:
+  state: promoted
+  volumeMappings:
+  - localPVCName: csi-nas
+----
++
+Trident 볼륨의 내부 정보와 볼륨의 현재 데이터 보호(DP) 상태를 가져온 다음 MirrorRelationship의 상태 필드를 채웁니다.
+
+.. TridentMirrorRelationship CR을 가져와서 PVC의 내부 이름과 SVM을 얻습니다.
++
+[listing]
+----
+kubectl get tmr csi-nas
+----
++
+[source, yaml]
+----
+kind: TridentMirrorRelationship
+apiVersion: trident.netapp.io/v1
+metadata:
+  name: csi-nas
+  generation: 1
+spec:
+  state: promoted
+  volumeMappings:
+  - localPVCName: csi-nas
+status:
+  conditions:
+  - state: promoted
+    localVolumeHandle: "datavserver:trident_pvc_3bedd23c_46a8_4384_b12b_3c38b313c1e1"
+    localPVCName: csi-nas
+    observedGeneration: 1
+----
+
+
+. 보조 Kubernetes 클러스터에서 다음 단계를 수행합니다.
++
+.. trident.netapp.io/replication: true 매개변수를 사용하여 StorageClass를 생성합니다.
++
+.예
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-nas
+provisioner: csi.trident.netapp.io
+parameters:
+  trident.netapp.io/replication: true
+----
+.. 목적지 및 소스 정보를 사용하여 MirrorRelationship CR을 만듭니다.
++
+.예
+[source, yaml]
+----
+kind: TridentMirrorRelationship
+apiVersion: trident.netapp.io/v1
+metadata:
+  name: csi-nas
+spec:
+  state: established
+  volumeMappings:
+  - localPVCName: csi-nas
+    remoteVolumeHandle: "datavserver:trident_pvc_3bedd23c_46a8_4384_b12b_3c38b313c1e1"
+----
++
+Trident 구성된 관계 정책 이름(또는 ONTAP 의 기본값)을 사용하여 SnapMirror 관계를 생성하고 초기화합니다.
+
+.. 이전에 생성한 StorageClass를 사용하여 보조(SnapMirror 대상) 역할을 하는 PVC를 생성합니다.
++
+.예
+[source, yaml]
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: csi-nas
+  annotations:
+    trident.netapp.io/mirrorRelationship: csi-nas
+spec:
+  accessModes:
+  - ReadWriteMany
+resources:
+  requests:
+    storage: 1Gi
+storageClassName: csi-nas
+----
++
+Trident TridentMirrorRelationship CRD를 확인하고 해당 관계가 없으면 볼륨을 생성하지 못합니다.  관계가 존재하는 경우, Trident 새로운 FlexVol volume MirrorRelationship에 정의된 원격 SVM과 피어링된 SVM에 배치되도록 합니다.
+
+
+
+
+
+
+
+== 볼륨 복제 상태
+
+Trident 미러 관계(TMR)는 PVC 간 복제 관계의 한쪽 끝을 나타내는 CRD입니다.  목적지 TMR에는 상태가 있는데, 이 상태는 Trident 원하는 상태가 무엇인지 알려줍니다.  목적지 TMR의 상태는 다음과 같습니다.
+
+* *설립됨*: 로컬 PVC는 미러 관계의 대상 볼륨이며, 이는 새로운 관계입니다.
+* *홍보*: 로컬 PVC는 읽기/쓰기가 가능하고 마운트 가능하며, 현재 미러 관계는 적용되지 않습니다.
+* *재설정*: 로컬 PVC가 미러 관계의 대상 볼륨이며 이전에도 해당 미러 관계에 있었습니다.
++
+** 대상 볼륨이 소스 볼륨과 관계를 맺은 적이 있는 경우에는 재설정된 상태를 사용해야 합니다. 재설정된 상태는 대상 볼륨의 내용을 덮어쓰기 때문입니다.
+** 볼륨이 이전에 소스와 관계가 없었던 경우 재설정된 상태는 실패합니다.
+
+
+
+
+
+
+== 계획되지 않은 장애 조치 중 2차 PVC 홍보
+
+보조 Kubernetes 클러스터에서 다음 단계를 수행합니다.
+
+* TridentMirrorRelationship의 _spec.state_ 필드를 다음으로 업데이트합니다. `promoted` .
+
+
+
+
+== 계획된 장애 조치 중 보조 PVC 홍보
+
+계획된 장애 조치(마이그레이션) 중에 다음 단계를 수행하여 보조 PVC를 승격합니다.
+
+.단계
+. 기본 Kubernetes 클러스터에서 PVC의 스냅샷을 만들고 스냅샷이 생성될 때까지 기다립니다.
+. 기본 Kubernetes 클러스터에서 SnapshotInfo CR을 생성하여 내부 세부 정보를 얻습니다.
++
+.예
+[source, yaml]
+----
+kind: SnapshotInfo
+apiVersion: trident.netapp.io/v1
+metadata:
+  name: csi-nas
+spec:
+  snapshot-name: csi-nas-snapshot
+----
+. 보조 Kubernetes 클러스터에서 _TridentMirrorRelationship_ CR의 _spec.state_ 필드를 _promoted_로 업데이트하고 _spec.promotedSnapshotHandle_을 스냅샷의 internalName으로 업데이트합니다.
+. 보조 Kubernetes 클러스터에서 TridentMirrorRelationship의 상태(status.state 필드)가 승격되었는지 확인합니다.
+
+
+
+
+== 장애 조치 후 미러 관계 복원
+
+미러 관계를 복원하기 전에 새로운 기본 관계로 만들려는 측면을 선택하세요.
+
+.단계
+. 보조 Kubernetes 클러스터에서 TridentMirrorRelationship의 _spec.remoteVolumeHandle_ 필드 값이 업데이트되었는지 확인하세요.
+. 보조 Kubernetes 클러스터에서 TridentMirrorRelationship의 _spec.mirror_ 필드를 다음으로 업데이트합니다. `reestablished` .
+
+
+
+
+== 추가 작업
+
+Trident 기본 및 보조 볼륨에서 다음 작업을 지원합니다.
+
+
+
+=== 1차 PVC를 새로운 2차 PVC로 복제합니다.
+
+기본 PVC와 보조 PVC가 이미 있는지 확인하세요.
+
+.단계
+. 설정된 보조(대상) 클러스터에서 PersistentVolumeClaim 및 TridentMirrorRelationship CRD를 삭제합니다.
+. 기본(소스) 클러스터에서 TridentMirrorRelationship CRD를 삭제합니다.
+. 설정하려는 새로운 2차(대상) PVC에 대한 기본(소스) 클러스터에 새로운 TridentMirrorRelationship CRD를 만듭니다.
+
+
+
+
+=== 미러링된 1차 또는 2차 PVC 크기 조정
+
+PVC는 일반적으로 크기를 조절할 수 있으며, 데이터 양이 현재 크기를 초과하면 ONTAP 모든 대상 flevxols를 자동으로 확장합니다.
+
+
+
+=== PVC에서 복제 제거
+
+복제를 제거하려면 현재 보조 볼륨에서 다음 작업 중 하나를 수행합니다.
+
+* 2차 PVC에서 MirrorRelationship을 삭제합니다.  이렇게 하면 복제 관계가 끊어집니다.
+* 또는 spec.state 필드를 _promoted_로 업데이트합니다.
+
+
+
+
+=== PVC(이전에 미러링됨) 삭제
+
+Trident 복제된 PVC를 확인하고 볼륨을 삭제하기 전에 복제 관계를 해제합니다.
+
+
+
+=== TMR 삭제
+
+미러링된 관계의 한쪽에서 TMR을 삭제하면 Trident 삭제를 완료하기 전에 나머지 TMR이 _승격_ 상태로 전환됩니다.  삭제를 위해 선택된 TMR이 이미 _promoted_ 상태인 경우 기존 미러 관계가 없으므로 TMR이 제거되고 Trident 로컬 PVC를 _ReadWrite_로 승격합니다.  이 삭제로 ONTAP 의 로컬 볼륨에 대한 SnapMirror 메타데이터가 해제됩니다.  이 볼륨이 나중에 미러 관계에서 사용되는 경우 새 미러 관계를 만들 때 _설정된_ 볼륨 복제 상태를 가진 새 TMR을 사용해야 합니다.
+
+
+
+== ONTAP 이 온라인일 때 미러 관계 업데이트
+
+미러 관계는 설정된 후 언제든지 업데이트할 수 있습니다.  당신은 사용할 수 있습니다 `state: promoted` 또는 `state: reestablished` 관계를 업데이트하는 필드입니다.  대상 볼륨을 일반 ReadWrite 볼륨으로 승격할 때 _promotedSnapshotHandle_을 사용하여 현재 볼륨을 복원할 특정 스냅샷을 지정할 수 있습니다.
+
+
+
+== ONTAP 이 오프라인일 때 미러 관계 업데이트
+
+Trident ONTAP 클러스터에 직접 연결되지 않고도 CRD를 사용하여 SnapMirror 업데이트를 수행할 수 있습니다.  TridentActionMirrorUpdate의 다음 예제 형식을 참조하세요.
+
+.예
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentActionMirrorUpdate
+metadata:
+  name: update-mirror-b
+spec:
+  snapshotHandle: "pvc-1234/snapshot-1234"
+  tridentMirrorRelationshipName: mirror-b
+----
+`status.state`TridentActionMirrorUpdate CRD의 상태를 반영합니다.  _Succeeded_, _In Progress_, 또는 _Failed_ 값을 가질 수 있습니다.

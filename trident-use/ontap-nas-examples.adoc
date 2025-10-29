@@ -1,0 +1,865 @@
+---
+sidebar: sidebar 
+permalink: trident-use/ontap-nas-examples.html 
+keywords: map backends, storage classes, trident backend, ontap-nas, ontap-nas-economy, ontap-nas-flexgroups, options, storageclasses, fsx, metrocluster 
+summary: Trident 설치로 ONTAP NAS 드라이버를 생성하고 사용하는 방법을 알아보세요.  이 섹션에서는 백엔드 구성 예제와 백엔드를 StorageClass에 매핑하는 방법에 대한 세부 정보를 제공합니다. 
+---
+= ONTAP NAS 구성 옵션 및 예
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident 설치로 ONTAP NAS 드라이버를 만들고 사용하는 방법을 알아보세요.  이 섹션에서는 백엔드 구성 예제와 백엔드를 StorageClass에 매핑하기 위한 세부 정보를 제공합니다.
+
+
+
+== 백엔드 구성 옵션
+
+백엔드 구성 옵션은 다음 표를 참조하세요.
+
+[cols="1,3,2"]
+|===
+| 매개변수 | 설명 | 기본 
+
+
+| `version` |  | 항상 1 
+
+
+| `storageDriverName` | 저장 드라이버의 이름 | `ontap-nas`, `ontap-nas-economy` , 또는 `ontap-nas-flexgroup` 
+
+
+| `backendName` | 사용자 정의 이름 또는 스토리지 백엔드 | 드라이버 이름 + "_" + dataLIF 
+
+
+| `managementLIF` | 클러스터 또는 SVM 관리 LIF의 IP 주소, 정규화된 도메인 이름(FQDN)을 지정할 수 있습니다.  IPv6 플래그를 사용하여 Trident 설치한 경우 IPv6 주소를 사용하도록 설정할 수 있습니다.  IPv6 주소는 다음과 같이 대괄호로 정의해야 합니다. `[28e8:d9fb:a825:b7bf:69a8:d02f:9e7b:3555]` .  원활한 MetroCluster 전환을 위해서는 다음을 참조하세요.<<mcc-best>> . | "10.0.0.1", "[2001:1234:abcd::fefe]" 
+
+
+| `dataLIF` | 프로토콜 LIF의 IP 주소.  NetApp 다음을 지정하는 것이 좋습니다. `dataLIF` .  제공되지 않으면 Trident SVM에서 dataLIF를 가져옵니다.  NFS 마운트 작업에 사용할 정규화된 도메인 이름(FQDN)을 지정하면 라운드 로빈 DNS를 만들어 여러 dataLIF에 걸쳐 부하를 분산할 수 있습니다.  초기 설정 후 변경이 가능합니다. 참조하다 .  IPv6 플래그를 사용하여 Trident 설치한 경우 IPv6 주소를 사용하도록 설정할 수 있습니다.  IPv6 주소는 다음과 같이 대괄호로 정의해야 합니다. `[28e8:d9fb:a825:b7bf:69a8:d02f:9e7b:3555]` .  *메트로클러스터는 생략합니다.* 를 참조하십시오<<mcc-best>> . | 지정되지 않은 경우 지정된 주소 또는 SVM에서 파생됨(권장하지 않음) 
+
+
+| `svm` | 사용할 스토리지 가상 머신 *Metrocluster의 경우 생략* 를 참조하십시오<<mcc-best>> . | SVM의 경우 파생됨 `managementLIF` 지정됨 
+
+
+| `autoExportPolicy` | 자동 내보내기 정책 생성 및 업데이트 활성화[부울]  를 사용하여 `autoExportPolicy` 그리고 `autoExportCIDRs` 옵션을 통해 Trident 자동으로 내보내기 정책을 관리할 수 있습니다. | 거짓 
+
+
+| `autoExportCIDRs` | Kubernetes 노드 IP를 필터링할 CIDR 목록 `autoExportPolicy` 활성화되어 있습니다.  를 사용하여 `autoExportPolicy` 그리고 `autoExportCIDRs` 옵션을 통해 Trident 자동으로 내보내기 정책을 관리할 수 있습니다. | ["0.0.0.0/0", "::/0"]` 
+
+
+| `labels` | 볼륨에 적용할 임의의 JSON 형식 레이블 세트 | "" 
+
+
+| `clientCertificate` | 클라이언트 인증서의 Base64로 인코딩된 값입니다.  인증서 기반 인증에 사용됨 | "" 
+
+
+| `clientPrivateKey` | 클라이언트 개인 키의 Base64 인코딩된 값입니다.  인증서 기반 인증에 사용됨 | "" 
+
+
+| `trustedCACertificate` | 신뢰할 수 있는 CA 인증서의 Base64로 인코딩된 값입니다. 선택 과목.  인증서 기반 인증에 사용됨 | "" 
+
+
+| `username` | 클러스터/SVM에 연결할 사용자 이름입니다. 자격 증명 기반 인증에 사용됩니다. Active Directory 인증에 대해서는 다음을 참조하세요. link:../trident-use/ontap-san-examples.html#authenticate-trident-to-a-backend-svm-using-active-directory-credentials["Active Directory 자격 증명을 사용하여 백엔드 SVM에 Trident 인증"]. |  
+
+
+| `password` | 클러스터/SVM에 연결하기 위한 비밀번호입니다. 자격 증명 기반 인증에 사용됩니다. Active Directory 인증에 대해서는 다음을 참조하세요. link:../trident-use/ontap-san-examples.html#authenticate-trident-to-a-backend-svm-using-active-directory-credentials["Active Directory 자격 증명을 사용하여 백엔드 SVM에 Trident 인증"]. |  
+
+
+| `storagePrefix`  a| 
+SVM에서 새로운 볼륨을 프로비저닝할 때 사용되는 접두사입니다.  설정 후 업데이트 불가
+
+
+NOTE: ontap-nas-economy와 24자 이상의 storagePrefix를 사용하는 경우 볼륨 이름에는 스토리지 접두사가 포함되지만 qtree에는 포함되지 않습니다.
+| "삼지창" 
+
+
+| `aggregate`  a| 
+프로비저닝을 위한 집계(선택 사항, 설정된 경우 SVM에 할당해야 함).  를 위해 `ontap-nas-flexgroup` 드라이버의 경우 이 옵션은 무시됩니다.  할당되지 않은 경우 사용 가능한 모든 집계를 사용하여 FlexGroup 볼륨을 프로비저닝할 수 있습니다.
+
+
+NOTE: SVM에서 집계가 업데이트되면 Trident Controller를 다시 시작하지 않고도 SVM을 폴링하여 Trident 에서 자동으로 업데이트됩니다.  Trident 에서 볼륨을 프로비저닝하기 위해 특정 집계를 구성한 경우, 집계의 이름이 변경되거나 SVM 외부로 이동하면 SVM 집계를 폴링하는 동안 백엔드가 Trident 에서 실패 상태로 전환됩니다.  백엔드를 다시 온라인 상태로 만들려면 SVM에 있는 집계로 변경하거나 집계를 완전히 제거해야 합니다.
+ a| 
+""
+
+
+
+| `limitAggregateUsage` | 사용량이 이 백분율을 초과하면 프로비저닝에 실패합니다.  * Amazon FSx for ONTAP 에는 적용되지 않습니다*. | "" (기본적으로 적용되지 않음) 
+
+
+| 플렉스그룹집계목록  a| 
+프로비저닝을 위한 집계 목록(선택 사항, 설정된 경우 SVM에 할당해야 함).  SVM에 할당된 모든 집계는 FlexGroup 볼륨을 프로비저닝하는 데 사용됩니다.  *ontap-nas-flexgroup* 스토리지 드라이버에 대해 지원됩니다.
+
+
+NOTE: SVM에서 집계 목록이 업데이트되면 Trident Controller를 다시 시작하지 않고도 SVM을 폴링하여 Trident 에서 목록이 자동으로 업데이트됩니다.  Trident 에서 볼륨을 프로비저닝하기 위해 특정 집계 목록을 구성한 경우, 집계 목록의 이름이 바뀌거나 SVM 외부로 이동하면 SVM 집계를 폴링하는 동안 백엔드가 Trident 에서 실패 상태로 전환됩니다.  백엔드를 다시 온라인 상태로 만들려면 집계 목록을 SVM에 있는 목록으로 변경하거나 집계 목록을 완전히 제거해야 합니다.
+| "" 
+
+
+| `limitVolumeSize` | 요청된 볼륨 크기가 이 값보다 크면 프로비저닝에 실패합니다. 또한 qtree에 대해 관리하는 볼륨의 최대 크기를 제한합니다. `qtreesPerFlexvol` 옵션을 사용하면 FlexVol volume 당 최대 Qtree 수를 사용자 지정할 수 있습니다. | "" (기본적으로 적용되지 않음) 
+
+
+| `debugTraceFlags` | 문제 해결 시 사용할 디버그 플래그입니다.  예를 들어, {"api":false, "method":true} 사용하지 마십시오. `debugTraceFlags` 문제 해결을 위해 자세한 로그 덤프가 필요한 경우가 아니면요. | 널 
+
+
+| `nasType` | NFS 또는 SMB 볼륨 생성을 구성합니다.  옵션은 다음과 같습니다 `nfs` , `smb` 또는 null.  null로 설정하면 기본적으로 NFS 볼륨이 사용됩니다. | `nfs` 
+
+
+| `nfsMountOptions` | 쉼표로 구분된 NFS 마운트 옵션 목록입니다.  Kubernetes 지속형 볼륨의 마운트 옵션은 일반적으로 스토리지 클래스에 지정되지만, 스토리지 클래스에 마운트 옵션이 지정되지 않은 경우 Trident 는 스토리지 백엔드의 구성 파일에 지정된 마운트 옵션을 사용합니다.  스토리지 클래스나 구성 파일에 마운트 옵션이 지정되지 않은 경우 Trident 연관된 영구 볼륨에 마운트 옵션을 설정하지 않습니다. | "" 
+
+
+| `qtreesPerFlexvol` | FlexVol 당 최대 Qtree는 [50, 300] 범위 내에 있어야 합니다. | "200" 
+
+
+| `smbShare` | 다음 중 하나를 지정할 수 있습니다. Microsoft Management Console이나 ONTAP CLI를 사용하여 만든 SMB 공유의 이름, Trident SMB 공유를 만들 수 있도록 하는 이름, 또는 매개변수를 비워 두면 볼륨에 대한 일반 공유 액세스를 방지할 수 있습니다.  이 매개변수는 온프레미스 ONTAP 의 경우 선택 사항입니다.  이 매개변수는 Amazon FSx for ONTAP 백엔드에 필수이므로 비워둘 수 없습니다. | `smb-share` 
+
+
+| `useREST` | ONTAP REST API를 사용하기 위한 부울 매개변수입니다.  `useREST`설정 시 `true` , Trident 백엔드와 통신하기 위해 ONTAP REST API를 사용합니다. `false` Trident 백엔드와 통신하기 위해 ONTAPI(ZAPI) 호출을 사용합니다. 이 기능을 사용하려면 ONTAP 9.11.1 이상이 필요합니다.  또한, 사용되는 ONTAP 로그인 역할에는 다음에 대한 액세스 권한이 있어야 합니다. `ontapi` 애플리케이션.  이는 사전 정의된 것에 의해 충족됩니다. `vsadmin` 그리고 `cluster-admin` 역할.  Trident 24.06 릴리스 및 ONTAP 9.15.1 이상부터 `useREST` 로 설정됩니다 `true` 기본적으로; 변경 `useREST` 에게 `false` ONTAPI(ZAPI) 호출을 사용합니다. | `true`ONTAP 9.15.1 이상인 경우, 그렇지 않은 경우 `false` . 
+
+
+| `limitVolumePoolSize` | ontap-nas-economy 백엔드에서 Qtrees를 사용할 때 요청 가능한 최대 FlexVol 크기입니다. | "" (기본적으로 적용되지 않음) 
+
+
+| `denyNewVolumePools` | 제한하다 `ontap-nas-economy` 백엔드가 Qtree를 포함하기 위해 새로운 FlexVol 볼륨을 생성하지 못하도록 합니다.  새로운 PV를 프로비저닝하는 데는 기존 Flexvol만 사용됩니다. |  
+
+
+| `adAdminUser` | SMB 공유에 대한 전체 액세스 권한이 있는 Active Directory 관리자 사용자 또는 사용자 그룹입니다.  이 매개변수를 사용하면 SMB 공유에 대한 전체 제어 권한을 관리자에게 제공할 수 있습니다. |  
+|===
+
+
+== 볼륨 프로비저닝을 위한 백엔드 구성 옵션
+
+다음 옵션을 사용하여 기본 프로비저닝을 제어할 수 있습니다. `defaults` 구성 섹션.  예를 들어, 아래의 구성 예를 참조하세요.
+
+[cols="1,3,2"]
+|===
+| 매개변수 | 설명 | 기본 
+
+
+| `spaceAllocation` | Qtrees에 대한 공간 할당 | "진실" 
+
+
+| `spaceReserve` | 공간 예약 모드; "없음"(씬) 또는 "볼륨"(두꺼움) | "없음" 
+
+
+| `snapshotPolicy` | 사용할 스냅샷 정책 | "없음" 
+
+
+| `qosPolicy` | 생성된 볼륨에 할당할 QoS 정책 그룹입니다.  스토리지 풀/백엔드당 qosPolicy 또는 adaptiveQosPolicy 중 하나를 선택하세요. | "" 
+
+
+| `adaptiveQosPolicy` | 생성된 볼륨에 할당할 적응형 QoS 정책 그룹입니다.  스토리지 풀/백엔드별로 qosPolicy 또는 adaptiveQosPolicy 중 하나를 선택합니다.  ontap-nas-economy에서 지원되지 않습니다. | "" 
+
+
+| `snapshotReserve` | 스냅샷을 위해 예약된 볼륨의 백분율 | "0"이면 `snapshotPolicy` "없음"이고, 그렇지 않으면 "" 
+
+
+| `splitOnClone` | 생성 시 부모로부터 복제본을 분할합니다. | "거짓" 
+
+
+| `encryption` | 새 볼륨에서 NetApp 볼륨 암호화(NVE)를 활성화합니다. 기본값은 다음과 같습니다. `false` .  이 옵션을 사용하려면 클러스터에서 NVE에 대한 라이선스를 받고 활성화해야 합니다.  백엔드에서 NAE가 활성화된 경우 Trident 에서 프로비저닝된 모든 볼륨은 NAE가 활성화됩니다.  자세한 내용은 다음을 참조하세요.link:../trident-reco/security-reco.html["Trident NVE 및 NAE와 함께 작동하는 방식"] . | "거짓" 
+
+
+| `tieringPolicy` | "없음"을 사용하는 계층화 정책 |  
+
+
+| `unixPermissions` | 새로운 볼륨에 대한 모드 | NFS 볼륨의 경우 "777", SMB 볼륨의 경우 비어 있음(해당 없음) 
+
+
+| `snapshotDir` | 에 대한 액세스를 제어합니다. `.snapshot` 예배 규칙서 | NFSv4의 경우 "true", NFSv3의 경우 "false" 
+
+
+| `exportPolicy` | 사용할 수출 정책 | "기본" 
+
+
+| `securityStyle` | 새로운 볼륨에 대한 보안 스타일입니다.  NFS 지원 `mixed` 그리고 `unix` 보안 스타일.  SMB 지원 `mixed` 그리고 `ntfs` 보안 스타일. | NFS 기본값은 `unix` .  SMB 기본값은 `ntfs` . 
+
+
+| `nameTemplate` | 사용자 정의 볼륨 이름을 만드는 템플릿입니다. | "" 
+|===
+
+NOTE: Trident 에서 QoS 정책 그룹을 사용하려면 ONTAP 9.8 이상이 필요합니다.  공유되지 않는 QoS 정책 그룹을 사용하고 정책 그룹이 각 구성 요소에 개별적으로 적용되는지 확인해야 합니다.  공유 QoS 정책 그룹은 모든 작업 부하의 총 처리량에 대한 상한을 적용합니다.
+
+
+
+=== 볼륨 프로비저닝 예시
+
+기본값이 정의된 예는 다음과 같습니다.
+
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas
+backendName: customBackendName
+managementLIF: 10.0.0.1
+dataLIF: 10.0.0.2
+labels:
+  k8scluster: dev1
+  backend: dev1-nasbackend
+svm: trident_svm
+username: cluster-admin
+password: <password>
+limitAggregateUsage: 80%
+limitVolumeSize: 50Gi
+nfsMountOptions: nfsvers=4
+debugTraceFlags:
+  api: false
+  method: true
+defaults:
+  spaceReserve: volume
+  qosPolicy: premium
+  exportPolicy: myk8scluster
+  snapshotPolicy: default
+  snapshotReserve: "10"
+----
+을 위한 `ontap-nas` 그리고 `ontap-nas-flexgroups` Trident 이제 FlexVol snapshotReserve 백분율과 PVC에 맞게 올바르게 조정되도록 새로운 계산을 사용합니다. 사용자가 PVC를 요청하면 Trident 새로운 계산을 사용하여 더 많은 공간을 가진 원래 FlexVol 생성합니다. 이 계산은 사용자가 PVC에서 요청한 쓰기 가능 공간을 확보하고 요청한 것보다 적은 공간을 확보하지 않도록 보장합니다. v21.07 이전에는 사용자가 스냅샷 예약 비율을 50%로 설정한 PVC(예: 5GiB)를 요청하면 2.5GiB의 쓰기 가능 공간만 확보되었습니다.  이는 사용자가 요청한 것이 전체 볼륨이기 때문입니다. `snapshotReserve` 그 중 일부입니다.  Trident 21.07을 사용하면 사용자가 요청하는 것은 쓰기 가능한 공간이며 Trident 이를 정의합니다. `snapshotReserve` 전체 볼륨에 대한 백분율로 나타낸 숫자입니다.  이것은 적용되지 않습니다 `ontap-nas-economy` . 작동 방식을 알아보려면 다음 예를 참조하세요.
+
+계산은 다음과 같습니다.
+
+[listing]
+----
+Total volume size = (PVC requested size) / (1 - (snapshotReserve percentage) / 100)
+----
+에서 요청한 5GiB입니다. 그만큼 `volume show` 명령을 실행하면 다음 예와 비슷한 결과가 표시됩니다.
+
+image::../media/volume-show-nas.png[볼륨 표시 명령의 출력을 보여줍니다.]
+
+이전 설치의 기존 백엔드는 Trident 업그레이드 시 위에서 설명한 대로 볼륨을 프로비저닝합니다. 업그레이드 전에 생성한 볼륨의 경우, 변경 사항을 적용하려면 볼륨 크기를 조정해야 합니다. 예를 들어, 2GiB PVC `snapshotReserve=50` 이전에는 1GiB의 쓰기 가능 공간을 제공하는 볼륨이 생성되었습니다. 예를 들어 볼륨 크기를 3GiB로 조정하면 애플리케이션은 6GiB 볼륨에서 3GiB의 쓰기 가능 공간을 확보하게 됩니다.
+
+
+
+== 최소 구성 예
+
+다음 예에서는 대부분의 매개변수를 기본값으로 두는 기본 구성을 보여줍니다.  백엔드를 정의하는 가장 쉬운 방법입니다.
+
+
+NOTE: Trident 와 함께 NetApp ONTAP 에서 Amazon FSx 사용하는 경우 IP 주소 대신 LIF에 DNS 이름을 지정하는 것이 좋습니다.
+
+.ONTAP NAS 경제 사례
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas-economy
+managementLIF: 10.0.0.1
+dataLIF: 10.0.0.2
+svm: svm_nfs
+username: vsadmin
+password: password
+----
+====
+.ONTAP NAS Flexgroup 예시
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas-flexgroup
+managementLIF: 10.0.0.1
+dataLIF: 10.0.0.2
+svm: svm_nfs
+username: vsadmin
+password: password
+----
+====
+.MetroCluster 예제
+[#mcc-best%collapsible]
+====
+전환 및 전환 중에 백엔드 정의를 수동으로 업데이트하지 않아도 되도록 백엔드를 구성할 수 있습니다.link:../trident-reco/backup.html#svm-replication-and-recovery["SVM 복제 및 복구"] .
+
+원활한 전환 및 스위치백을 위해 다음을 사용하여 SVM을 지정하십시오. `managementLIF` 그리고 생략하다 `dataLIF` 그리고 `svm` 매개변수. 예를 들어:
+
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas
+managementLIF: 192.168.1.66
+username: vsadmin
+password: password
+----
+====
+.SMB 볼륨 예시
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+backendName: ExampleBackend
+storageDriverName: ontap-nas
+managementLIF: 10.0.0.1
+nasType: smb
+securityStyle: ntfs
+unixPermissions: ""
+dataLIF: 10.0.0.2
+svm: svm_nfs
+username: vsadmin
+password: password
+----
+====
+.인증서 기반 인증 예제
+[%collapsible]
+====
+이는 최소 백엔드 구성의 예입니다. `clientCertificate` , `clientPrivateKey` , 그리고 `trustedCACertificate` (신뢰할 수 있는 CA를 사용하는 경우 선택 사항)이 채워집니다. `backend.json` 그리고 클라이언트 인증서, 개인 키, 신뢰할 수 있는 CA 인증서의 base64 인코딩 값을 각각 가져옵니다.
+
+[source, yaml]
+----
+---
+version: 1
+backendName: DefaultNASBackend
+storageDriverName: ontap-nas
+managementLIF: 10.0.0.1
+dataLIF: 10.0.0.15
+svm: nfs_svm
+clientCertificate: ZXR0ZXJwYXB...ICMgJ3BhcGVyc2
+clientPrivateKey: vciwKIyAgZG...0cnksIGRlc2NyaX
+trustedCACertificate: zcyBbaG...b3Igb3duIGNsYXNz
+storagePrefix: myPrefix_
+----
+====
+.자동 내보내기 정책 예
+[%collapsible]
+====
+이 예제에서는 Trident 동적 내보내기 정책을 사용하여 내보내기 정책을 자동으로 만들고 관리하는 방법을 보여줍니다.  이것은 다음과 같은 경우에도 동일하게 작동합니다. `ontap-nas-economy` 그리고 `ontap-nas-flexgroup` 운전자.
+
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas
+managementLIF: 10.0.0.1
+dataLIF: 10.0.0.2
+svm: svm_nfs
+labels:
+  k8scluster: test-cluster-east-1a
+  backend: test1-nasbackend
+autoExportPolicy: true
+autoExportCIDRs:
+- 10.0.0.0/24
+username: admin
+password: password
+nfsMountOptions: nfsvers=4
+----
+====
+.IPv6 주소 예
+[%collapsible]
+====
+이 예에서는 다음을 보여줍니다. `managementLIF` IPv6 주소를 사용합니다.
+
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas
+backendName: nas_ipv6_backend
+managementLIF: "[5c5d:5edf:8f:7657:bef8:109b:1b41:d491]"
+labels:
+  k8scluster: test-cluster-east-1a
+  backend: test1-ontap-ipv6
+svm: nas_ipv6_svm
+username: vsadmin
+password: password
+----
+====
+.SMB 볼륨을 사용하는 Amazon FSx for ONTAP 예제
+[%collapsible]
+====
+그만큼 `smbShare` SMB 볼륨을 사용하는 FSx for ONTAP 에는 매개변수가 필요합니다.
+
+[source, yaml]
+----
+---
+version: 1
+backendName: SMBBackend
+storageDriverName: ontap-nas
+managementLIF: example.mgmt.fqdn.aws.com
+nasType: smb
+dataLIF: 10.0.0.15
+svm: nfs_svm
+smbShare: smb-share
+clientCertificate: ZXR0ZXJwYXB...ICMgJ3BhcGVyc2
+clientPrivateKey: vciwKIyAgZG...0cnksIGRlc2NyaX
+trustedCACertificate: zcyBbaG...b3Igb3duIGNsYXNz
+storagePrefix: myPrefix_
+----
+====
+.nameTemplate을 사용한 백엔드 구성 예
+[%collapsible]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas
+backendName: ontap-nas-backend
+managementLIF: <ip address>
+svm: svm0
+username: <admin>
+password: <password>
+defaults:
+  nameTemplate: "{{.volume.Name}}_{{.labels.cluster}}_{{.volume.Namespace}}_{{.vo\
+    lume.RequestName}}"
+labels:
+  cluster: ClusterA
+  PVC: "{{.volume.Namespace}}_{{.volume.RequestName}}"
+----
+====
+
+
+== 가상 풀을 사용한 백엔드의 예
+
+아래에 표시된 샘플 백엔드 정의 파일에서는 모든 스토리지 풀에 대해 다음과 같은 특정 기본값이 설정됩니다. `spaceReserve` 없음, `spaceAllocation` 거짓이고, `encryption` 거짓.  가상 풀은 스토리지 섹션에 정의됩니다.
+
+Trident "주석" 필드에 프로비저닝 라벨을 설정합니다.  FlexVol 에 대한 의견이 설정되었습니다. `ontap-nas` 또는 FlexGroup 용 `ontap-nas-flexgroup` .  Trident 프로비저닝 시 가상 풀에 있는 모든 레이블을 스토리지 볼륨에 복사합니다.  편의를 위해 스토리지 관리자는 가상 풀별로 레이블을 정의하고 레이블별로 볼륨을 그룹화할 수 있습니다.
+
+이러한 예에서 일부 스토리지 풀은 자체적으로 설정합니다. `spaceReserve` , `spaceAllocation` , 그리고 `encryption` 값이 지정되고 일부 풀은 기본값을 재정의합니다.
+
+.ONTAP NAS 예시
+[%collapsible%open]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas
+managementLIF: 10.0.0.1
+svm: svm_nfs
+username: admin
+password: <password>
+nfsMountOptions: nfsvers=4
+defaults:
+  spaceReserve: none
+  encryption: "false"
+  qosPolicy: standard
+labels:
+  store: nas_store
+  k8scluster: prod-cluster-1
+region: us_east_1
+storage:
+  - labels:
+      app: msoffice
+      cost: "100"
+    zone: us_east_1a
+    defaults:
+      spaceReserve: volume
+      encryption: "true"
+      unixPermissions: "0755"
+      adaptiveQosPolicy: adaptive-premium
+  - labels:
+      app: slack
+      cost: "75"
+    zone: us_east_1b
+    defaults:
+      spaceReserve: none
+      encryption: "true"
+      unixPermissions: "0755"
+  - labels:
+      department: legal
+      creditpoints: "5000"
+    zone: us_east_1b
+    defaults:
+      spaceReserve: none
+      encryption: "true"
+      unixPermissions: "0755"
+  - labels:
+      app: wordpress
+      cost: "50"
+    zone: us_east_1c
+    defaults:
+      spaceReserve: none
+      encryption: "true"
+      unixPermissions: "0775"
+  - labels:
+      app: mysqldb
+      cost: "25"
+    zone: us_east_1d
+    defaults:
+      spaceReserve: volume
+      encryption: "false"
+      unixPermissions: "0775"
+
+----
+====
+.ONTAP NAS FlexGroup 예시
+[%collapsible%open]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas-flexgroup
+managementLIF: 10.0.0.1
+svm: svm_nfs
+username: vsadmin
+password: <password>
+defaults:
+  spaceReserve: none
+  encryption: "false"
+labels:
+  store: flexgroup_store
+  k8scluster: prod-cluster-1
+region: us_east_1
+storage:
+  - labels:
+      protection: gold
+      creditpoints: "50000"
+    zone: us_east_1a
+    defaults:
+      spaceReserve: volume
+      encryption: "true"
+      unixPermissions: "0755"
+  - labels:
+      protection: gold
+      creditpoints: "30000"
+    zone: us_east_1b
+    defaults:
+      spaceReserve: none
+      encryption: "true"
+      unixPermissions: "0755"
+  - labels:
+      protection: silver
+      creditpoints: "20000"
+    zone: us_east_1c
+    defaults:
+      spaceReserve: none
+      encryption: "true"
+      unixPermissions: "0775"
+  - labels:
+      protection: bronze
+      creditpoints: "10000"
+    zone: us_east_1d
+    defaults:
+      spaceReserve: volume
+      encryption: "false"
+      unixPermissions: "0775"
+
+----
+====
+.ONTAP NAS 경제 사례
+[%collapsible%open]
+====
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas-economy
+managementLIF: 10.0.0.1
+svm: svm_nfs
+username: vsadmin
+password: <password>
+defaults:
+  spaceReserve: none
+  encryption: "false"
+labels:
+  store: nas_economy_store
+region: us_east_1
+storage:
+  - labels:
+      department: finance
+      creditpoints: "6000"
+    zone: us_east_1a
+    defaults:
+      spaceReserve: volume
+      encryption: "true"
+      unixPermissions: "0755"
+  - labels:
+      protection: bronze
+      creditpoints: "5000"
+    zone: us_east_1b
+    defaults:
+      spaceReserve: none
+      encryption: "true"
+      unixPermissions: "0755"
+  - labels:
+      department: engineering
+      creditpoints: "3000"
+    zone: us_east_1c
+    defaults:
+      spaceReserve: none
+      encryption: "true"
+      unixPermissions: "0775"
+  - labels:
+      department: humanresource
+      creditpoints: "2000"
+    zone: us_east_1d
+    defaults:
+      spaceReserve: volume
+      encryption: "false"
+      unixPermissions: "0775"
+
+----
+====
+
+
+== 백엔드를 StorageClass에 매핑
+
+다음 StorageClass 정의는 다음을 참조합니다.<<가상 풀을 사용한 백엔드의 예>> .  를 사용하여 `parameters.selector` 필드에서 각 StorageClass는 볼륨을 호스팅하는 데 사용할 수 있는 가상 풀을 호출합니다.  볼륨에는 선택한 가상 풀에 정의된 측면이 있습니다.
+
+* 그만큼 `protection-gold` StorageClass는 첫 번째 및 두 번째 가상 풀에 매핑됩니다. `ontap-nas-flexgroup` 백엔드.  골드 레벨 보호를 제공하는 유일한 풀입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: protection-gold
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "protection=gold"
+  fsType: "ext4"
+----
+* 그만큼 `protection-not-gold` StorageClass는 세 번째 및 네 번째 가상 풀에 매핑됩니다. `ontap-nas-flexgroup` 백엔드.  이것들은 금 이외의 보호 수준을 제공하는 유일한 풀입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: protection-not-gold
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "protection!=gold"
+  fsType: "ext4"
+----
+* 그만큼 `app-mysqldb` StorageClass는 네 번째 가상 풀에 매핑됩니다. `ontap-nas` 백엔드.  이는 mysqldb 유형 앱에 대한 스토리지 풀 구성을 제공하는 유일한 풀입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: app-mysqldb
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "app=mysqldb"
+  fsType: "ext4"
+----
+* 그 `protection-silver-creditpoints-20k` StorageClass는 세 번째 가상 풀에 매핑됩니다. `ontap-nas-flexgroup` 백엔드.  이 풀은 실버 레벨 보호와 20000 크레딧 포인트를 제공하는 유일한 풀입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: protection-silver-creditpoints-20k
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "protection=silver; creditpoints=20000"
+  fsType: "ext4"
+----
+* 그만큼 `creditpoints-5k` StorageClass는 세 번째 가상 풀에 매핑됩니다. `ontap-nas` 백엔드와 두 번째 가상 풀 `ontap-nas-economy` 백엔드.  5000 크레딧 포인트를 제공하는 유일한 풀 서비스입니다.
++
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: creditpoints-5k
+provisioner: csi.trident.netapp.io
+parameters:
+  selector: "creditpoints=5000"
+  fsType: "ext4"
+----
+
+
+Trident 어떤 가상 풀을 선택할지 결정하고 저장 요구 사항이 충족되는지 확인합니다.
+
+
+
+== 업데이트 `dataLIF` 초기 구성 후
+
+다음 명령을 실행하여 업데이트된 dataLIF로 새 백엔드 JSON 파일을 제공하면 초기 구성 후 dataLIF를 변경할 수 있습니다.
+
+[listing]
+----
+tridentctl update backend <backend-name> -f <path-to-backend-json-file-with-updated-dataLIF>
+----
+
+NOTE: PVC가 하나 이상의 포드에 연결된 경우 새로운 dataLIF가 적용되려면 해당 포드를 모두 내렸다가 다시 올려야 합니다.
+
+
+
+== 보안 SMB 사례
+
+
+
+=== ontap-nas 드라이버를 사용한 백엔드 구성
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-nas
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: ontap-nas
+  managementLIF: 10.0.0.1
+  svm: svm2
+  nasType: smb
+  defaults:
+    adAdminUser: tridentADtest
+  credentials:
+    name: backend-tbc-ontap-invest-secret
+----
+
+
+=== ontap-nas-economy 드라이버를 사용한 백엔드 구성
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-nas
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: ontap-nas-economy
+  managementLIF: 10.0.0.1
+  svm: svm2
+  nasType: smb
+  defaults:
+    adAdminUser: tridentADtest
+  credentials:
+    name: backend-tbc-ontap-invest-secret
+----
+
+
+=== 스토리지 풀을 사용한 백엔드 구성
+
+[source, yaml]
+----
+apiVersion: trident.netapp.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-tbc-ontap-nas
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: ontap-nas
+  managementLIF: 10.0.0.1
+  svm: svm0
+  useREST: false
+  storage:
+  - labels:
+      app: msoffice
+    defaults:
+      adAdminUser: tridentADuser
+  nasType: smb
+  credentials:
+    name: backend-tbc-ontap-invest-secret
+
+----
+
+
+=== ontap-nas 드라이버를 사용한 스토리지 클래스 예제
+
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ontap-smb-sc
+  annotations:
+    trident.netapp.io/smbShareAdUserPermission: change
+    trident.netapp.io/smbShareAdUser: tridentADtest
+parameters:
+  backendType: ontap-nas
+  csi.storage.k8s.io/node-stage-secret-name: smbcreds
+  csi.storage.k8s.io/node-stage-secret-namespace: trident
+  trident.netapp.io/nasType: smb
+provisioner: csi.trident.netapp.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+----
+
+NOTE: 추가했는지 확인하세요 `annotations` 안전한 SMB를 구현합니다.  보안 SMB는 백엔드나 PVC에 설정된 구성과 관계없이 주석 없이는 작동하지 않습니다.
+
+
+
+=== ontap-nas-economy 드라이버를 사용한 스토리지 클래스 예제
+
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ontap-smb-sc
+  annotations:
+    trident.netapp.io/smbShareAdUserPermission: change
+    trident.netapp.io/smbShareAdUser: tridentADuser3
+parameters:
+  backendType: ontap-nas-economy
+  csi.storage.k8s.io/node-stage-secret-name: smbcreds
+  csi.storage.k8s.io/node-stage-secret-namespace: trident
+  trident.netapp.io/nasType: smb
+provisioner: csi.trident.netapp.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+----
+
+
+=== 단일 AD 사용자가 있는 PVC 예
+
+[source, yaml]
+----
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc4
+  namespace: trident
+  annotations:
+    trident.netapp.io/smbShareAccessControl: |
+      change:
+        - tridentADtest
+      read:
+        - tridentADuser
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: ontap-smb-sc
+----
+
+
+=== 여러 AD 사용자가 있는 PVC 예
+
+[source, yaml]
+----
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-test-pvc
+  annotations:
+    trident.netapp.io/smbShareAccessControl: |
+      full_control:
+        - tridentTestuser
+        - tridentuser
+        - tridentTestuser1
+        - tridentuser1
+      change:
+        - tridentADuser
+        - tridentADuser1
+        - tridentADuser4
+        - tridentTestuser2
+      read:
+        - tridentTestuser2
+        - tridentTestuser3
+        - tridentADuser2
+        - tridentADuser3
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+----

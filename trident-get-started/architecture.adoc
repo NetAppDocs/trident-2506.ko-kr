@@ -1,0 +1,89 @@
+---
+sidebar: sidebar 
+permalink: trident-get-started/architecture.html 
+keywords: trident backend, AFF, FAS, ONTAP Select, Cloud, Amazon FSx for NetApp ONTAP, drivers, ONTAP drivers 
+summary: Trident 클러스터의 각 워커 노드에 있는 노드 포드와 단일 컨트롤러 포드로 실행됩니다.  Trident 볼륨을 마운트하려는 모든 호스트에서 노드 포드를 실행해야 합니다. 
+---
+= Trident 아키텍처
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident 클러스터의 각 워커 노드에 있는 노드 포드와 단일 컨트롤러 포드로 실행됩니다.  Trident 볼륨을 마운트하려는 모든 호스트에서 노드 포드를 실행해야 합니다.
+
+
+
+== 컨트롤러 포드와 노드 포드 이해
+
+Trident 단일로 배치됩니다.<<Trident 컨트롤러 포드>> 그리고 하나 이상<<Trident 노드 포드>> Kubernetes 클러스터에서 표준 Kubernetes _CSI Sidecar Containers_를 사용하여 CSI 플러그인 배포를 간소화합니다. link:https://kubernetes-csi.github.io/docs/sidecar-containers.html["Kubernetes CSI 사이드카 컨테이너"^] Kubernetes Storage 커뮤니티에서 유지 관리됩니다.
+
+쿠버네티스link:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/["노드 선택기"^] 그리고link:https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/["관용과 오염"^] 특정 노드나 선호하는 노드에서 포드가 실행되도록 제한하는 데 사용됩니다.  Trident 설치 중에 컨트롤러와 노드 포드에 대한 노드 선택기와 허용 범위를 구성할 수 있습니다.
+
+* 컨트롤러 플러그인은 스냅샷 및 크기 조정과 같은 볼륨 프로비저닝 및 관리를 처리합니다.
+* 노드 플러그인은 저장소를 노드에 연결하는 작업을 처리합니다.
+
+
+.Kubernetes 클러스터에 Trident 배포
+image::../media/trident-arch.png[Kubernetes 클러스터의 Trident 아키텍처 다이어그램.]
+
+
+
+=== Trident 컨트롤러 포드
+
+Trident Controller Pod는 CSI Controller 플러그인을 실행하는 단일 Pod입니다.
+
+* NetApp 스토리지의 볼륨 프로비저닝 및 관리를 담당합니다.
+* Kubernetes 배포로 관리됨
+* 설치 매개변수에 따라 제어 평면이나 작업자 노드에서 실행할 수 있습니다.
+
+
+.Trident 컨트롤러 포드 다이어그램
+image::../media/controller-pod.png[CSI 사이드카와 함께 CSI 컨트롤러 플러그인을 실행하는 Trident Controller Pod의 다이어그램입니다.]
+
+
+
+=== Trident 노드 포드
+
+Trident Node Pod는 CSI Node 플러그인을 실행하는 특권 Pod입니다.
+
+* 호스트에서 실행되는 Pod에 대한 스토리지 마운트 및 마운트 해제를 담당합니다.
+* Kubernetes DaemonSet에서 관리됨
+* NetApp 스토리지를 마운트할 모든 노드에서 실행해야 함
+
+
+.Trident 노드 포드 다이어그램
+image::../media/node-pod.png[CSI 사이드카와 함께 CSI 노드 플러그인을 실행하는 Trident 노드 포드의 다이어그램입니다.]
+
+
+
+== 지원되는 Kubernetes 클러스터 아키텍처
+
+Trident 다음과 같은 Kubernetes 아키텍처에서 지원됩니다.
+
+[cols="3,1,2"]
+|===
+| 쿠버네티스 클러스터 아키텍처 | 지원됨 | 기본 설치 
+
+
+| 단일 마스터, 컴퓨팅 | 예  a| 
+예
+
+
+
+| 다중 마스터, 컴퓨팅 | 예  a| 
+예
+
+
+
+| 주인, `etcd` , 계산하다 | 예  a| 
+예
+
+
+
+| 마스터, 인프라, 컴퓨팅 | 예  a| 
+예
+
+|===

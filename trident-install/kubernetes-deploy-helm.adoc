@@ -1,0 +1,268 @@
+---
+sidebar: sidebar 
+permalink: trident-get-started/kubernetes-deploy-helm.html 
+keywords: deploy, Trident, operator, helm, helm chart, configuration, values, standard, registry 
+summary: Helm을 사용하여 Trident 운영자를 배포하고 Trident 설치할 수 있습니다.  이 프로세스는 Trident 에 필요한 컨테이너 이미지가 개인 레지스트리에 저장되지 않은 설치에 적용됩니다. 
+---
+= Helm(표준 모드)을 사용하여 Trident 운영자 배치
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Helm을 사용하여 Trident 운영자를 배포하고 Trident 설치할 수 있습니다.  이 프로세스는 Trident 에 필요한 컨테이너 이미지가 개인 레지스트리에 저장되지 않은 설치에 적용됩니다.  개인 이미지 레지스트리가 있는 경우 다음을 사용하세요.link:kubernetes-deploy-helm-mirror.html["오프라인 배포 프로세스"] .
+
+
+
+== Trident 25.06에 대한 중요 정보
+
+* Trident 에 대한 다음의 중요 정보를 꼭 읽어보세요.*
+
+.<strong> Trident 에 대한 중요 정보</strong>
+[%collapsible%open]
+====
+[]
+=====
+* Kubernetes 1.34가 이제 Trident 에서 지원됩니다. Kubernetes를 업그레이드하기 전에 Trident 업그레이드하세요.
+* Trident SAN 환경에서 다중 경로 구성 사용을 엄격하게 시행하며 권장 값은 다음과 같습니다. `find_multipaths: no` multipath.conf 파일에서.
++
+비다중경로 구성 사용 또는 사용 `find_multipaths: yes` 또는 `find_multipaths: smart` multipath.conf 파일의 값으로 인해 마운트가 실패합니다.  Trident 다음을 사용할 것을 권장했습니다. `find_multipaths: no` 21.07 릴리스 이후.
+
+
+
+=====
+====
+
+
+== Trident 운영자를 배포하고 Helm을 사용하여 Trident 설치합니다.
+
+Trident 사용link:https://artifacthub.io/packages/helm/netapp-trident/trident-operator["헬름 차트"^] Trident 운영자를 배포하고 한 단계로 Trident 설치할 수 있습니다.
+
+검토link:../trident-get-started/kubernetes-deploy.html["설치 개요"] 설치 전제 조건을 충족했는지, 그리고 사용자 환경에 맞는 올바른 설치 옵션을 선택했는지 확인하세요.
+
+.시작하기 전에
+또한link:../trident-get-started/kubernetes-deploy.html#before-you-deploy["배포 전제 조건"] 당신은 필요합니다link:https://v3.helm.sh/["헬름 버전 3"^] .
+
+.단계
+. Trident Helm 저장소를 추가합니다.
++
+[listing]
+----
+helm repo add netapp-trident https://netapp.github.io/trident-helm-chart
+----
+. 사용 `helm install` 다음 예와 같이 배포에 대한 이름을 지정합니다. `100.2506.0` 설치하려는 Trident 버전입니다.
++
+[listing]
+----
+helm install <name> netapp-trident/trident-operator --version 100.2506.0 --create-namespace --namespace <trident-namespace>
+----
++
+
+NOTE: 이미 Trident 에 대한 네임스페이스를 생성한 경우 `--create-namespace` 매개변수는 추가 네임스페이스를 생성하지 않습니다.
+
+
+
+사용할 수 있습니다 `helm list` 이름, 네임스페이스, 차트, 상태, 앱 버전, 개정 번호 등의 설치 세부 정보를 검토합니다.
+
+
+
+== 설치 중 구성 데이터 전달
+
+설치 중에 구성 데이터를 전달하는 방법에는 두 가지가 있습니다.
+
+[cols="2"]
+|===
+| 옵션 | 설명 
+
+
+| `--values`(또는 `-f` )  a| 
+재정의가 포함된 YAML 파일을 지정합니다.  이 항목은 여러 번 지정할 수 있으며 가장 오른쪽에 있는 파일이 우선 적용됩니다.
+
+
+
+| `--set`  a| 
+명령줄에서 재정의를 지정합니다.
+
+|===
+예를 들어, 기본값을 변경하려면 `debug` , 다음 명령을 실행합니다. `100.2506.0` 설치하려는 Trident 버전은 다음과 같습니다.
+
+[listing]
+----
+helm install <name> netapp-trident/trident-operator --version 100.2506.0  --create-namespace --namespace trident --set tridentDebug=true
+----
+
+
+== 구성 옵션
+
+이 테이블과 `values.yaml` Helm 차트의 일부인 파일은 키와 해당 기본값 목록을 제공합니다.
+
+[cols="1,2,3"]
+|===
+| 옵션 | 설명 | 기본 
+
+
+| `nodeSelector` | 포드 할당을 위한 노드 레이블 |  
+
+
+| `podAnnotations` | 포드 주석 |  
+
+
+| `deploymentAnnotations` | 배포 주석 |  
+
+
+| `tolerations` | 포드 할당에 대한 허용 범위 |  
+
+
+| `affinity` | 포드 할당에 대한 친화성  a| 
+[listing]
+----
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+              - arm64
+              - amd64
+            - key: kubernetes.io/os
+              operator: In
+              values:
+              - linux
+----
+
+WARNING: values.yaml 파일에서 기본 친화성을 제거하지 마세요.  사용자 지정 친화도를 제공하려면 기본 친화도를 확장하세요.
+
+
+
+| `tridentControllerPluginNodeSelector` | 포드에 대한 추가 노드 선택기. 참조하다 <<컨트롤러 포드와 노드 포드 이해>> 자세한 내용은. |  
+
+
+| `tridentControllerPluginTolerations` | 포드에 대한 Kubernetes 허용을 재정의합니다. 참조하다 <<컨트롤러 포드와 노드 포드 이해>> 자세한 내용은. |  
+
+
+| `tridentNodePluginNodeSelector` | 포드에 대한 추가 노드 선택기. 참조하다 <<컨트롤러 포드와 노드 포드 이해>> 자세한 내용은. |  
+
+
+| `tridentNodePluginTolerations` | 포드에 대한 Kubernetes 허용을 재정의합니다. 참조하다 <<컨트롤러 포드와 노드 포드 이해>> 자세한 내용은. |  
+
+
+| `imageRegistry` | 레지스트리를 식별합니다. `trident-operator` , `trident` , 및 기타 이미지.  기본값을 적용하려면 비워 두세요.  중요: 개인 저장소에 Trident 설치하는 경우 다음을 사용하는 경우 `imageRegistry` 저장소 위치를 지정하려면 스위치를 사용하세요. `/netapp/` 저장소 경로에. | `""` 
+
+
+| `imagePullPolicy` | 이미지 풀 정책을 설정합니다. `trident-operator` . | `IfNotPresent` 
+
+
+| `imagePullSecrets` | 이미지 풀 비밀을 설정합니다. `trident-operator` , `trident` , 및 기타 이미지. |  
+
+
+| `kubeletDir` | kubelet의 내부 상태의 호스트 위치를 재정의할 수 있습니다. | `"/var/lib/kubelet"` 
+
+
+| `operatorLogLevel` | Trident 연산자의 로그 수준을 다음과 같이 설정할 수 있습니다. `trace` , `debug` , `info` , `warn` , `error` , 또는 `fatal` . | `"info"` 
+
+
+| `operatorDebug` | Trident 연산자의 로그 수준을 디버그로 설정할 수 있습니다. | `true` 
+
+
+| `operatorImage` | 이미지의 완전한 재정의를 허용합니다. `trident-operator` . | `""` 
+
+
+| `operatorImageTag` | 태그를 재정의할 수 있습니다. `trident-operator` 영상. | `""` 
+
+
+| `tridentIPv6` | IPv6 클러스터에서 Trident 작동하도록 허용합니다. | `false` 
+
+
+| `tridentK8sTimeout` | 대부분의 Kubernetes API 작업에 대한 기본 30초 시간 제한을 재정의합니다(0이 아닌 경우 초 단위). | `0` 
+
+
+| `tridentHttpRequestTimeout` | HTTP 요청에 대한 기본 90초 시간 제한을 재정의합니다. `0s` 타임아웃 시간이 무한대인 경우.  음수 값은 허용되지 않습니다. | `"90s"` 
+
+
+| `tridentSilenceAutosupport` | Trident 주기적 AutoSupport 보고를 비활성화할 수 있습니다. | `false` 
+
+
+| `tridentAutosupportImageTag` | Trident AutoSupport 컨테이너의 이미지 태그를 재정의할 수 있습니다. | `<version>` 
+
+
+| `tridentAutosupportProxy` | HTTP 프록시를 통해 Trident AutoSupport 컨테이너가 홈에 전화를 걸 수 있도록 합니다. | `""` 
+
+
+| `tridentLogFormat` | Trident 로깅 형식을 설정합니다.(`text` 또는 `json` ). | `"text"` 
+
+
+| `tridentDisableAuditLog` | Trident 감사 로거를 비활성화합니다. | `true` 
+
+
+| `tridentLogLevel` | Trident 의 로그 수준을 다음과 같이 설정할 수 있습니다. `trace` , `debug` , `info` , `warn` , `error` , 또는 `fatal` . | `"info"` 
+
+
+| `tridentDebug` | Trident 의 로그 수준을 설정할 수 있습니다. `debug` . | `false` 
+
+
+| `tridentLogWorkflows` | 추적 로깅이나 로그 억제를 위해 특정 Trident 워크플로를 활성화할 수 있습니다. | `""` 
+
+
+| `tridentLogLayers` | 추적 로깅이나 로그 억제를 위해 특정 Trident 레이어를 활성화할 수 있습니다. | `""` 
+
+
+| `tridentImage` | Trident 의 이미지를 완전히 재정의할 수 있습니다. | `""` 
+
+
+| `tridentImageTag` | Trident 이미지의 태그를 재정의할 수 있습니다. | `""` 
+
+
+| `tridentProbePort` | Kubernetes 활성/준비 프로브에 사용되는 기본 포트를 재정의할 수 있습니다. | `""` 
+
+
+| `windows` | Windows 워커 노드에 Trident 설치할 수 있습니다. | `false` 
+
+
+| `enableForceDetach` | 강제 분리 기능을 활성화할 수 있습니다. | `false` 
+
+
+| `excludePodSecurityPolicy` | 운영자 포드 보안 정책이 생성에서 제외됩니다. | `false` 
+
+
+| `cloudProvider` | 로 설정 `"Azure"` AKS 클러스터에서 관리형 ID 또는 클라우드 ID를 사용하는 경우.  EKS 클러스터에서 클라우드 ID를 사용하는 경우 "AWS"로 설정합니다. | `""` 
+
+
+| `cloudIdentity` | AKS 클러스터에서 클라우드 ID를 사용하는 경우 워크로드 ID("azure.workload.identity/client-id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")로 설정합니다.  EKS 클러스터에서 클라우드 ID를 사용하는 경우 AWS IAM 역할("'eks.amazonaws.com/role-arn: arn:aws:iam::123456:role/trident-role'")로 설정합니다. | `""` 
+
+
+| `iscsiSelfHealingInterval` | iSCSI 자체 복구가 호출되는 간격입니다. | `5m0s` 
+
+
+| `iscsiSelfHealingWaitTime` | iSCSI 자체 복구가 로그아웃과 후속 로그인을 수행하여 오래된 세션을 해결하려고 시도하는 데 걸리는 시간입니다. | `7m0s` 
+
+
+| `nodePrep` | Trident 지정된 데이터 저장 프로토콜을 사용하여 볼륨을 관리하도록 Kubernetes 클러스터의 노드를 준비할 수 있도록 합니다. *현재, `iscsi` 지원되는 유일한 값입니다.* 참고: OpenShift 4.19부터 이 기능을 지원하는 최소 Trident 버전은 25.06.1입니다. |  
+
+
+| `enableConcurrency`  a| 
+향상된 처리량을 위해 동시 Trident 컨트롤러 작업이 가능합니다.
+
+
+NOTE: *기술 미리보기*: 이 기능은 NetApp Trident 25.06에서 실험적이며 현재 ONTAP-SAN 드라이버(iSCSI 및 FCP 프로토콜)를 사용하여 제한된 병렬 워크플로를 지원합니다.
+| 거짓 
+
+
+| `k8sAPIQPS`  a| 
+Kubernetes API 서버와 통신하는 동안 컨트롤러가 사용하는 초당 쿼리 수(QPS) 제한입니다. 버스트 값은 QPS 값에 따라 자동으로 설정됩니다.
+| `100`; 선택 사항 
+|===
+
+
+=== 컨트롤러 포드와 노드 포드 이해
+
+Trident 단일 컨트롤러 포드로 실행되고, 클러스터의 각 워커 노드에는 노드 포드가 있습니다.  Trident 볼륨을 마운트하려는 모든 호스트에서 노드 포드를 실행해야 합니다.
+
+쿠버네티스link:https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/["노드 선택기"^] 그리고link:https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/["관용과 오염"^] 특정 노드나 선호하는 노드에서 포드가 실행되도록 제한하는 데 사용됩니다.  `ControllerPlugin`을 사용하여 `NodePlugin` , 제약 조건과 재정의를 지정할 수 있습니다.
+
+* 컨트롤러 플러그인은 스냅샷 및 크기 조정과 같은 볼륨 프로비저닝 및 관리를 처리합니다.
+* 노드 플러그인은 저장소를 노드에 연결하는 작업을 처리합니다.
+

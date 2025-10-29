@@ -1,0 +1,66 @@
+---
+sidebar: sidebar 
+permalink: trident-reference/rest-api.html 
+keywords: rest api, get, post, json, object, backends 
+summary: Trident의 REST API와 상호 작용하려면 REST 엔드포인트를 직접 사용할 수 있습니다. 
+---
+= Trident REST API
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+하는 동안link:tridentctl.html["tridentctl 명령 및 옵션"] Trident REST API와 상호 작용하는 가장 쉬운 방법이며, 원하는 경우 REST 엔드포인트를 직접 사용할 수도 있습니다.
+
+
+
+== REST API를 사용하는 경우
+
+REST API는 Kubernetes가 아닌 배포 환경에서 Trident 독립 실행형 바이너리로 사용하는 고급 설치에 유용합니다.
+
+더 나은 보안을 위해 Trident `REST API` Pod 내부에서 실행할 경우 기본적으로 localhost로 제한됩니다.  이 동작을 변경하려면 Trident를 설정해야 합니다. `-address` 포드 구성의 인수입니다.
+
+
+
+== REST API 사용
+
+이러한 API가 호출되는 방법에 대한 예를 보려면 디버그를 전달하세요.(`-d` ) 깃발.  자세한 내용은 다음을 참조하세요.link:../trident-managing-k8s/tridentctl.html["tridentctl을 사용하여 Trident 관리"] .
+
+API는 다음과 같이 작동합니다.
+
+
+
+=== 얻다
+
+`GET <trident-address>/trident/v1/<object-type>`:: 해당 유형의 모든 객체를 나열합니다.
+`GET <trident-address>/trident/v1/<object-type>/<object-name>`:: 명명된 객체의 세부 정보를 가져옵니다.
+
+
+
+
+=== 우편
+
+`POST <trident-address>/trident/v1/<object-type>`:: 지정된 유형의 객체를 생성합니다.
++
+--
+* 객체를 생성하려면 JSON 구성이 필요합니다.  각 객체 유형의 사양은 다음을 참조하세요.link:../trident-managing-k8s/tridentctl.html["tridentctl을 사용하여 Trident 관리"] .
+* 해당 객체가 이미 존재하는 경우 동작이 달라집니다. 백엔드는 기존 객체를 업데이트하지만 다른 모든 객체 유형은 작업에 실패합니다.
+
+
+--
+
+
+
+
+=== 삭제
+
+`DELETE <trident-address>/trident/v1/<object-type>/<object-name>`:: 지정된 리소스를 삭제합니다.
++
+--
+
+NOTE: 백엔드 또는 스토리지 클래스와 연결된 볼륨은 계속 존재합니다. 이러한 볼륨은 별도로 삭제해야 합니다.  자세한 내용은 다음을 참조하세요.link:../trident-managing-k8s/tridentctl.html["tridentctl을 사용하여 Trident 관리"] .
+
+--
+

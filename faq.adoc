@@ -1,0 +1,419 @@
+---
+sidebar: sidebar 
+permalink: faq.html 
+keywords: faq, frequently asked questions 
+summary: Trident 설치, 구성, 업그레이드 및 문제 해결에 대한 자주 묻는 질문에 대한 답변을 찾아보세요. 
+---
+= 자주 묻는 질문
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ./media/
+
+
+[role="lead"]
+Trident 설치, 구성, 업그레이드 및 문제 해결에 대한 자주 묻는 질문에 대한 답변을 찾아보세요.
+
+
+
+== 일반적인 질문
+
+
+
+=== Trident 얼마나 자주 출시되나요?
+
+24.02 릴리스부터 Trident 4개월마다(2월, 6월, 10월) 출시됩니다.
+
+
+
+=== Trident Kubernetes의 특정 버전에서 출시된 모든 기능을 지원합니까?
+
+Trident 일반적으로 Kubernetes의 알파 기능을 지원하지 않습니다.  Trident Kubernetes 베타 릴리스 이후에 나오는 두 가지 Trident 릴리스에서 베타 기능을 지원할 수 있습니다.
+
+
+
+=== Trident 의 작동을 위해 다른 NetApp 제품에 대한 종속성이 있습니까?
+
+Trident 다른 NetApp 소프트웨어 제품에 대한 종속성이 없으며 독립 실행형 애플리케이션으로 작동합니다.  하지만 NetApp 백엔드 스토리지 장치가 있어야 합니다.
+
+
+
+=== Trident 구성에 대한 자세한 내용을 어떻게 얻을 수 있나요?
+
+사용하다 `tridentctl get` Trident 구성에 대한 자세한 정보를 얻으려면 명령을 사용하세요.
+
+
+
+=== Trident 가 스토리지를 프로비저닝하는 방식에 대한 메트릭을 얻을 수 있나요?
+
+네. Trident 작업에 대한 정보(관리되는 백엔드 수, 프로비저닝된 볼륨 수, 사용된 바이트 수 등)를 수집하는 데 사용할 수 있는 Prometheus 엔드포인트입니다.  또한 사용할 수 있습니다link:https://docs.netapp.com/us-en/cloudinsights/["Cloud Insights"^] 모니터링 및 분석을 위해.
+
+
+
+=== Trident CSI Provisioner로 사용하면 사용자 경험이 달라지나요?
+
+아니요. 사용자 경험과 기능 면에서는 아무런 변화가 없습니다.  사용된 프로비저너 이름은 다음과 같습니다. `csi.trident.netapp.io` .  현재 및 향후 릴리스에서 제공되는 모든 새로운 기능을 사용하려면 이 Trident 설치 방법을 사용하는 것이 좋습니다.
+
+
+
+== Kubernetes 클러스터에 Trident 설치 및 사용
+
+
+
+=== Trident 개인 레지스트리에서 오프라인 설치를 지원합니까?
+
+네, Trident 오프라인으로 설치할 수 있습니다. 참조하다link:../trident-get-started/kubernetes-deploy.html["Trident 설치에 대해 알아보세요"^] .
+
+
+
+=== 원격으로 Trident 설치할 수 있나요?
+
+네. Trident 18.10 이상은 모든 컴퓨터에서 원격 설치 기능을 지원합니다. `kubectl` 클러스터에 접근합니다.  후에 `kubectl` 액세스가 검증되었습니다(예: 시작 `kubectl get nodes` 원격 컴퓨터에서 명령을 입력하여 확인하고, 설치 지침을 따르세요.
+
+
+
+=== Trident 로 고가용성을 구성할 수 있나요?
+
+Trident 인스턴스 하나가 있는 Kubernetes 배포(ReplicaSet)로 설치되므로 HA가 내장되어 있습니다. 배포에서 복제본 수를 늘리면 안 됩니다.  Trident 설치된 노드가 손실되거나 Pod에 다른 방법으로 접근할 수 없는 경우, Kubernetes는 클러스터 내의 정상적인 노드에 Pod를 자동으로 다시 배포합니다.  Trident 제어 평면에만 적용되므로 Trident 재배치되더라도 현재 장착된 포드는 영향을 받지 않습니다.
+
+
+
+=== Trident kube-system 네임스페이스에 액세스해야 합니까?
+
+Trident 애플리케이션이 새로운 PVC를 요청하는 시점을 확인하기 위해 Kubernetes API 서버에서 데이터를 읽어오므로 kube-system에 액세스해야 합니다.
+
+
+
+=== Trident 에서 사용하는 역할과 권한은 무엇입니까?
+
+Trident 설치 프로그램은 Kubernetes 클러스터의 PersistentVolume, PersistentVolumeClaim, StorageClass 및 Kubernetes 클러스터의 Secret 리소스에 대한 특정 액세스 권한이 있는 Kubernetes ClusterRole을 생성합니다. 참조하다link:trident-get-started/kubernetes-customize-deploy-tridentctl.html["tridentctl 설치 사용자 정의"^] .
+
+
+
+=== Trident 설치에 사용하는 정확한 매니페스트 파일을 로컬에서 생성할 수 있나요?
+
+필요한 경우 Trident 설치에 사용하는 정확한 매니페스트 파일을 로컬에서 생성하고 수정할 수 있습니다. 참조하다link:trident-get-started/kubernetes-customize-deploy-tridentctl.html["tridentctl 설치 사용자 정의"^] .
+
+
+
+=== 두 개의 별도 Kubernetes 클러스터에 대해 두 개의 별도 Trident 인스턴스에 대해 동일한 ONTAP 백엔드 SVM을 공유할 수 있습니까?
+
+권장하지는 않지만 두 개의 Trident 인스턴스에 동일한 백엔드 SVM을 사용할 수 있습니다.  설치 중 각 인스턴스에 대해 고유한 볼륨 이름을 지정하거나 고유한 볼륨 이름을 지정하십시오. `StoragePrefix` 매개변수 `setup/backend.json` 파일.  이는 동일한 FlexVol volume 이 두 인스턴스 모두에 사용되지 않도록 하기 위한 것입니다.
+
+
+
+=== ContainerLinux(이전 CoreOS)에 Trident 설치할 수 있나요?
+
+Trident 단순히 Kubernetes 포드일 뿐이며 Kubernetes가 실행되는 곳이라면 어디에나 설치할 수 있습니다.
+
+
+
+=== Trident NetApp Cloud Volumes ONTAP 과 함께 사용할 수 있나요?
+
+네, Trident AWS, Google Cloud, Azure에서 지원됩니다.
+
+
+
+=== Trident Cloud Volumes Services와 호환되나요?
+
+네, Trident Azure의 Azure NetApp Files 서비스와 GCP의 Cloud Volumes Service 지원합니다.
+
+
+
+== 문제 해결 및 지원
+
+
+
+=== NetApp Trident 지원합니까?
+
+Trident 는 오픈 소스이고 무료로 제공되지만 NetApp 백엔드가 지원되는 경우 NetApp 에서도 Trident를 완벽하게 지원합니다.
+
+
+
+=== 지원 사례를 제기하려면 어떻게 해야 하나요?
+
+지원 사례를 제기하려면 다음 중 하나를 수행하세요.
+
+. 지원 계정 관리자에게 문의하여 티켓 제출에 대한 도움을 받으세요.
+. 지원 사례를 문의하세요. https://www.netapp.com/company/contact-us/support/["NetApp 지원"^] .
+
+
+
+
+=== 지원 로그 번들을 어떻게 생성하나요?
+
+다음을 실행하여 지원 번들을 생성할 수 있습니다. `tridentctl logs -a` .  번들에 캡처된 로그 외에도 kubelet 로그를 캡처하여 Kubernetes 측의 마운트 문제를 진단합니다.  kubelet 로그를 얻는 방법은 Kubernetes가 설치된 방법에 따라 다릅니다.
+
+
+
+=== 새로운 기능에 대한 요청을 해야 할 경우 어떻게 해야 하나요?
+
+문제를 생성하세요 https://github.com/NetApp/trident["Trident Github"^] 그리고 해당 이슈의 제목과 설명에 *RFE*를 언급하세요.
+
+
+
+=== 결함은 어디에 제기해야 하나요?
+
+문제를 생성하세요 https://github.com/NetApp/trident["Trident Github"^] .  해당 문제와 관련된 모든 필수 정보와 로그를 포함시키세요.
+
+
+
+=== Trident 에 대해 명확히 알고 싶은 질문이 있으면 어떻게 해야 하나요?  커뮤니티나 포럼이 있나요?
+
+질문, 문제 또는 요청 사항이 있는 경우 Trident 통해 문의해 주세요.link:https://discord.gg/NetApp["디스코드 채널"^] 또는 GitHub.
+
+
+
+=== 저장 시스템의 비밀번호가 변경되어 Trident 더 이상 작동하지 않습니다. 어떻게 복구할 수 있나요?
+
+백엔드의 비밀번호를 업데이트하세요. `tridentctl update backend myBackend -f </path/to_new_backend.json> -n trident` .  바꾸다 `myBackend` 백엔드 이름을 사용한 예에서 ``/path/to_new_backend.json` 올바른 길로 가는 길 `backend.json` 파일.
+
+
+
+=== Trident 내 Kubernetes 노드를 찾을 수 없습니다.  이 문제를 어떻게 해결하나요?
+
+Trident Kubernetes 노드를 찾을 수 없는 데에는 두 가지 시나리오가 있을 수 있습니다.  Kubernetes 내부의 네트워킹 문제나 DNS 문제 때문일 수 있습니다.  각 Kubernetes 노드에서 실행되는 Trident 노드 데몬셋은 Trident 컨트롤러와 통신하여 노드를 Trident 에 등록할 수 있어야 합니다.  Trident 설치한 후 네트워킹이 변경된 경우, 클러스터에 추가된 새로운 Kubernetes 노드에서만 이 문제가 발생합니다.
+
+
+
+=== Trident 포드가 파괴되면 데이터가 손실되나요?
+
+Trident 포드가 파괴되어도 데이터는 손실되지 않습니다.  Trident 메타데이터는 CRD 객체에 저장됩니다.  Trident 에서 프로비저닝한 모든 PV는 정상적으로 작동합니다.
+
+
+
+== Trident 업그레이드
+
+
+
+=== 이전 버전에서 새 버전으로 바로 업그레이드할 수 있나요(몇 가지 버전을 건너뛸 수 있나요)?
+
+NetApp Trident 현재 주요 릴리스에서 바로 다음 주요 릴리스로 업그레이드하는 것을 지원합니다.  버전 18.xx에서 19.xx로, 19.xx에서 20.xx로 업그레이드할 수 있습니다.  실제 운영에 적용하기 전에 실험실에서 업그레이드를 테스트해야 합니다.
+
+
+
+=== Trident 이전 릴리스로 다운그레이드할 수 있나요?
+
+업그레이드 후 발견된 버그, 종속성 문제 또는 실패하거나 완료되지 않은 업그레이드에 대한 수정이 필요한 경우 다음을 수행해야 합니다.link:trident-managing-k8s/uninstall-trident.html["Trident 제거"] 그리고 해당 버전에 대한 구체적인 지침을 사용하여 이전 버전을 다시 설치하세요.  이는 이전 버전으로 다운그레이드하는 데 권장되는 유일한 방법입니다.
+
+
+
+== 백엔드 및 볼륨 관리
+
+
+
+=== ONTAP 백엔드 정의 파일에서 Management와 DataLIF를 모두 정의해야 합니까?
+
+관리 LIF는 필수입니다.  DataLIF는 다음과 같이 다양합니다.
+
+* ONTAP SAN: iSCSI에 대해서는 지정하지 마세요.  Trident 사용link:https://docs.netapp.com/us-en/ontap/san-admin/selective-lun-map-concept.html["ONTAP 선택적 LUN 맵"^] 다중 경로 세션을 설정하는 데 필요한 iSCI LIF를 발견합니다.  경고가 생성됩니다. `dataLIF` 명확하게 정의되어 있습니다. 참조하다 link:trident-use/ontap-san-examples.html["ONTAP SAN 구성 옵션 및 예"] 자세한 내용은.
+* ONTAP NAS: NetApp 다음을 지정하는 것을 권장합니다. `dataLIF` .  제공되지 않으면 Trident SVM에서 dataLIF를 가져옵니다.  NFS 마운트 작업에 사용할 정규화된 도메인 이름(FQDN)을 지정하면 라운드 로빈 DNS를 만들어 여러 dataLIF에 걸쳐 부하를 분산할 수 있습니다.  참조하다link:trident-use/ontap-nas-examples.html["ONTAP NAS 구성 옵션 및 예"] 자세한 내용은
+
+
+
+
+=== Trident ONTAP 백엔드에 대해 CHAP를 구성할 수 있나요?
+
+네. Trident ONTAP 백엔드에 대해 양방향 CHAP를 지원합니다.  여기에는 설정이 필요합니다 `useCHAP=true` 백엔드 구성에서.
+
+
+
+=== Trident 사용하여 수출 정책을 어떻게 관리합니까?
+
+Trident 20.04 버전부터 동적으로 내보내기 정책을 만들고 관리할 수 있습니다.  이를 통해 스토리지 관리자는 백엔드 구성에서 하나 이상의 CIDR 블록을 제공하고 Trident 해당 범위에 속하는 노드 IP를 생성한 내보내기 정책에 추가할 수 있습니다.  이런 방식으로 Trident 주어진 CIDR 내의 IP를 가진 노드에 대한 규칙의 추가 및 삭제를 자동으로 관리합니다.
+
+
+
+=== IPv6 주소를 Management 및 DataLIF에 사용할 수 있나요?
+
+Trident 다음에 대한 IPv6 주소 정의를 지원합니다.
+
+* `managementLIF`그리고 `dataLIF` ONTAP NAS 백엔드용.
+* `managementLIF`ONTAP SAN 백엔드용.  지정할 수 없습니다 `dataLIF` ONTAP SAN 백엔드에서.
+
+
+Trident 플래그를 사용하여 설치해야 합니다. `--use-ipv6` (을 위한 `tridentctl` 설치), `IPv6` ( Trident 운영자의 경우) 또는 `tridentTPv6` (Helm 설치의 경우) IPv6에서 작동하도록 해야 합니다.
+
+
+
+=== 백엔드에서 Management LIF를 업데이트할 수 있나요?
+
+예, 다음을 사용하여 백엔드 관리 LIF를 업데이트할 수 있습니다. `tridentctl update backend` 명령.
+
+
+
+=== 백엔드에서 DataLIF를 업데이트하는 것이 가능합니까?
+
+DataLIF를 업데이트할 수 있습니다. `ontap-nas` 그리고 `ontap-nas-economy` 오직.
+
+
+
+=== Kubernetes용 Trident 에서 여러 개의 백엔드를 만들 수 있나요?
+
+Trident 동일한 드라이버나 다른 드라이버를 사용하여 여러 백엔드를 동시에 지원할 수 있습니다.
+
+
+
+=== Trident 백엔드 자격 증명을 어떻게 저장합니까?
+
+Trident 백엔드 자격 증명을 Kubernetes Secrets로 저장합니다.
+
+
+
+=== Trident 어떻게 특정 백엔드를 선택하나요?
+
+백엔드 속성을 사용하여 클래스에 적합한 풀을 자동으로 선택할 수 없는 경우 `storagePools` 그리고 `additionalStoragePools` 매개변수는 특정 풀 세트를 선택하는 데 사용됩니다.
+
+
+
+=== Trident 특정 백엔드에서 프로비저닝을 하지 않도록 하려면 어떻게 해야 하나요?
+
+그만큼 `excludeStoragePools` 매개변수는 Trident 프로비저닝에 사용하는 풀 세트를 필터링하는 데 사용되며 일치하는 모든 풀을 제거합니다.
+
+
+
+=== 같은 종류의 백엔드가 여러 개 있는 경우, Trident 어떤 백엔드를 사용할지 어떻게 선택합니까?
+
+동일한 유형의 구성된 백엔드가 여러 개 있는 경우 Trident 현재 매개변수를 기반으로 적절한 백엔드를 선택합니다. `StorageClass` 그리고 `PersistentVolumeClaim` .  예를 들어, 여러 개의 ontap-nas 드라이버 백엔드가 있는 경우 Trident 매개변수를 일치시키려고 시도합니다. `StorageClass` 그리고 `PersistentVolumeClaim` 결합되어 요구 사항을 충족할 수 있는 백엔드와 일치합니다. `StorageClass` 그리고 `PersistentVolumeClaim` .  요청과 일치하는 백엔드가 여러 개 있는 경우 Trident 그 중 하나를 무작위로 선택합니다.
+
+
+
+=== Trident Element/ SolidFire 와 양방향 CHAP를 지원합니까?
+
+네.
+
+
+
+=== Trident ONTAP 볼륨에 Qtrees를 어떻게 배포합니까?  단일 볼륨에 몇 개의 Qtree를 배포할 수 있나요?
+
+그만큼 `ontap-nas-economy` 드라이버는 동일한 FlexVol volume 에 최대 200개의 Qtree를 생성하고(50~300개로 구성 가능), 클러스터 노드당 100,000개의 Qtree, 클러스터당 2.4M개의 Qtree를 생성합니다.  새로운 것을 입력할 때 `PersistentVolumeClaim` 경제 드라이버가 서비스하는 경우 드라이버는 새 Qtree를 서비스할 수 있는 FlexVol volume 이미 있는지 확인합니다.  Qtree에 서비스를 제공할 수 있는 FlexVol volume 없으면 새로운 FlexVol volume 생성됩니다.
+
+
+
+=== ONTAP NAS에 프로비저닝된 볼륨에 대한 Unix 권한을 어떻게 설정할 수 있나요?
+
+백엔드 정의 파일에서 매개변수를 설정하여 Trident 에서 프로비저닝한 볼륨에 대한 Unix 권한을 설정할 수 있습니다.
+
+
+
+=== 볼륨을 프로비저닝하는 동안 명시적인 ONTAP NFS 마운트 옵션 세트를 구성하려면 어떻게 해야 합니까?
+
+기본적으로 Trident Kubernetes에서 마운트 옵션을 어떤 값으로도 설정하지 않습니다.  Kubernetes 스토리지 클래스에서 마운트 옵션을 지정하려면 다음 예를 따르세요.link:https://github.com/NetApp/trident/blob/master/trident-installer/sample-input/storage-class-samples/storage-class-ontapnas-k8s1.8-mountoptions.yaml["여기"^] .
+
+
+
+=== 프로비저닝된 볼륨을 특정 내보내기 정책으로 설정하려면 어떻게 해야 하나요?
+
+적절한 호스트가 볼륨에 액세스할 수 있도록 하려면 다음을 사용하세요. `exportPolicy` 백엔드 정의 파일에 구성된 매개변수입니다.
+
+
+
+=== ONTAP 사용하여 Trident 통해 볼륨 암호화를 설정하려면 어떻게 해야 합니까?
+
+백엔드 정의 파일의 암호화 매개변수를 사용하여 Trident 에서 프로비저닝한 볼륨에 암호화를 설정할 수 있습니다.  자세한 내용은 다음을 참조하세요.link:trident-reco/security-reco.html#use-trident-with-nve-and-nae["Trident NVE 및 NAE와 함께 작동하는 방식"]
+
+
+
+=== Trident 통해 ONTAP 에 대한 QoS를 구현하는 가장 좋은 방법은 무엇입니까?
+
+사용 `StorageClasses` ONTAP 에 QoS를 구현합니다.
+
+
+
+=== Trident 통해 씬 프로비저닝이나 씩 프로비저닝을 지정하려면 어떻게 해야 하나요?
+
+ONTAP 드라이버는 씬 프로비저닝이나 씩 프로비저닝을 모두 지원합니다.  ONTAP 드라이버는 기본적으로 씬 프로비저닝을 사용합니다.  두꺼운 프로비저닝이 필요한 경우 백엔드 정의 파일이나 다음을 구성해야 합니다. `StorageClass` .  둘 다 구성된 경우, `StorageClass` 우선합니다.  ONTAP 에 대해 다음을 구성합니다.
+
+. ~에 `StorageClass` , 설정하다 `provisioningType` 속성이 두껍습니다.
+. 백엔드 정의 파일에서 다음을 설정하여 두꺼운 볼륨을 활성화합니다. `backend spaceReserve parameter` 볼륨으로서.
+
+
+
+
+=== 실수로 PVC를 삭제하더라도 사용 중인 볼륨이 삭제되지 않도록 하려면 어떻게 해야 합니까?
+
+PVC 보호는 Kubernetes 버전 1.10부터 자동으로 활성화됩니다.
+
+
+
+=== Trident 에서 만든 NFS PVC를 재배할 수 있나요?
+
+네. Trident 에서 생성된 PVC를 확장할 수 있습니다.  볼륨 자동 증가는 Trident 에 적용할 수 없는 ONTAP 기능입니다.
+
+
+
+=== SnapMirror Data Protection(DP) 또는 오프라인 모드에 있는 동안 볼륨을 가져올 수 있나요?
+
+외부 볼륨이 DP 모드이거나 오프라인인 경우 볼륨 가져오기가 실패합니다.  다음과 같은 오류 메시지가 나타납니다.
+
+[listing]
+----
+Error: could not import volume: volume import failed to get size of volume: volume <name> was not found (400 Bad Request) command terminated with exit code 1.
+Make sure to remove the DP mode or put the volume online before importing the volume.
+----
+
+
+=== 리소스 할당량은 NetApp 클러스터로 어떻게 변환되나요?
+
+Kubernetes 스토리지 리소스 할당량은 NetApp 스토리지에 용량이 있는 한 작동해야 합니다.  NetApp 스토리지가 용량 부족으로 인해 Kubernetes 할당량 설정을 준수할 수 없는 경우 Trident 프로비저닝을 시도하지만 오류가 발생합니다.
+
+
+
+=== Trident 사용하여 볼륨 스냅샷을 만들 수 있나요?
+
+네. Trident 에서는 스냅샷에서 주문형 볼륨 스냅샷과 영구 볼륨을 생성하는 기능을 지원합니다.  스냅샷에서 PV를 생성하려면 다음을 확인하세요. `VolumeSnapshotDataSource` 기능 게이트가 활성화되었습니다.
+
+
+
+=== Trident 볼륨 스냅샷을 지원하는 드라이버는 무엇입니까?
+
+오늘부터 주문형 스냅샷 지원이 가능합니다. `ontap-nas` , `ontap-nas-flexgroup` , `ontap-san` , `ontap-san-economy` , `solidfire-san` , `gcp-cvs` , 그리고 `azure-netapp-files` 백엔드 드라이버.
+
+
+
+=== ONTAP 사용하여 Trident 에서 프로비저닝한 볼륨의 스냅샷 백업을 어떻게 만들 수 있나요?
+
+이것은 다음에서 사용 가능합니다. `ontap-nas` , `ontap-san` , 그리고 `ontap-nas-flexgroup` 운전자.  또한 다음을 지정할 수도 있습니다. `snapshotPolicy` 를 위해 `ontap-san-economy` FlexVol 레벨의 드라이버.
+
+이것은 또한 다음에서도 사용 가능합니다. `ontap-nas-economy` 드라이버는 FlexVol volume 수준 세분성에 따라 동작하며 qtree 수준 세분성에는 동작하지 않습니다.  Trident 에서 프로비저닝한 볼륨의 스냅샷 기능을 활성화하려면 백엔드 매개변수 옵션을 설정하세요. `snapshotPolicy` ONTAP 백엔드에 정의된 원하는 스냅샷 정책에 따라.  스토리지 컨트롤러가 찍은 스냅샷은 Trident 에서 알 수 없습니다.
+
+
+
+=== Trident 통해 프로비저닝된 볼륨에 대해 스냅샷 예약 비율을 설정할 수 있나요?
+
+예, Trident 를 통해 스냅샷 복사본을 저장하기 위해 디스크 공간의 특정 백분율을 예약할 수 있습니다. `snapshotReserve` 백엔드 정의 파일의 속성.  구성한 경우 `snapshotPolicy` 그리고 `snapshotReserve` 백엔드 정의 파일에서 스냅샷 예약 비율은 다음에 따라 설정됩니다. `snapshotReserve` 백엔드 파일에 언급된 백분율입니다.  만약 `snapshotReserve` 백분율 숫자는 언급되지 않았지만 ONTAP 기본적으로 스냅샷 예약 백분율을 5로 설정합니다.  만약 `snapshotPolicy` 옵션이 없음으로 설정되면 스냅샷 예약 비율이 0으로 설정됩니다.
+
+
+
+=== 볼륨 스냅샷 디렉토리에 직접 접근하여 파일을 복사할 수 있나요?
+
+예, Trident 에서 프로비저닝한 볼륨의 스냅샷 디렉토리에 액세스하려면 다음을 설정하세요. `snapshotDir` 백엔드 정의 파일의 매개변수.
+
+
+
+=== Trident 통해 볼륨에 대한 SnapMirror 설정할 수 있나요?
+
+현재 SnapMirror ONTAP CLI 또는 OnCommand System Manager 사용하여 외부에서 설정해야 합니다.
+
+
+
+=== 영구 볼륨을 특정 ONTAP 스냅샷으로 복원하려면 어떻게 해야 하나요?
+
+볼륨을 ONTAP 스냅샷으로 복원하려면 다음 단계를 수행하세요.
+
+. 영구 볼륨을 사용하는 애플리케이션 포드를 중지합니다.
+. ONTAP CLI 또는 OnCommand System Manager 통해 필요한 스냅샷으로 되돌립니다.
+. 애플리케이션 포드를 다시 시작합니다.
+
+
+
+
+=== Trident 로드 공유 미러가 구성된 SVM에서 볼륨을 프로비저닝할 수 있나요?
+
+NFS를 통해 데이터를 제공하는 SVM의 루트 볼륨에 대해 로드 공유 미러를 생성할 수 있습니다.  ONTAP Trident 에서 생성된 볼륨에 대한 로드 공유 미러를 자동으로 업데이트합니다.  이로 인해 볼륨 증가가 지연될 수 있습니다.  Trident 사용하여 여러 볼륨을 생성하는 경우 볼륨 프로비저닝은 ONTAP 로드 공유 미러를 업데이트하는 데 따라 달라집니다.
+
+
+
+=== 각 고객/테넌트에 대한 스토리지 클래스 사용량을 어떻게 분리할 수 있나요?
+
+Kubernetes는 네임스페이스에서 스토리지 클래스를 허용하지 않습니다.  그러나 Kubernetes를 사용하면 네임스페이스별로 적용되는 스토리지 리소스 할당량을 사용하여 네임스페이스별로 특정 스토리지 클래스의 사용을 제한할 수 있습니다.  특정 네임스페이스가 특정 저장소에 액세스하는 것을 거부하려면 해당 저장소 클래스에 대한 리소스 할당량을 0으로 설정합니다.

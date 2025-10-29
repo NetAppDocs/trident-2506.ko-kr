@@ -1,0 +1,150 @@
+---
+sidebar: sidebar 
+permalink: trident-use/trident-fsx.html 
+keywords: Amazon FSx for NetApp ONTAP, FSx for ONTAP, deploy Trident, integrate Trident, Trident 
+summary: 'Amazon FSx for NetApp ONTAP 과 함께 Trident 사용하면 Amazon Elastic Kubernetes Service(EKS)에서 실행되는 Kubernetes 클러스터가 ONTAP 에서 지원하는 블록 및 파일 영구 볼륨을 프로비저닝할 수 있습니다.' 
+---
+= Amazon FSx for NetApp ONTAP 과 함께 Trident 사용
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html["Amazon FSx for NetApp ONTAP"^]NetApp ONTAP 스토리지 운영 체제를 기반으로 하는 파일 시스템을 실행하고 실행할 수 있는 완전 관리형 AWS 서비스입니다.  FSx for ONTAP 사용하면 AWS에 데이터를 저장함으로써 얻는 단순성, 민첩성, 보안성, 확장성의 이점을 누리는 동시에, 익숙한 NetApp 기능, 성능, 관리 역량을 활용할 수 있습니다.  FSx for ONTAP ONTAP 파일 시스템 기능과 관리 API를 지원합니다.
+
+Amazon FSx for NetApp ONTAP 파일 시스템을 Trident 와 통합하면 Amazon Elastic Kubernetes Service(EKS)에서 실행되는 Kubernetes 클러스터가 ONTAP 에서 지원하는 블록 및 파일 영구 볼륨을 프로비저닝할 수 있습니다.
+
+파일 시스템은 온프레미스 ONTAP 클러스터와 유사한 Amazon FSx 의 기본 리소스입니다.  각 SVM 내에서 하나 이상의 볼륨을 만들 수 있습니다. 볼륨은 파일 시스템의 파일과 폴더를 저장하는 데이터 컨테이너입니다.  Amazon FSx for NetApp ONTAP 클라우드에서 관리형 파일 시스템으로 제공됩니다.  새로운 파일 시스템 유형은 * NetApp ONTAP*이라고 합니다.
+
+Amazon FSx for NetApp ONTAP 과 함께 Trident 사용하면 Amazon Elastic Kubernetes Service(EKS)에서 실행되는 Kubernetes 클러스터가 ONTAP 에서 지원하는 블록 및 파일 영구 볼륨을 프로비저닝할 수 있습니다.
+
+
+
+== 요구 사항
+
+또한link:../trident-get-started/requirements.html["Trident 요구 사항"] FSx for ONTAP Trident 와 통합하려면 다음이 필요합니다.
+
+* 기존 Amazon EKS 클러스터 또는 자체 관리 Kubernetes 클러스터 `kubectl` 설치됨.
+* 클러스터의 워커 노드에서 접근할 수 있는 기존 Amazon FSx for NetApp ONTAP 파일 시스템 및 스토리지 가상 머신(SVM)입니다.
+* 준비된 작업자 노드link:worker-node-prep.html["NFS 또는 iSCSI"] .
++
+
+NOTE: Amazon Linux 및 Ubuntu에 필요한 노드 준비 단계를 따르세요. https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html["Amazon Machine Images"^] (AMI)는 EKS AMI 유형에 따라 다릅니다.
+
+
+
+
+
+== 고려 사항
+
+* SMB 볼륨:
++
+** SMB 볼륨은 다음을 사용하여 지원됩니다. `ontap-nas` 운전자만.
+** SMB 볼륨은 Trident EKS 애드온에서 지원되지 않습니다.
+** Trident Windows 노드에서 실행되는 Pod에 마운트된 SMB 볼륨만 지원합니다. 참조하다 link:../trident-use/trident-fsx-storage-backend.html#prepare-to-provision-smb-volumes["SMB 볼륨 프로비저닝 준비"] 자세한 내용은.
+
+
+* Trident 24.02 이전에는 자동 백업이 활성화된 Amazon FSx 파일 시스템에서 생성된 볼륨은 Trident 에서 삭제할 수 없었습니다.  Trident 24.02 이상에서 이 문제를 방지하려면 다음을 지정하십시오. `fsxFilesystemID` , AWS `apiRegion` , AWS `apikey` , 그리고 AWS `secretKey` AWS FSx for ONTAP 의 백엔드 구성 파일에서.
++
+
+NOTE: Trident 에 IAM 역할을 지정하는 경우 다음을 지정하지 않아도 됩니다. `apiRegion` , `apiKey` , 그리고 `secretKey` 필드를 Trident 에 명시적으로 지정합니다.  자세한 내용은 다음을 참조하세요.link:../trident-use/trident-fsx-examples.html["FSx for ONTAP 구성 옵션 및 예제"] .
+
+
+
+
+
+=== Trident SAN/iSCSI 및 EBS-CSI 드라이버 동시 사용
+
+AWS(EKS, ROSA, EC2 또는 기타 인스턴스)에서 ontap-san 드라이버(예: iSCSI)를 사용하려는 경우 노드에 필요한 다중 경로 구성이 Amazon Elastic Block Store(EBS) CSI 드라이버와 충돌할 수 있습니다. 동일한 노드에 있는 EBS 디스크를 방해하지 않고 멀티패스 기능을 보장하려면 멀티패스 설정에서 EBS를 제외해야 합니다. 이 예에서는 다음을 보여줍니다. `multipath.conf` EBS 디스크를 다중 경로에서 제외하면서 필수 Trident 설정을 포함하는 파일:
+
+[listing]
+----
+defaults {
+    find_multipaths no
+}
+blacklist {
+    device {
+        vendor "NVME"
+        product "Amazon Elastic Block Store"
+    }
+}
+----
+
+
+== 입증
+
+Trident 두 가지 인증 모드를 제공합니다.
+
+* 자격 증명 기반(권장): AWS Secrets Manager에 자격 증명을 안전하게 저장합니다.  당신은 사용할 수 있습니다 `fsxadmin` 파일 시스템 또는 사용자 `vsadmin` SVM에 맞게 사용자가 구성했습니다.
++
+
+WARNING: Trident 다음과 같이 실행될 것으로 예상됩니다. `vsadmin` SVM 사용자 또는 동일한 역할을 가진 다른 이름을 가진 사용자로 지정할 수 있습니다.  Amazon FSx for NetApp ONTAP 다음이 있습니다. `fsxadmin` ONTAP 의 제한된 대체품인 사용자 `admin` 클러스터 사용자.  우리는 강력히 사용을 권장합니다 `vsadmin` Trident 와 함께.
+
+* 인증서 기반: Trident SVM에 설치된 인증서를 사용하여 FSx 파일 시스템의 SVM과 통신합니다.
+
+
+인증 활성화에 대한 자세한 내용은 드라이버 유형에 대한 인증을 참조하세요.
+
+* link:ontap-nas-prep.html["ONTAP NAS 인증"]
+* link:ontap-san-prep.html["ONTAP SAN 인증"]
+
+
+
+
+== 테스트된 Amazon Machine Images(AMI)
+
+EKS 클러스터는 다양한 운영 체제를 지원하지만 AWS는 컨테이너와 EKS에 맞게 특정 Amazon Machine Image(AMI)를 최적화했습니다.  다음 AMI는 NetApp Trident 25.02에서 테스트되었습니다.
+
+|===
+
+
+| 아미 | NAS | NAS-경제 | iSCSI | iSCSI 경제 
+
+
+| AL2023_x86_64_STANDARD | 예 | 예 | 예 | 예 
+
+
+| AL2_x86_64 | 예 | 예 | 예* | 예* 
+
+
+| BOTTLEROCKET_x86_64 | 예** | 예 | 해당 없음 | 해당 없음 
+
+
+| AL2023_ARM_64_STANDARD | 예 | 예 | 예 | 예 
+
+
+| AL2_ARM_64 | 예 | 예 | 예* | 예* 
+
+
+| BOTTLEROCKET_ARM_64 | 예** | 예 | 해당 없음 | 해당 없음 
+|===
+* * 노드를 재시작하지 않고는 PV를 삭제할 수 없습니다.
+* ** Trident 버전 25.02에서는 NFSv3와 작동하지 않습니다.
+
+
+
+NOTE: 원하는 AMI가 여기에 나열되어 있지 않더라도 지원되지 않는다는 의미는 아닙니다. 단순히 테스트를 거치지 않았다는 의미일 뿐입니다.  이 목록은 AMI가 작동하는 것으로 알려진 방법에 대한 가이드 역할을 합니다.
+
+*다음과 함께 수행된 테스트:*
+
+* EKS 버전: 1.32
+* 설치 방법: Helm 25.06 및 AWS 추가 기능 25.06
+* NAS의 경우 NFSv3와 NFSv4.1이 모두 테스트되었습니다.
+* SAN의 경우 iSCSI만 테스트되었으며 NVMe-oF는 테스트되지 않았습니다.
+
+
+*수행된 테스트*:
+
+* 생성: 스토리지 클래스, pvc, pod
+* 삭제: pod, pvc(일반, qtree/lun – 경제형, AWS 백업이 있는 NAS)
+
+
+
+
+== 더 많은 정보를 찾아보세요
+
+* https://docs.aws.amazon.com/fsx/latest/ONTAPGuide/what-is-fsx-ontap.html["Amazon FSx for NetApp ONTAP 설명서"^]
+* https://www.netapp.com/blog/amazon-fsx-for-netapp-ontap/["Amazon FSx for NetApp ONTAP 에 대한 블로그 게시물"^]
+

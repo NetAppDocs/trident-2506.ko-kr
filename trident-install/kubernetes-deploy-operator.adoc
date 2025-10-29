@@ -1,0 +1,266 @@
+---
+sidebar: sidebar 
+permalink: trident-get-started/kubernetes-deploy-operator.html 
+keywords: deploy, Trident, methods, operator, tridentctl, registry, registries 
+summary: Trident 운영자를 수동으로 배포하여 Trident 설치할 수 있습니다.  이 프로세스는 Trident 에 필요한 컨테이너 이미지가 개인 레지스트리에 저장되지 않은 설치에 적용됩니다. 
+---
+= Trident 운영자 수동 배포(표준 모드)
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident 운영자를 수동으로 배포하여 Trident 설치할 수 있습니다.  이 프로세스는 Trident 에 필요한 컨테이너 이미지가 개인 레지스트리에 저장되지 않은 설치에 적용됩니다.  개인 이미지 레지스트리가 있는 경우 다음을 사용하세요.link:kubernetes-deploy-operator-mirror.html["오프라인 배포 프로세스"] .
+
+
+
+== Trident 25.06에 대한 중요 정보
+
+* Trident 에 대한 다음의 중요 정보를 꼭 읽어보세요.*
+
+.<strong> Trident 에 대한 중요 정보</strong>
+[%collapsible%open]
+====
+[]
+=====
+* Kubernetes 1.34가 이제 Trident 에서 지원됩니다. Kubernetes를 업그레이드하기 전에 Trident 업그레이드하세요.
+* Trident SAN 환경에서 다중 경로 구성 사용을 엄격하게 시행하며 권장 값은 다음과 같습니다. `find_multipaths: no` multipath.conf 파일에서.
++
+비다중경로 구성 사용 또는 사용 `find_multipaths: yes` 또는 `find_multipaths: smart` multipath.conf 파일의 값으로 인해 마운트가 실패합니다.  Trident 다음을 사용할 것을 권장했습니다. `find_multipaths: no` 21.07 릴리스 이후.
+
+
+
+=====
+====
+
+
+== Trident 운영자를 수동으로 배포하고 Trident 설치합니다.
+
+검토link:../trident-get-started/kubernetes-deploy.html["설치 개요"] 설치 전제 조건을 충족했는지, 그리고 사용자 환경에 맞는 올바른 설치 옵션을 선택했는지 확인하세요.
+
+.시작하기 전에
+설치를 시작하기 전에 Linux 호스트에 로그인하여 작동 중인지 확인하십시오.link:requirements.html["지원되는 Kubernetes 클러스터"^] 그리고 당신에게 필요한 특권이 있다는 것을 알려주세요.
+
+
+NOTE: OpenShift를 사용하면 `oc` 대신에 `kubectl` 다음 모든 예에서 먼저 *system:admin*으로 로그인하여 다음을 실행합니다. `oc login -u system:admin` 또는 `oc login -u kube-admin` .
+
+[%collapsible%open]
+====
+. Kubernetes 버전을 확인하세요.
++
+[listing]
+----
+kubectl version
+----
+. 클러스터 관리자 권한 확인:
++
+[listing]
+----
+kubectl auth can-i '*' '*' --all-namespaces
+----
+. Docker Hub의 이미지를 사용하여 Pod를 시작하고 Pod 네트워크를 통해 스토리지 시스템에 접속할 수 있는지 확인하세요.
++
+[listing]
+----
+kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \
+  ping <management IP>
+----
+
+
+====
+
+
+=== 1단계: Trident 설치 프로그램 패키지 다운로드
+
+Trident 설치 프로그램 패키지에는 Trident 운영자를 배포하고 Trident 설치하는 데 필요한 모든 것이 포함되어 있습니다.  Trident 설치 프로그램의 최신 버전을 다운로드하고 추출하세요.link:https://github.com/NetApp/trident/releases/latest["GitHub의 _Assets_ 섹션"^] .
+
+[listing]
+----
+wget https://github.com/NetApp/trident/releases/download/v25.06.0/trident-installer-25.06.0.tar.gz
+tar -xf trident-installer-25.06.0.tar.gz
+cd trident-installer
+----
+
+
+=== 2단계: 만들기 `TridentOrchestrator` CRD
+
+생성하다 `TridentOrchestrator` 사용자 정의 리소스 정의(CRD).  당신은 만들 것입니다 `TridentOrchestrator` 나중에 사용자 정의 리소스.  적절한 CRD YAML 버전을 사용하세요. `deploy/crds` 생성하기 위해 `TridentOrchestrator` CRD(크레디)
+
+[listing]
+----
+kubectl create -f deploy/crds/trident.netapp.io_tridentorchestrators_crd_post1.16.yaml
+----
+
+
+=== 3단계: Trident 운영자 배포
+
+Trident 설치 프로그램은 운영자를 설치하고 관련 객체를 생성하는 데 사용할 수 있는 번들 파일을 제공합니다.  번들 파일은 기본 구성을 사용하여 운영자를 배포하고 Trident 설치하는 쉬운 방법입니다.
+
+* Kubernetes 1.24를 실행하는 클러스터의 경우 다음을 사용하세요. `bundle_pre_1_25.yaml` .
+* Kubernetes 1.25 이상을 실행하는 클러스터의 경우 다음을 사용하세요. `bundle_post_1_25.yaml` .
+
+
+.시작하기 전에
+* 기본적으로 Trident 설치 프로그램은 운영자를 다음 위치에 배포합니다. `trident` 네임스페이스.  만약 `trident` 네임스페이스가 존재하지 않습니다. 다음을 사용하여 만듭니다.
++
+[listing]
+----
+kubectl apply -f deploy/namespace.yaml
+----
+* 네임스페이스 이외의 다른 네임스페이스에 연산자를 배포하려면 `trident` 네임스페이스, 업데이트 `serviceaccount.yaml` , `clusterrolebinding.yaml` 그리고 `operator.yaml` 다음을 사용하여 번들 파일을 생성합니다. `kustomization.yaml` .
++
+.. 생성하다 `kustomization.yaml` 다음 명령을 사용합니다. 여기서 _<bundle.yaml>_은 `bundle_pre_1_25.yaml` 또는 `bundle_post_1_25.yaml` Kubernetes 버전에 따라 다릅니다.
++
+[listing]
+----
+cp deploy/kustomization_<bundle.yaml> deploy/kustomization.yaml
+----
+.. 다음 명령을 사용하여 번들을 컴파일합니다. 여기서 _<bundle.yaml>_은 다음과 같습니다. `bundle_pre_1_25.yaml` 또는 `bundle_post_1_25.yaml` Kubernetes 버전에 따라 다릅니다.
++
+[listing]
+----
+kubectl kustomize deploy/ > deploy/<bundle.yaml>
+----
+
+
+
+
+.단계
+. 리소스를 생성하고 운영자를 배포합니다.
++
+[listing]
+----
+kubectl create -f deploy/<bundle.yaml>
+----
+. 운영자, 배포 및 복제 세트가 생성되었는지 확인합니다.
++
+[listing]
+----
+kubectl get all -n <operator-namespace>
+----
+
+
+
+IMPORTANT: Kubernetes 클러스터에는 운영자의 *인스턴스*가 *하나만* 있어야 합니다.  Trident 운영자를 여러 개 배포하지 마세요.
+
+
+
+=== 4단계: 만들기 `TridentOrchestrator` 그리고 Trident 설치하세요
+
+이제 다음을 생성할 수 있습니다. `TridentOrchestrator` 그리고 Trident 설치하세요.  선택적으로 다음을 수행할 수 있습니다.link:kubernetes-customize-deploy.html["Trident 설치를 사용자 정의하세요"] 속성을 사용하여 `TridentOrchestrator` 투기.
+
+[listing]
+----
+kubectl create -f deploy/crds/tridentorchestrator_cr.yaml
+tridentorchestrator.trident.netapp.io/trident created
+
+kubectl describe torc trident
+
+Name:        trident
+Namespace:
+Labels:      <none>
+Annotations: <none>
+API Version: trident.netapp.io/v1
+Kind:        TridentOrchestrator
+...
+Spec:
+  Debug:     true
+  Namespace: trident
+  nodePrep:
+  - iscsi
+Status:
+  Current Installation Params:
+    IPv6:                      false
+    Autosupport Hostname:
+    Autosupport Image:         netapp/trident-autosupport:25.06
+    Autosupport Proxy:
+    Autosupport Serial Number:
+    Debug:                     true
+    Image Pull Secrets:
+    Image Registry:
+    k8sTimeout:           30
+    Kubelet Dir:          /var/lib/kubelet
+    Log Format:           text
+    Silence Autosupport:  false
+    Trident Image:        netapp/trident:25.06.0
+  Message:                  Trident installed  Namespace:                trident
+  Status:                   Installed
+  Version:                  v25.06.0
+Events:
+    Type Reason Age From Message ---- ------ ---- ---- -------Normal
+    Installing 74s trident-operator.netapp.io Installing Trident Normal
+    Installed 67s trident-operator.netapp.io Trident installed
+----
+
+
+== 설치를 확인하세요
+
+설치를 확인하는 방법은 여러 가지가 있습니다.
+
+
+
+=== 사용 중 `TridentOrchestrator` 상태
+
+의 상태 `TridentOrchestrator` 설치가 성공했는지 여부를 나타내고 설치된 Trident 버전을 표시합니다.  설치 중 상태 `TridentOrchestrator` 변경 사항 `Installing` 에게 `Installed` .  당신이 관찰한다면 `Failed` 상태이며 운영자가 스스로 복구할 수 없는 경우link:../troubleshooting.html["로그를 확인하세요"] .
+
+[cols="2"]
+|===
+| 상태 | 설명 
+
+
+| 설치 중 | 운영자는 이것을 사용하여 Trident 설치합니다. `TridentOrchestrator` 크.알. 
+
+
+| 설치됨 | Trident 성공적으로 설치되었습니다. 
+
+
+| 제거 중 | 운영자는 Trident 제거하고 있습니다.
+`spec.uninstall=true` . 
+
+
+| 설치 해제됨 | Trident 제거되었습니다. 
+
+
+| 실패한 | 운영자는 Trident 설치, 패치, 업데이트 또는 제거할 수 없습니다. 운영자는 자동으로 이 상태에서 복구를 시도합니다.  이 상태가 지속되면 문제 해결이 필요합니다. 
+
+
+| 업데이트 중 | 운영자가 기존 설치를 업데이트하고 있습니다. 
+
+
+| 오류 | 그만큼 `TridentOrchestrator` 사용되지 않습니다.  또 다른 것이 이미 존재합니다. 
+|===
+
+
+=== 포드 생성 상태 사용
+
+생성된 포드의 상태를 검토하여 Trident 설치가 완료되었는지 확인할 수 있습니다.
+
+[listing]
+----
+kubectl get pods -n trident
+
+NAME                                       READY   STATUS    RESTARTS   AGE
+trident-controller-7d466bf5c7-v4cpw        6/6     Running   0           1m
+trident-node-linux-mr6zc                   2/2     Running   0           1m
+trident-node-linux-xrp7w                   2/2     Running   0           1m
+trident-node-linux-zh2jt                   2/2     Running   0           1m
+trident-operator-766f7b8658-ldzsv          1/1     Running   0           3m
+----
+
+
+=== 사용 중 `tridentctl`
+
+사용할 수 있습니다 `tridentctl` 설치된 Trident 버전을 확인하세요.
+
+[listing]
+----
+./tridentctl -n trident version
+
++----------------+----------------+
+| SERVER VERSION | CLIENT VERSION |
++----------------+----------------+
+| 25.06.0        | 25.06.0        |
++----------------+----------------+
+----

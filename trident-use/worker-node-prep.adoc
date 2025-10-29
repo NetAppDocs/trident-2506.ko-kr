@@ -1,0 +1,443 @@
+---
+sidebar: sidebar 
+permalink: trident-use/worker-node-prep.html 
+keywords: storage class, manage storage class, storage classes, kubernetes storage classes, worker node, nfs, iscsi, kubernetes clusters, self-healing, healing, nvme, tcp 
+summary: Kubernetes 클러스터의 모든 워커 노드는 Pod에 대해 프로비저닝한 볼륨을 마운트할 수 있어야 합니다.  백엔드 중 하나에 ontap-nas, ontap-nas-economy, ontap-nas-flexgroup 드라이버를 사용하는 경우, 작업자 노드에 NFS 도구가 필요합니다.  그렇지 않으면 iSCSI 도구가 필요합니다. 
+---
+= 워커 노드 준비
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Kubernetes 클러스터의 모든 워커 노드는 Pod에 대해 프로비저닝한 볼륨을 마운트할 수 있어야 합니다.  작업자 노드를 준비하려면 드라이버 선택에 따라 NFS, iSCSI, NVMe/TCP 또는 FC 도구를 설치해야 합니다.
+
+
+
+== 올바른 도구 선택
+
+여러 드라이버를 조합하여 사용하는 경우 드라이버에 필요한 모든 도구를 설치해야 합니다.  Red Hat Enterprise Linux CoreOS(RHCOS)의 최신 버전에는 기본적으로 도구가 설치되어 있습니다.
+
+.NFS 도구
+link:https://docs.netapp.com/us-en/trident/trident-use/worker-node-prep.html#nfs-volumes["NFS 도구 설치"]다음을 사용하는 경우: `ontap-nas` , `ontap-nas-economy` , `ontap-nas-flexgroup` , `azure-netapp-files` , `gcp-cvs` .
+
+.iSCSI 도구
+link:https://docs.netapp.com/us-en/trident/trident-use/worker-node-prep.html#install-the-iscsi-tools["iSCSI 도구 설치"]다음을 사용하는 경우: `ontap-san` , `ontap-san-economy` , `solidfire-san` .
+
+.NVMe 도구
+link:https://docs.netapp.com/us-en/trident/trident-use/worker-node-prep.html#nvmetcp-volumes["NVMe 도구 설치"]당신이 사용하는 경우 `ontap-san` TCP(NVMe/TCP) 프로토콜을 통한 비휘발성 메모리 익스프레스(NVMe)용입니다.
+
+
+NOTE: NetApp NVMe/TCP에 ONTAP 9.12 이상을 권장합니다.
+
+.FC 도구를 통한 SCSI
+참조하다link:https://docs.netapp.com/us-en/ontap/san-config/configure-fc-nvme-hosts-ha-pairs-reference.html["FC 및 FC-NVMe SAN 호스트를 구성하는 방법"] FC 및 FC-NVMe SAN 호스트 구성에 대한 자세한 내용은 다음을 참조하세요.
+
+link:https://docs.netapp.com/us-en/trident/trident-use/worker-node-prep.html#install-the-fc-tools["FC 도구 설치"]당신이 사용하는 경우 `ontap-san` sanType으로 `fcp` (FC를 통한 SCSI).
+
+*고려 사항*: * FC를 통한 SCSI는 OpenShift 및 KubeVirt 환경에서 지원됩니다.  * Docker에서는 FC를 통한 SCSI가 지원되지 않습니다.  * iSCSI 자체 복구 기능은 FC를 통한 SCSI에는 적용되지 않습니다.
+
+
+
+== 노드 서비스 검색
+
+Trident 노드가 iSCSI 또는 NFS 서비스를 실행할 수 있는지 자동으로 감지하려고 시도합니다.
+
+
+NOTE: 노드 서비스 검색은 검색된 서비스를 식별하지만 서비스가 올바르게 구성되었는지 보장하지는 않습니다.  반대로, 검색된 서비스가 없다고 해서 볼륨 마운트가 실패한다는 보장은 없습니다.
+
+.이벤트 검토
+Trident 노드가 발견된 서비스를 식별할 수 있도록 이벤트를 생성합니다.  이러한 이벤트를 검토하려면 다음을 실행하세요.
+
+[listing]
+----
+kubectl get event -A --field-selector involvedObject.name=<Kubernetes node name>
+----
+.발견된 서비스 검토
+Trident Trident 노드 CR의 각 노드에서 활성화된 서비스를 식별합니다.  검색된 서비스를 보려면 다음을 실행하세요.
+
+[listing]
+----
+tridentctl get node -o wide -n <Trident namespace>
+----
+
+
+== NFS 볼륨
+
+운영 체제에 맞는 명령을 사용하여 NFS 도구를 설치합니다.  부팅 시 NFS 서비스가 시작되었는지 확인하세요.
+
+[role="tabbed-block"]
+====
+.RHEL 8 이상
+--
+[listing]
+----
+sudo yum install -y nfs-utils
+----
+--
+.우분투
+--
+[listing]
+----
+sudo apt-get install -y nfs-common
+----
+--
+====
+
+WARNING: 컨테이너에 볼륨을 연결할 때 오류가 발생하는 것을 방지하려면 NFS 도구를 설치한 후 작업자 노드를 재부팅하세요.
+
+
+
+== iSCSI 볼륨
+
+Trident 자동으로 iSCSI 세션을 설정하고, LUN을 스캔하고, 다중 경로 장치를 검색하여 포맷하고, 포드에 마운트할 수 있습니다.
+
+
+
+=== iSCSI 자체 복구 기능
+
+ONTAP 시스템의 경우 Trident 다음을 위해 5분마다 iSCSI 자체 복구를 실행합니다.
+
+. 원하는 iSCSI 세션 상태와 현재 iSCSI 세션 상태를 *식별*합니다.
+. 원하는 상태와 현재 상태를 *비교*하여 필요한 수리를 파악합니다.  Trident 수리 우선순위를 결정하고 언제 수리를 먼저 시작해야 할지 결정합니다.
+. 현재 iSCSI 세션 상태를 원하는 iSCSI 세션 상태로 되돌리려면 필요한 *수리를 수행합니다*.
+
+
+
+NOTE: 자체 복구 활동 로그는 다음 위치에 있습니다. `trident-main` 해당 Daemonset 포드의 컨테이너입니다.  로그를 보려면 다음을 설정해야 합니다. `debug` Trident 설치 중에 "true"로 설정합니다.
+
+Trident iSCSI 자체 복구 기능은 다음을 방지하는 데 도움이 될 수 있습니다.
+
+* 네트워크 연결 문제 이후 발생할 수 있는 오래되거나 비정상적 iSCSI 세션입니다.  세션이 오래된 경우, Trident 포털과의 연결을 재설정하기 위해 로그아웃하기 전에 7분을 기다립니다.
++
+
+NOTE: 예를 들어, CHAP 비밀번호가 스토리지 컨트롤러에서 순환되고 네트워크 연결이 끊어지면 이전(_stale_) CHAP 비밀번호가 유지될 수 있습니다.  자가 복구 기능은 이를 인식하고 업데이트된 CHAP 비밀을 적용하기 위해 세션을 자동으로 재설정합니다.
+
+* iSCSI 세션이 누락되었습니다
+* LUN이 누락되었습니다
+
+
+* Trident 업그레이드 전 고려사항*
+
+* 노드당 igroup(23.04+에서 도입)만 사용 중인 경우 iSCSI 자체 복구 기능은 SCSI 버스의 모든 장치에 대한 SCSI 재검색을 시작합니다.
+* 백엔드 범위의 igroup(23.04부터 더 이상 사용되지 않음)만 사용 중인 경우 iSCSI 자체 복구 기능은 SCSI 버스에서 정확한 LUN ID를 찾기 위해 SCSI 재검색을 시작합니다.
+* 노드별 igroup과 백엔드 범위 igroup을 혼합하여 사용하는 경우 iSCSI 자체 복구 기능은 SCSI 버스에서 정확한 LUN ID를 찾기 위해 SCSI 재검색을 시작합니다.
+
+
+
+
+=== iSCSI 도구 설치
+
+운영 체제에 맞는 명령을 사용하여 iSCSI 도구를 설치합니다.
+
+.시작하기 전에
+* Kubernetes 클러스터의 각 노드에는 고유한 IQN이 있어야 합니다.  *이것은 필수 전제 조건입니다*.
+* RHCOS 버전 4.5 이상 또는 기타 RHEL 호환 Linux 배포판을 사용하는 경우 `solidfire-san` 드라이버 및 Element OS 12.5 이하에서는 CHAP 인증 알고리즘이 MD5로 설정되어 있는지 확인하십시오. `/etc/iscsi/iscsid.conf` Element 12.7에서는 보안 FIPS 호환 CHAP 알고리즘 SHA1, SHA-256 및 SHA3-256을 사용할 수 있습니다.
++
+[listing]
+----
+sudo sed -i 's/^\(node.session.auth.chap_algs\).*/\1 = MD5/' /etc/iscsi/iscsid.conf
+----
+* iSCSI PV와 함께 RHEL/Red Hat Enterprise Linux CoreOS(RHCOS)를 실행하는 작업자 노드를 사용하는 경우 다음을 지정합니다. `discard` StorageClass의 mountOption을 사용하여 인라인 공간 회수를 수행합니다. 참조하다 https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_file_systems/discarding-unused-blocks_managing-file-systems["Red Hat 문서"^] .
+* 최신 버전으로 업그레이드했는지 확인하세요. `multipath-tools` .
+
+
+[role="tabbed-block"]
+====
+.RHEL 8 이상
+--
+. 다음 시스템 패키지를 설치하세요:
++
+[listing]
+----
+sudo yum install -y lsscsi iscsi-initiator-utils device-mapper-multipath
+----
+. iscsi-initiator-utils 버전이 6.2.0.874-2.el7 이상인지 확인하세요.
++
+[listing]
+----
+rpm -q iscsi-initiator-utils
+----
+. 스캐닝을 수동으로 설정:
++
+[listing]
+----
+sudo sed -i 's/^\(node.session.scan\).*/\1 = manual/' /etc/iscsi/iscsid.conf
+----
+. 다중 경로 활성화:
++
+[listing]
+----
+sudo mpathconf --enable --with_multipathd y --find_multipaths n
+----
++
+
+NOTE: 보장하다 `/etc/multipath.conf` 포함하다 `find_multipaths no` 아래에 `defaults` .
+
+. 확인하십시오 `iscsid` 그리고 `multipathd` 실행 중입니다:
++
+[listing]
+----
+sudo systemctl enable --now iscsid multipathd
+----
+. 활성화하고 시작하세요 `iscsi` :
++
+[listing]
+----
+sudo systemctl enable --now iscsi
+----
+
+
+--
+.우분투
+--
+. 다음 시스템 패키지를 설치하세요:
++
+[listing]
+----
+sudo apt-get install -y open-iscsi lsscsi sg3-utils multipath-tools scsitools
+----
+. open-iscsi 버전이 2.0.874-5ubuntu2.10 이상(bionic의 경우) 또는 2.0.874-7.1ubuntu6.1 이상(focal의 경우)인지 확인하세요.
++
+[listing]
+----
+dpkg -l open-iscsi
+----
+. 스캐닝을 수동으로 설정:
++
+[listing]
+----
+sudo sed -i 's/^\(node.session.scan\).*/\1 = manual/' /etc/iscsi/iscsid.conf
+----
+. 다중 경로 활성화:
++
+[listing]
+----
+sudo tee /etc/multipath.conf <<-EOF
+defaults {
+    user_friendly_names yes
+    find_multipaths no
+}
+EOF
+sudo systemctl enable --now multipath-tools.service
+sudo service multipath-tools restart
+----
++
+
+NOTE: 보장하다 `/etc/multipath.conf` 포함하다 `find_multipaths no` 아래에 `defaults` .
+
+. 확인하십시오 `open-iscsi` 그리고 `multipath-tools` 활성화되어 실행 중입니다.
++
+[listing]
+----
+sudo systemctl status multipath-tools
+sudo systemctl enable --now open-iscsi.service
+sudo systemctl status open-iscsi
+----
++
+
+NOTE: Ubuntu 18.04의 경우 대상 포트를 검색해야 합니다. `iscsiadm` 시작하기 전에 `open-iscsi` iSCSI 데몬을 시작하려면.  또는 다음을 수정할 수 있습니다. `iscsi` 서비스를 시작하려면 `iscsid` 자동으로.
+
+
+
+--
+====
+
+
+=== iSCSI 자체 복구 구성 또는 비활성화
+
+다음의 Trident iSCSI 자체 복구 설정을 구성하여 오래된 세션을 수정할 수 있습니다.
+
+* *iSCSI 자체 복구 간격*: iSCSI 자체 복구가 호출되는 빈도를 결정합니다(기본값: 5분).  작은 숫자를 설정하면 더 자주 실행되도록 구성할 수 있고, 큰 숫자를 설정하면 덜 자주 실행되도록 구성할 수 있습니다.
+
+
+[NOTE]
+====
+iSCSI 자체 복구 간격을 0으로 설정하면 iSCSI 자체 복구가 완전히 중지됩니다.  iSCSI 자체 복구를 비활성화하는 것은 권장하지 않습니다. iSCSI 자체 복구가 의도한 대로 작동하지 않거나 디버깅 목적으로만 특정 상황에서만 비활성화해야 합니다.
+
+====
+* *iSCSI 자체 복구 대기 시간*: iSCSI 자체 복구가 비정상 세션에서 로그아웃하고 다시 로그인을 시도하기 전까지 기다리는 시간을 결정합니다(기본값: 7분).  세션이 비정상적으로 식별되어 로그아웃되기 전에 더 오래 기다린 후 다시 로그인을 시도하도록 하려면 숫자를 더 크게 구성하거나, 로그아웃한 후 더 일찍 로그인하도록 숫자를 더 작게 구성할 수 있습니다.
+
+
+[role="tabbed-block"]
+====
+.지배
+--
+iSCSI 자체 복구 설정을 구성하거나 변경하려면 다음을 전달하세요. `iscsiSelfHealingInterval` 그리고 `iscsiSelfHealingWaitTime` Helm 설치 또는 Helm 업데이트 중의 매개변수.
+
+다음 예에서는 iSCSI 자체 복구 간격을 3분으로 설정하고 자체 복구 대기 시간을 6분으로 설정합니다.
+
+[listing]
+----
+helm install trident trident-operator-100.2506.0.tgz --set iscsiSelfHealingInterval=3m0s --set iscsiSelfHealingWaitTime=6m0s -n trident
+----
+--
+.트라이던트ctl
+--
+iSCSI 자체 복구 설정을 구성하거나 변경하려면 다음을 전달하세요. `iscsi-self-healing-interval` 그리고 `iscsi-self-healing-wait-time` tridentctl 설치 또는 업데이트 중의 매개변수.
+
+다음 예에서는 iSCSI 자체 복구 간격을 3분으로 설정하고 자체 복구 대기 시간을 6분으로 설정합니다.
+
+[listing]
+----
+tridentctl install --iscsi-self-healing-interval=3m0s --iscsi-self-healing-wait-time=6m0s -n trident
+----
+--
+====
+
+
+== NVMe/TCP 볼륨
+
+운영 체제에 맞는 명령을 사용하여 NVMe 도구를 설치하세요.
+
+[NOTE]
+====
+* NVMe에는 RHEL 9 이상이 필요합니다.
+* Kubernetes 노드의 커널 버전이 너무 오래되었거나 커널 버전에서 NVMe 패키지를 사용할 수 없는 경우, 노드의 커널 버전을 NVMe 패키지가 있는 버전으로 업데이트해야 할 수 있습니다.
+
+
+====
+[role="tabbed-block"]
+====
+.RHEL 9
+--
+[listing]
+----
+sudo yum install nvme-cli
+sudo yum install linux-modules-extra-$(uname -r)
+sudo modprobe nvme-tcp
+----
+--
+.우분투
+--
+[listing]
+----
+sudo apt install nvme-cli
+sudo apt -y install linux-modules-extra-$(uname -r)
+sudo modprobe nvme-tcp
+----
+--
+====
+
+
+=== 설치 확인
+
+설치 후 다음 명령을 사용하여 Kubernetes 클러스터의 각 노드에 고유한 NQN이 있는지 확인하세요.
+
+[listing]
+----
+cat /etc/nvme/hostnqn
+----
+
+WARNING: Trident 다음을 수정합니다. `ctrl_device_tmo` NVMe가 다운되더라도 경로를 포기하지 않도록 보장하는 가치입니다.  이 설정을 변경하지 마세요.
+
+
+
+== FC 볼륨을 통한 SCSI
+
+이제 Trident 와 함께 Fibre Channel(FC) 프로토콜을 사용하여 ONTAP 시스템에서 스토리지 리소스를 프로비저닝하고 관리할 수 있습니다.
+
+
+
+=== 필수 조건
+
+FC에 필요한 네트워크 및 노드 설정을 구성합니다.
+
+
+
+==== 네트워크 설정
+
+. 대상 인터페이스의 WWPN을 가져옵니다.  참조하다 https://docs.netapp.com/us-en/ontap-cli//network-interface-show.html["네트워크 인터페이스 표시"^] 자세한 내용은.
+. 개시자(호스트)의 인터페이스에 대한 WWPN을 가져옵니다.
++
+해당 호스트 운영 체제 유틸리티를 참조하세요.
+
+. 호스트와 대상의 WWPN을 사용하여 FC 스위치에서 구역화를 구성합니다.
++
+자세한 내용은 해당 스위치 공급업체의 설명서를 참조하세요.
+
++
+자세한 내용은 다음 ONTAP 문서를 참조하세요.
+
++
+** https://docs.netapp.com/us-en/ontap/san-config/fibre-channel-fcoe-zoning-concept.html["파이버 채널 및 FCoE 구역화 개요"^]
+** https://docs.netapp.com/us-en/ontap/san-config/configure-fc-nvme-hosts-ha-pairs-reference.html["FC 및 FC-NVMe SAN 호스트를 구성하는 방법"^]
+
+
+
+
+
+
+=== FC 도구 설치
+
+운영 체제에 맞는 명령을 사용하여 FC 도구를 설치하세요.
+
+* FC PV와 함께 RHEL/Red Hat Enterprise Linux CoreOS(RHCOS)를 실행하는 작업자 노드를 사용하는 경우 다음을 지정합니다. `discard` StorageClass의 mountOption을 사용하여 인라인 공간 회수를 수행합니다. 참조하다 https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_file_systems/discarding-unused-blocks_managing-file-systems["Red Hat 문서"^] .
+
+
+[role="tabbed-block"]
+====
+.RHEL 8 이상
+--
+. 다음 시스템 패키지를 설치하세요:
++
+[listing]
+----
+sudo yum install -y lsscsi device-mapper-multipath
+----
+. 다중 경로 활성화:
++
+[listing]
+----
+sudo mpathconf --enable --with_multipathd y --find_multipaths n
+----
++
+
+NOTE: 보장하다 `/etc/multipath.conf` 포함하다 `find_multipaths no` 아래에 `defaults` .
+
+. 확인하십시오 `multipathd` 실행 중입니다:
++
+[listing]
+----
+sudo systemctl enable --now multipathd
+----
+
+
+--
+.우분투
+--
+. 다음 시스템 패키지를 설치하세요:
++
+[listing]
+----
+sudo apt-get install -y lsscsi sg3-utils multipath-tools scsitools
+----
+. 다중 경로 활성화:
++
+[listing]
+----
+sudo tee /etc/multipath.conf <<-EOF
+defaults {
+    user_friendly_names yes
+    find_multipaths no
+}
+EOF
+sudo systemctl enable --now multipath-tools.service
+sudo service multipath-tools restart
+----
++
+
+NOTE: 보장하다 `/etc/multipath.conf` 포함하다 `find_multipaths no` 아래에 `defaults` .
+
+. 확인하십시오 `multipath-tools` 활성화되어 실행 중입니다.
++
+[listing]
+----
+sudo systemctl status multipath-tools
+----
+
+
+--
+====

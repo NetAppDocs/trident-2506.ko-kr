@@ -1,0 +1,40 @@
+---
+sidebar: sidebar 
+permalink: trident-reference/ports.html 
+keywords: Trident, port, ports 
+summary: Trident 통신하는 포트에 대해 자세히 알아보세요. 
+---
+= Trident 포트
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident 통신에 사용하는 포트에 대해 자세히 알아보세요.
+
+
+
+== Trident 포트
+
+Trident Kubernetes 내부 통신에 다음 포트를 사용합니다.
+
+[cols="2,4"]
+|===
+| 포트 | 목적 
+
+
+| 8443 | 백채널 HTTPS 
+
+
+| 8001 | Prometheus 메트릭 엔드포인트 
+
+
+| 8000 | Trident REST 서버 
+
+
+| 17546 | Trident daemonset Pod에서 사용하는 활성/준비 프로브 포트 
+|===
+
+NOTE: 설치 중에 활성/준비 프로브 포트를 변경할 수 있습니다. `--probe-port` 깃발.  이 포트가 워커 노드의 다른 프로세스에 의해 사용되고 있지 않은지 확인하는 것이 중요합니다.

@@ -1,0 +1,15 @@
+---
+sidebar: sidebar 
+permalink: trident-reference/k8s-concepts.html 
+keywords: kubernetes, clusters, master, compute, architecture 
+summary: Kubernetes 시스템의 각 부분에 대해 자세히 알아보세요. 
+---
+= 쿠버네티스 개념
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+부품에 대해 자세히 알아보세요 https://kubernetes.io/docs/concepts/["쿠버네티스 시스템"^] .

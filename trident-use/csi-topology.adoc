@@ -1,0 +1,299 @@
+---
+sidebar: sidebar 
+permalink: trident-use/csi-topology.html 
+keywords: volumes, csi topology, storage classes, backends, kubernetes 
+summary: Trident CSI 토폴로지 기능을 활용하여 Kubernetes 클러스터에 있는 노드에 볼륨을 선택적으로 생성하고 연결할 수 있습니다. 
+---
+= CSI 토폴로지 사용
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident Kubernetes 클러스터에 있는 노드에 볼륨을 선택적으로 생성하고 첨부할 수 있습니다. https://kubernetes-csi.github.io/docs/topology.html["CSI 토폴로지 기능"^] .
+
+
+
+== 개요
+
+CSI 토폴로지 기능을 사용하면 지역 및 가용성 영역을 기반으로 볼륨에 대한 액세스를 노드 하위 집합으로 제한할 수 있습니다. 오늘날 클라우드 공급업체는 Kubernetes 관리자가 영역 기반 노드를 생성할 수 있도록 지원합니다. 노드는 한 지역 내의 여러 가용성 영역에 위치할 수도 있고, 여러 지역에 걸쳐 위치할 수도 있습니다. 다중 구역 아키텍처의 워크로드에 대한 볼륨 프로비저닝을 용이하게 하기 위해 Trident CSI 토폴로지를 사용합니다.
+
+
+TIP: CSI 토폴로지 기능에 대해 자세히 알아보세요 https://kubernetes.io/blog/2018/10/11/topology-aware-volume-provisioning-in-kubernetes/["여기"^] .
+
+Kubernetes는 두 가지 고유한 볼륨 바인딩 모드를 제공합니다.
+
+* 와 함께 `VolumeBindingMode` 로 설정 `Immediate` Trident 토폴로지를 인식하지 않고 볼륨을 생성합니다.  볼륨 바인딩과 동적 프로비저닝은 PVC가 생성될 때 처리됩니다.  이것은 기본값입니다 `VolumeBindingMode` 토폴로지 제약을 적용하지 않는 클러스터에 적합합니다. 영구 볼륨은 요청하는 포드의 스케줄링 요구 사항에 대한 종속성 없이 생성됩니다.
+* 와 함께 `VolumeBindingMode` 로 설정 `WaitForFirstConsumer` PVC에 대한 영구 볼륨의 생성 및 바인딩은 PVC를 사용하는 포드가 예약되고 생성될 때까지 지연됩니다. 이런 방식으로 토폴로지 요구 사항에 의해 적용되는 스케줄링 제약 조건을 충족하는 볼륨이 생성됩니다.
+
+
+
+NOTE: 그만큼 `WaitForFirstConsumer` 바인딩 모드에는 토폴로지 레이블이 필요하지 않습니다.  이 기능은 CSI 토폴로지 기능과 별도로 사용할 수 있습니다.
+
+.필요한 것
+CSI 토폴로지를 활용하려면 다음이 필요합니다.
+
+* Kubernetes 클러스터를 실행 중link:../trident-get-started/requirements.html["지원되는 Kubernetes 버전"]
++
+[listing]
+----
+kubectl version
+Client Version: version.Info{Major:"1", Minor:"19", GitVersion:"v1.19.3", GitCommit:"1e11e4a2108024935ecfcb2912226cedeafd99df", GitTreeState:"clean", BuildDate:"2020-10-14T12:50:19Z", GoVersion:"go1.15.2", Compiler:"gc", Platform:"linux/amd64"}
+Server Version: version.Info{Major:"1", Minor:"19", GitVersion:"v1.19.3", GitCommit:"1e11e4a2108024935ecfcb2912226cedeafd99df", GitTreeState:"clean", BuildDate:"2020-10-14T12:41:49Z", GoVersion:"go1.15.2", Compiler:"gc", Platform:"linux/amd64"}
+----
+* 클러스터의 노드에는 토폴로지 인식을 소개하는 레이블이 있어야 합니다.(`topology.kubernetes.io/region` 그리고 `topology.kubernetes.io/zone` ).  Trident 가 토폴로지를 인식할 수 있도록 Trident 설치하기 전에 이러한 레이블이 *클러스터의 노드에 있어야 합니다.*
++
+[listing]
+----
+kubectl get nodes -o=jsonpath='{range .items[*]}[{.metadata.name}, {.metadata.labels}]{"\n"}{end}' | grep --color "topology.kubernetes.io"
+[node1, {"beta.kubernetes.io/arch":"amd64","beta.kubernetes.io/os":"linux","kubernetes.io/arch":"amd64","kubernetes.io/hostname":"node1","kubernetes.io/os":"linux","node-role.kubernetes.io/master":"","topology.kubernetes.io/region":"us-east1","topology.kubernetes.io/zone":"us-east1-a"}]
+[node2, {"beta.kubernetes.io/arch":"amd64","beta.kubernetes.io/os":"linux","kubernetes.io/arch":"amd64","kubernetes.io/hostname":"node2","kubernetes.io/os":"linux","node-role.kubernetes.io/worker":"","topology.kubernetes.io/region":"us-east1","topology.kubernetes.io/zone":"us-east1-b"}]
+[node3, {"beta.kubernetes.io/arch":"amd64","beta.kubernetes.io/os":"linux","kubernetes.io/arch":"amd64","kubernetes.io/hostname":"node3","kubernetes.io/os":"linux","node-role.kubernetes.io/worker":"","topology.kubernetes.io/region":"us-east1","topology.kubernetes.io/zone":"us-east1-c"}]
+----
+
+
+
+
+== 1단계: 토폴로지 인식 백엔드 만들기
+
+Trident 스토리지 백엔드는 가용성 영역에 따라 볼륨을 선택적으로 프로비저닝하도록 설계될 수 있습니다.  각 백엔드는 선택 사항을 수행할 수 있습니다. `supportedTopologies` 지원되는 영역 및 지역 목록을 나타내는 블록입니다. 이러한 백엔드를 사용하는 StorageClass의 경우, 지원되는 지역/영역에서 예약된 애플리케이션에서 요청하는 경우에만 볼륨이 생성됩니다.
+
+다음은 백엔드 정의의 예입니다.
+
+[role="tabbed-block"]
+====
+.YAML
+--
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-san
+backendName: san-backend-us-east1
+managementLIF: 192.168.27.5
+svm: iscsi_svm
+username: admin
+password: password
+supportedTopologies:
+  - topology.kubernetes.io/region: us-east1
+    topology.kubernetes.io/zone: us-east1-a
+  - topology.kubernetes.io/region: us-east1
+    topology.kubernetes.io/zone: us-east1-b
+----
+--
+.JSON
+--
+[source, json]
+----
+{
+  "version": 1,
+  "storageDriverName": "ontap-san",
+  "backendName": "san-backend-us-east1",
+  "managementLIF": "192.168.27.5",
+  "svm": "iscsi_svm",
+  "username": "admin",
+  "password": "password",
+  "supportedTopologies": [
+    {
+      "topology.kubernetes.io/region": "us-east1",
+      "topology.kubernetes.io/zone": "us-east1-a"
+    },
+    {
+      "topology.kubernetes.io/region": "us-east1",
+      "topology.kubernetes.io/zone": "us-east1-b"
+    }
+  ]
+}
+----
+--
+====
+
+NOTE: `supportedTopologies`백엔드별 지역 및 영역 목록을 제공하는 데 사용됩니다.  이러한 지역과 영역은 StorageClass에서 제공할 수 있는 허용 가능한 값 목록을 나타냅니다.  백엔드에서 제공되는 지역 및 영역의 하위 집합을 포함하는 StorageClass의 경우 Trident 백엔드에 볼륨을 생성합니다.
+
+정의할 수 있습니다 `supportedTopologies` 저장 풀당도 마찬가지입니다. 다음 예를 참조하세요.
+
+[source, yaml]
+----
+---
+version: 1
+storageDriverName: ontap-nas
+backendName: nas-backend-us-central1
+managementLIF: 172.16.238.5
+svm: nfs_svm
+username: admin
+password: password
+supportedTopologies:
+  - topology.kubernetes.io/region: us-central1
+    topology.kubernetes.io/zone: us-central1-a
+  - topology.kubernetes.io/region: us-central1
+    topology.kubernetes.io/zone: us-central1-b
+storage:
+  - labels:
+      workload: production
+    supportedTopologies:
+      - topology.kubernetes.io/region: us-central1
+        topology.kubernetes.io/zone: us-central1-a
+  - labels:
+      workload: dev
+    supportedTopologies:
+      - topology.kubernetes.io/region: us-central1
+        topology.kubernetes.io/zone: us-central1-b
+
+----
+이 예에서는 `region` 그리고 `zone` 라벨은 저장 풀의 위치를 나타냅니다. `topology.kubernetes.io/region` 그리고 `topology.kubernetes.io/zone` 저장 풀을 어디에서 사용할 수 있는지 지정합니다.
+
+
+
+== 2단계: 토폴로지를 인식하는 StorageClass 정의
+
+클러스터의 노드에 제공된 토폴로지 레이블을 기반으로 토폴로지 정보를 포함하도록 StorageClass를 정의할 수 있습니다.  이를 통해 PVC 요청에 대한 후보 역할을 하는 스토리지 풀과 Trident 에서 프로비저닝한 볼륨을 활용할 수 있는 노드 하위 집합이 결정됩니다.
+
+다음 예를 참조하세요.
+
+[source, yaml]
+----
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata: null
+name: netapp-san-us-east1
+provisioner: csi.trident.netapp.io
+volumeBindingMode: WaitForFirstConsumer
+allowedTopologies:
+  - matchLabelExpressions: null
+  - key: topology.kubernetes.io/zone
+    values:
+      - us-east1-a
+      - us-east1-b
+  - key: topology.kubernetes.io/region
+    values:
+      - us-east1
+parameters:
+  fsType: ext4
+----
+위에 제공된 StorageClass 정의에서 `volumeBindingMode` 로 설정됩니다 `WaitForFirstConsumer` .  이 StorageClass로 요청된 PVC는 Pod에서 참조될 때까지 작업이 수행되지 않습니다.  그리고, `allowedTopologies` 사용할 구역과 지역을 제공합니다.  그만큼 `netapp-san-us-east1` StorageClass는 PVC를 생성합니다. `san-backend-us-east1` 백엔드는 위에 정의되어 있습니다.
+
+
+
+== 3단계: PVC 만들기 및 사용
+
+StorageClass를 생성하고 백엔드에 매핑했으므로 이제 PVC를 생성할 수 있습니다.
+
+예를 보세요 `spec` 아래에:
+
+[source, yaml]
+----
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata: null
+name: pvc-san
+spec: null
+accessModes:
+  - ReadWriteOnce
+resources:
+  requests:
+    storage: 300Mi
+storageClassName: netapp-san-us-east1
+----
+이 매니페스트를 사용하여 PVC를 생성하면 다음과 같은 결과가 발생합니다.
+
+[listing]
+----
+kubectl create -f pvc.yaml
+persistentvolumeclaim/pvc-san created
+kubectl get pvc
+NAME      STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS          AGE
+pvc-san   Pending                                      netapp-san-us-east1   2s
+kubectl describe pvc
+Name:          pvc-san
+Namespace:     default
+StorageClass:  netapp-san-us-east1
+Status:        Pending
+Volume:
+Labels:        <none>
+Annotations:   <none>
+Finalizers:    [kubernetes.io/pvc-protection]
+Capacity:
+Access Modes:
+VolumeMode:    Filesystem
+Mounted By:    <none>
+Events:
+  Type    Reason                Age   From                         Message
+  ----    ------                ----  ----                         -------
+  Normal  WaitForFirstConsumer  6s    persistentvolume-controller  waiting for first consumer to be created before binding
+----
+Trident 볼륨을 생성하고 이를 PVC에 연결하려면 포드에서 PVC를 사용하세요. 다음 예를 참조하세요.
+
+[source, yaml]
+----
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-pod-1
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: topology.kubernetes.io/region
+            operator: In
+            values:
+            - us-east1
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: topology.kubernetes.io/zone
+            operator: In
+            values:
+            - us-east1-a
+            - us-east1-b
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 3000
+    fsGroup: 2000
+  volumes:
+  - name: vol1
+    persistentVolumeClaim:
+      claimName: pvc-san
+  containers:
+  - name: sec-ctx-demo
+    image: busybox
+    command: [ "sh", "-c", "sleep 1h" ]
+    volumeMounts:
+    - name: vol1
+      mountPath: /data/demo
+    securityContext:
+      allowPrivilegeEscalation: false
+----
+이 podSpec은 Kubernetes에 현재 존재하는 노드에서 Pod를 예약하도록 지시합니다. `us-east1` 지역 및 해당 지역에 있는 모든 노드 중에서 선택하십시오. `us-east1-a` 또는 `us-east1-b` 구역.
+
+다음 출력을 확인하세요.
+
+[listing]
+----
+kubectl get pods -o wide
+NAME        READY   STATUS    RESTARTS   AGE   IP               NODE              NOMINATED NODE   READINESS GATES
+app-pod-1   1/1     Running   0          19s   192.168.25.131   node2             <none>           <none>
+kubectl get pvc -o wide
+NAME      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS          AGE   VOLUMEMODE
+pvc-san   Bound    pvc-ecb1e1a0-840c-463b-8b65-b3d033e2e62b   300Mi      RWO            netapp-san-us-east1   48s   Filesystem
+----
+
+
+== 백엔드를 업데이트하여 포함합니다. `supportedTopologies`
+
+기존 백엔드를 업데이트하여 다음 목록을 포함할 수 있습니다. `supportedTopologies` 사용 중 `tridentctl backend update` .  이는 이미 프로비저닝된 볼륨에는 영향을 미치지 않으며, 후속 PVC에만 사용됩니다.
+
+
+
+== 더 많은 정보를 찾아보세요
+
+* https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/["컨테이너 리소스 관리"^]
+* https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector["노드 선택기"^]
+* https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity["친화성과 반친화성"^]
+* https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/["오염과 관용"^]
+

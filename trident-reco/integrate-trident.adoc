@@ -1,0 +1,437 @@
+---
+sidebar: sidebar 
+permalink: trident-reco/integrate-trident.html 
+keywords: kubernetes, clusters, nodes, components, master, compute, fsx, flexgroup, flexvolume, solidfire, hci, virtual pool, cvs, gcp, volumes 
+summary: 쿠버네티스 클러스터는 일반적으로 두 가지 유형의 노드로 구성되며, 각 노드는 기능의 서로 다른 측면을 담당합니다. 
+---
+= Trident 통합
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident 통합하려면 드라이버 선택 및 배포, 스토리지 클래스 설계, 가상 풀 설계, 스토리지 프로비저닝에 미치는 PVC(영구 볼륨 클레임)의 영향, 볼륨 작업, Trident 사용한 OpenShift 서비스 배포 등의 설계 및 아키텍처 요소를 통합해야 합니다.
+
+
+
+== 드라이버 선택 및 배치
+
+스토리지 시스템에 맞는 백엔드 드라이버를 선택하고 배포합니다.
+
+
+
+=== ONTAP 백엔드 드라이버
+
+ONTAP 백엔드 드라이버는 사용되는 프로토콜과 스토리지 시스템에서 볼륨이 프로비저닝되는 방식에 따라 구분됩니다.  따라서 어떤 드라이버를 배치할지 결정할 때 신중하게 고려하세요.
+
+더 높은 수준에서, 애플리케이션에 공유 스토리지(동일한 PVC에 액세스하는 여러 포드)가 필요한 구성 요소가 있는 경우 NAS 기반 드라이버가 기본 선택이 되고, 블록 기반 iSCSI 드라이버는 공유되지 않는 스토리지의 요구 사항을 충족합니다.  애플리케이션의 요구 사항과 스토리지 및 인프라 팀의 편의성 수준에 따라 프로토콜을 선택하세요.  일반적으로 대부분의 애플리케이션에서는 두 가지 사이에 큰 차이가 없으므로, 공유 스토리지(두 개 이상의 포드에 동시에 액세스해야 하는 경우)가 필요한지 여부에 따라 결정이 내려지는 경우가 많습니다.
+
+사용 가능한 ONTAP 백엔드 드라이버는 다음과 같습니다.
+
+* `ontap-nas`: 프로비저닝된 각 PV는 전체 ONTAP FlexVolume입니다.
+* `ontap-nas-economy`: 프로비저닝된 각 PV는 qtree이며, FlexVolume당 구성 가능한 qtree 수가 있습니다(기본값은 200).
+* `ontap-nas-flexgroup`: 각 PV는 전체 ONTAP FlexGroup 으로 프로비저닝되고, SVM에 할당된 모든 집계가 사용됩니다.
+* `ontap-san`: 프로비저닝된 각 PV는 자체 FlexVolume 내의 LUN입니다.
+* `ontap-san-economy`: 프로비저닝된 각 PV는 LUN이며, FlexVolume당 LUN 수는 구성 가능합니다(기본값은 100).
+
+
+세 가지 NAS 드라이버 중에서 선택하면 애플리케이션에서 사용할 수 있는 기능에 몇 가지 영향이 있습니다.
+
+아래 표에서 모든 기능이 Trident 통해 공개되는 것은 아니라는 점에 유의하세요.  해당 기능이 필요한 경우 스토리지 관리자가 프로비저닝 후에 일부 기능을 적용해야 합니다.  상위 첨자 각주는 기능과 드라이버별 기능을 구분합니다.
+
+[cols="20,10,10,10,10,10,10,10"]
+|===
+| ONTAP NAS 드라이버 | 스냅샷 | 클론 | 동적 수출 정책 | 다중 부착 | 서비스 품질 | 크기 조정 | 복제 
+
+
+| `ontap-nas` | 예 | 예 | 예각주:5[] | 예 | 예각주:1[] | 예 | 예각주:1[] 
+
+
+| `ontap-nas-economy` | NO각주:3[] | NO각주:3[] | 예각주:5[] | 예 | NO각주:3[] | 예 | NO각주:3[] 
+
+
+| `ontap-nas-flexgroup` | 예각주:1[] | 아니요 | 예각주:5[] | 예 | 예각주:1[] | 예 | 예각주:1[] 
+|===
+Trident ONTAP 용 SAN 드라이버 2개를 제공하며, 해당 드라이버의 기능은 아래와 같습니다.
+
+[cols="20,10,10,10,10,10,10,10"]
+|===
+| ONTAP SAN 드라이버 | 스냅샷 | 클론 | 다중 부착 | 양방향 CHAP | 서비스 품질 | 크기 조정 | 복제 
+
+
+| `ontap-san` | 예 | 예 | 예각주:4[] | 예 | 예각주:1[] | 예 | 예각주:1[] 
+
+
+| `ontap-san-economy` | 예 | 예 | 예각주:4[] | 예 | NO각주:3[] | 예 | NO각주:3[] 
+|===
+[verse]
+위 표에 대한 각주: 예각주:1[]: Trident 에서 관리하지 않음 예각주:2[]: Trident 에서 관리하지만 PV 세분화되지 않음 아니요각주:3[]: Trident 에서 관리하지 않고 PV 세분화되지 않음 예각주:4[]: 원시 블록 볼륨에 대해 지원됨 예각주:5[]: Trident 에서 지원됨
+
+PV 세분화가 아닌 기능은 전체 FlexVolume에 적용되며 모든 PV(즉, 공유 FlexVol의 qtree 또는 LUN)는 공통 일정을 공유합니다.
+
+위의 표에서 볼 수 있듯이, 다음 기능 간의 많은 부분이 `ontap-nas` 그리고 `ontap-nas-economy` 동일합니다.  그러나, `ontap-nas-economy` 드라이버는 PV 단위로 일정을 제어하는 ​​기능을 제한하며, 이는 특히 재해 복구 및 백업 계획에 영향을 미칠 수 있습니다.  ONTAP 스토리지에서 PVC 복제 기능을 활용하려는 개발 팀의 경우 이는 다음을 사용할 때만 가능합니다. `ontap-nas` , `ontap-san` 또는 `ontap-san-economy` 운전자.
+
+
+NOTE: 그만큼 `solidfire-san` 드라이버는 PVC를 복제할 수도 있습니다.
+
+
+
+=== Cloud Volumes ONTAP 백엔드 드라이버
+
+Cloud Volumes ONTAP 파일 공유 및 NAS 및 SAN 프로토콜(NFS, SMB/CIFS, iSCSI)을 제공하는 블록 수준 스토리지를 포함하여 다양한 사용 사례에 대한 엔터프라이즈급 스토리지 기능과 함께 데이터 제어 기능을 제공합니다.  Cloud Volume ONTAP 에 호환되는 드라이버는 다음과 같습니다. `ontap-nas` , `ontap-nas-economy` , `ontap-san` 그리고 `ontap-san-economy` .  이러한 기능은 Azure용 Cloud Volume ONTAP , GCP용 Cloud Volume ONTAP 에 적용됩니다.
+
+
+
+=== Amazon FSx for ONTAP 백엔드 드라이버
+
+Amazon FSx for NetApp ONTAP 사용하면 AWS에 데이터를 저장함으로써 얻는 단순성, 민첩성, 보안 및 확장성의 이점을 누리면서 익숙한 NetApp 기능, 성능 및 관리 역량을 활용할 수 있습니다.  FSx for ONTAP 다양한 ONTAP 파일 시스템 기능과 관리 API를 지원합니다.  Cloud Volume ONTAP 에 호환되는 드라이버는 다음과 같습니다. `ontap-nas` , `ontap-nas-economy` , `ontap-nas-flexgroup` , `ontap-san` 그리고 `ontap-san-economy` .
+
+
+
+=== NetApp HCI/ SolidFire 백엔드 드라이버
+
+그만큼 `solidfire-san` NetApp HCI/ SolidFire 플랫폼과 함께 사용되는 드라이버는 관리자가 QoS 제한에 따라 Trident 에 대한 Element 백엔드를 구성하는 데 도움이 됩니다.  Trident 에서 프로비저닝한 볼륨에 대한 특정 QoS 제한을 설정하도록 백엔드를 설계하려면 다음을 사용하십시오. `type` 백엔드 파일의 매개변수.  관리자는 또한 다음을 사용하여 저장소에서 생성될 수 있는 볼륨 크기를 제한할 수 있습니다. `limitVolumeSize` 매개변수.  현재 볼륨 크기 조정 및 볼륨 복제와 같은 Element 스토리지 기능은 지원되지 않습니다. `solidfire-san` 운전사.  이러한 작업은 Element Software 웹 UI를 통해 수동으로 수행해야 합니다.
+
+[cols="20,10,10,10,10,10,10,10"]
+|===
+| SolidFire 드라이버 | 스냅샷 | 클론 | 다중 부착 | 녀석 | 서비스 품질 | 크기 조정 | 복제 
+
+
+| `solidfire-san` | 예 | 예 | 예각주:2[] | 예 | 예 | 예 | 예각주:1[] 
+|===
+[verse]
+각주: 예각주:1[]: Trident 에서 관리되지 않음 예각주:2[]: 원시 블록 볼륨에 대해 지원됨
+
+
+
+=== Azure NetApp Files 백엔드 드라이버
+
+Trident 다음을 사용합니다. `azure-netapp-files` 관리하는 드라이버link:https://azure.microsoft.com/en-us/services/netapp/["Azure NetApp Files"^] 서비스.
+
+이 드라이버에 대한 자세한 정보와 이를 구성하는 방법은 다음에서 확인할 수 있습니다.link:https://docs.netapp.com/us-en/trident/trident-use/anf.html["Azure NetApp Files 대한 Trident 백엔드 구성"^] .
+
+[cols="20,10,10,10,10,10,10"]
+|===
+| Azure NetApp Files 드라이버 | 스냅샷 | 클론 | 다중 부착 | 서비스 품질 | 확장하다 | 복제 
+
+
+| `azure-netapp-files` | 예 | 예 | 예 | 예 | 예 | 예각주:1[] 
+|===
+[verse]
+각주: 예각주:1[]: Trident 에서 관리하지 않음
+
+
+
+=== Google Cloud 백엔드 드라이버의 Cloud Volumes Service
+
+Trident 다음을 사용합니다. `gcp-cvs` Google Cloud의 Cloud Volumes Service 에 연결하는 드라이버입니다.
+
+그만큼 `gcp-cvs` 드라이버는 가상 풀을 사용하여 백엔드를 추상화하고 Trident 볼륨 배치를 결정할 수 있도록 합니다.  관리자는 가상 풀을 정의합니다. `backend.json` 파일.  저장소 클래스는 선택기를 사용하여 레이블로 가상 풀을 식별합니다.
+
+* 백엔드에 가상 풀이 정의된 경우 Trident 해당 가상 풀이 제한된 Google Cloud 스토리지 풀에 볼륨을 생성하려고 시도합니다.
+* 백엔드에 가상 풀이 정의되어 있지 않으면 Trident 해당 지역의 사용 가능한 스토리지 풀 중에서 Google Cloud 스토리지 풀을 선택합니다.
+
+
+Trident 에서 Google Cloud 백엔드를 구성하려면 다음을 지정해야 합니다. `projectNumber` , `apiRegion` , 그리고 `apiKey` 백엔드 파일에서.  프로젝트 번호는 Google Cloud 콘솔에서 찾을 수 있습니다.  API 키는 Google Cloud에서 Cloud Volumes Service 에 대한 API 액세스를 설정할 때 생성한 서비스 계정 개인 키 파일에서 가져옵니다.
+
+Google Cloud 서비스 유형 및 서비스 수준의 Cloud Volumes Service 에 대한 자세한 내용은 다음을 참조하세요.link:../trident-use/gcp.html["GCP용 CVS에 대한 Trident 지원에 대해 알아보세요"] .
+
+[cols="20,10,10,10,10,10,10"]
+|===
+| Google Cloud 드라이버용 Cloud Volumes Service | 스냅샷 | 클론 | 다중 부착 | 서비스 품질 | 확장하다 | 복제 
+
+
+| `gcp-cvs` | 예 | 예 | 예 | 예 | 예 | CVS-Performance 서비스 유형에서만 사용 가능합니다. 
+|===
+[NOTE]
+====
+.복제 노트
+* 복제는 Trident 에서 관리되지 않습니다.
+* 복제본은 소스 볼륨과 동일한 스토리지 풀에 생성됩니다.
+
+
+====
+
+
+== 스토리지 클래스 디자인
+
+Kubernetes 스토리지 클래스 객체를 생성하려면 개별 스토리지 클래스를 구성하고 적용해야 합니다.  이 섹션에서는 애플리케이션에 맞는 스토리지 클래스를 설계하는 방법을 설명합니다.
+
+
+
+=== 특정 백엔드 활용
+
+필터링은 특정 스토리지 클래스 개체 내에서 사용하여 해당 특정 스토리지 클래스와 함께 사용할 스토리지 풀 또는 풀 세트를 결정할 수 있습니다.  스토리지 클래스에는 세 가지 필터 세트를 설정할 수 있습니다. `storagePools` , `additionalStoragePools` , 및/또는 `excludeStoragePools` .
+
+그만큼 `storagePools` 매개변수는 지정된 속성과 일치하는 풀 세트로 저장소를 제한하는 데 도움이 됩니다.  그만큼 `additionalStoragePools` 매개변수는 Trident 가 프로비저닝에 사용하는 풀 세트와 속성에 의해 선택된 풀 세트를 확장하는 데 사용됩니다. `storagePools` 매개변수.  두 매개변수 중 하나만 사용하거나 두 매개변수를 함께 사용하여 적절한 스토리지 풀 세트가 선택되었는지 확인할 수 있습니다.
+
+그만큼 `excludeStoragePools` 매개변수는 속성과 일치하는 풀의 나열된 세트를 구체적으로 제외하는 데 사용됩니다.
+
+
+
+=== QoS 정책 에뮬레이션
+
+서비스 품질 정책을 에뮬레이트하기 위해 스토리지 클래스를 설계하려면 다음을 사용하여 스토리지 클래스를 만듭니다. `media` 속성으로 `hdd` 또는 `ssd` .  에 근거하여 `media` 저장 클래스에 언급된 속성에 대해 Trident 적절한 백엔드를 선택합니다. `hdd` 또는 `ssd` 미디어 속성과 일치하는 집계를 수행한 다음 볼륨 프로비저닝을 특정 집계로 지시합니다.  따라서 PREMIUM 스토리지 클래스를 생성할 수 있습니다. `media` 속성 집합으로 `ssd` 이는 PREMIUM QoS 정책으로 분류될 수 있습니다.  또 다른 저장 클래스 STANDARD를 만들면 미디어 속성이 `hdd`로 설정되고, 이는 STANDARD QoS 정책으로 분류될 수 있습니다.  저장소 클래스에서 ``IOPS'' 속성을 사용하여 프로비저닝을 QoS 정책으로 정의할 수 있는 Element 어플라이언스로 리디렉션할 수도 있습니다.
+
+
+
+=== 특정 기능에 기반한 백엔드 활용
+
+스토리지 클래스는 씬 및 씩 프로비저닝, 스냅샷, 복제, 암호화 등의 기능이 활성화된 특정 백엔드에서 볼륨 프로비저닝을 지시하도록 설계될 수 있습니다.  사용할 저장소를 지정하려면 필요한 기능이 활성화된 적절한 백엔드를 지정하는 저장소 클래스를 만듭니다.
+
+
+
+=== 가상 풀
+
+모든 Trident 백엔드에서 가상 풀을 사용할 수 있습니다.  Trident 제공하는 모든 드라이버를 사용하여 모든 백엔드에 대한 가상 풀을 정의할 수 있습니다.
+
+가상 풀을 사용하면 관리자가 백엔드에 대한 추상화 수준을 생성할 수 있으며, 이는 스토리지 클래스를 통해 참조할 수 있어 백엔드에 볼륨을 보다 유연하게 배치하고 효율적으로 배치할 수 있습니다.  동일한 서비스 클래스로 서로 다른 백엔드를 정의할 수 있습니다.  게다가 동일한 백엔드에 서로 다른 특성을 가진 여러 개의 스토리지 풀을 만들 수도 있습니다.  스토리지 클래스가 특정 레이블이 있는 선택기로 구성된 경우 Trident 모든 선택기 레이블과 일치하는 백엔드를 선택하여 볼륨을 배치합니다.  스토리지 클래스 선택기 레이블이 여러 스토리지 풀과 일치하는 경우 Trident 볼륨을 프로비저닝할 스토리지 풀을 하나 선택합니다.
+
+
+
+== 가상 풀 디자인
+
+백엔드를 생성할 때 일반적으로 매개변수 집합을 지정할 수 있습니다. 이전에는 관리자가 동일한 스토리지 자격 증명과 다른 매개변수 집합을 사용하여 다른 백엔드를 생성하는 것이 불가능했습니다. 가상 풀이 도입되면서 이 문제가 해결되었습니다. 가상 풀은 백엔드와 Kubernetes 스토리지 클래스 사이에 도입된 레벨 추상화로, 관리자가 백엔드에 관계없이 Kubernetes 스토리지 클래스를 통해 선택기로 참조할 수 있는 레이블과 함께 매개변수를 정의할 수 있도록 합니다. 가상 풀은 Trident 를 통해 지원되는 모든 NetApp 백엔드에 대해 정의할 수 있습니다. 해당 목록에는 SolidFire/ NetApp HCI, ONTAP, GCP의 Cloud Volumes Service 및 Azure NetApp Files 포함됩니다.
+
+
+NOTE: 가상 풀을 정의할 때 백엔드 정의에서 기존 가상 풀의 순서를 재정렬하지 않는 것이 좋습니다.  기존 가상 풀의 속성을 편집/수정하지 않고 대신 새 가상 풀을 정의하는 것이 좋습니다.
+
+
+
+=== 다양한 서비스 수준/QoS 에뮬레이션
+
+서비스 클래스를 에뮬레이션하기 위해 가상 풀을 설계하는 것이 가능합니다.  Azure NetApp Files 용 Cloud Volume Service의 가상 풀 구현을 사용하여 다양한 서비스 클래스를 설정하는 방법을 살펴보겠습니다.  다양한 성능 수준을 나타내는 여러 레이블로 Azure NetApp Files 백엔드를 구성합니다.  세트 `servicelevel` 각 라벨 아래에 필요한 다른 측면을 추가하고, 적절한 성능 수준에 맞춰 측면을 조정합니다.  이제 다양한 가상 풀에 매핑되는 다양한 Kubernetes 스토리지 클래스를 만듭니다.  를 사용하여 `parameters.selector` 필드에서 각 StorageClass는 볼륨을 호스팅하는 데 사용할 수 있는 가상 풀을 호출합니다.
+
+
+
+=== 특정 측면 집합 할당
+
+특정 측면을 갖춘 여러 개의 가상 풀을 단일 스토리지 백엔드에서 설계할 수 있습니다.  이를 위해 백엔드를 여러 개의 레이블로 구성하고 각 레이블 아래에 필요한 측면을 설정합니다.  이제 다음을 사용하여 다양한 Kubernetes 스토리지 클래스를 만듭니다. `parameters.selector` 다양한 가상 풀에 매핑되는 필드입니다.  백엔드에 프로비저닝되는 볼륨에는 선택한 가상 풀에 정의된 측면이 있습니다.
+
+
+
+=== 저장 용량에 영향을 미치는 PVC 특성
+
+요청된 스토리지 클래스를 넘어서는 일부 매개변수는 PVC를 생성할 때 Trident 프로비저닝 결정 프로세스에 영향을 미칠 수 있습니다.
+
+
+
+=== 접근 모드
+
+PVC를 통해 저장소를 요청할 때 필수 필드 중 하나는 액세스 모드입니다.  원하는 모드는 저장 요청을 호스팅하기 위해 선택된 백엔드에 영향을 미칠 수 있습니다.
+
+Trident 다음 매트릭스에 따라 지정된 액세스 방법과 사용된 저장 프로토콜을 일치시키려고 시도합니다.  이는 기본 저장 플랫폼과 무관합니다.
+
+[cols="20,30,30,30"]
+|===
+|  | 한 번 읽기/쓰기 | 읽기 전용 다수 | 읽기쓰기많음 
+
+
+| iSCSI | 예 | 예 | 네 (원시 블록) 
+
+
+| NFS | 예 | 예 | 예 
+|===
+NFS 백엔드가 구성되지 않은 Trident 배포에 ReadWriteMany PVC에 대한 요청을 제출하면 볼륨이 프로비저닝되지 않습니다.  이러한 이유로 요청자는 자신의 애플리케이션에 적합한 액세스 모드를 사용해야 합니다.
+
+
+
+== 볼륨 작업
+
+
+
+=== 영구 볼륨 수정
+
+두 가지 예외를 제외하고 영구 볼륨은 Kubernetes에서 변경할 수 없는 객체입니다.  회수 정책과 크기를 생성한 후에는 이를 수정할 수 있습니다.  하지만 이렇게 해도 볼륨의 일부 측면이 Kubernetes 외부에서 수정되는 것을 막을 수는 없습니다.  이는 특정 애플리케이션에 맞게 볼륨을 사용자 지정하거나, 용량이 실수로 소모되는 것을 방지하거나, 어떤 이유로든 볼륨을 다른 스토리지 컨트롤러로 옮기는 경우에 바람직할 수 있습니다.
+
+
+NOTE: Kubernetes 인트리 프로비저너는 현재 NFS, iSCSI 또는 FC PV에 대한 볼륨 크기 조정 작업을 지원하지 않습니다.  Trident NFS, iSCSI, FC 볼륨 확장을 모두 지원합니다.
+
+PV의 연결 세부정보는 생성 후 수정할 수 없습니다.
+
+
+
+=== 주문형 볼륨 스냅샷 만들기
+
+Trident CSI 프레임워크를 사용하여 주문형 볼륨 스냅샷 생성과 스냅샷에서 PVC 생성을 지원합니다.  스냅샷은 데이터의 특정 시점 사본을 유지 관리하는 편리한 방법을 제공하며 Kubernetes의 소스 PV와 독립적인 수명 주기를 갖습니다.  이러한 스냅샷은 PVC를 복제하는 데 사용할 수 있습니다.
+
+
+
+=== 스냅샷에서 볼륨 생성
+
+Trident 볼륨 스냅샷에서 PersistentVolume을 생성하는 기능도 지원합니다.  이를 달성하려면 PersistentVolumeClaim을 생성하고 다음을 언급하기만 하면 됩니다. `datasource` 볼륨을 생성하는 데 필요한 스냅샷입니다.  Trident 스냅샷에 있는 데이터로 볼륨을 생성하여 이 PVC를 처리합니다.  이 기능을 사용하면 여러 지역에 걸쳐 데이터를 복제하고, 테스트 환경을 만들고, 손상되거나 훼손된 운영 볼륨을 전체적으로 교체하거나, 특정 파일과 디렉터리를 검색하여 다른 연결된 볼륨으로 전송할 수 있습니다.
+
+
+
+=== 클러스터에서 볼륨 이동
+
+스토리지 관리자는 ONTAP 클러스터의 집계와 컨트롤러 간에 볼륨을 스토리지 소비자에게 중단 없이 이동할 수 있습니다.  대상 집계가 Trident 사용하는 SVM에서 액세스할 수 있는 집계인 한, 이 작업은 Trident 나 Kubernetes 클러스터에 영향을 미치지 않습니다.  중요한 점은, 집계가 SVM에 새로 추가된 경우 백엔드를 Trident 에 다시 추가하여 새로 고쳐야 한다는 것입니다.  이렇게 하면 Trident SVM을 재인벤토리하여 새로운 집계가 인식되도록 합니다.
+
+하지만 백엔드 간 볼륨 이동은 Trident 에서 자동으로 지원되지 않습니다.  여기에는 동일한 클러스터 내의 SVM 간, 클러스터 간 또는 다른 스토리지 플랫폼(해당 스토리지 시스템이 Trident 에 연결된 경우에도 해당)이 포함됩니다.
+
+볼륨을 다른 위치로 복사하는 경우 볼륨 가져오기 기능을 사용하여 현재 볼륨을 Trident 로 가져올 수 있습니다.
+
+
+
+=== 볼륨 확장
+
+Trident NFS, iSCSI, FC PV의 크기 조정을 지원합니다.  이를 통해 사용자는 Kubernetes 계층을 통해 볼륨 크기를 직접 조정할 수 있습니다.  ONTAP, SolidFire/ NetApp HCI 및 Cloud Volumes Service 백엔드를 포함한 모든 주요 NetApp 스토리지 플랫폼에서 볼륨 확장이 가능합니다.  나중에 확장이 가능하도록 설정하세요. `allowVolumeExpansion` 에게 `true` 볼륨과 연결된 StorageClass에서.  영구 볼륨의 크기를 조정해야 할 때마다 다음을 편집합니다. `spec.resources.requests.storage` 영구 볼륨 클레임에 필요한 볼륨 크기에 대한 주석을 추가합니다.  Trident 스토리지 클러스터의 볼륨 크기를 자동으로 조정합니다.
+
+
+
+=== 기존 볼륨을 Kubernetes로 가져오기
+
+볼륨 가져오기는 기존 스토리지 볼륨을 Kubernetes 환경으로 가져오는 기능을 제공합니다.  이는 현재 다음에서 지원됩니다. `ontap-nas` , `ontap-nas-flexgroup` , `solidfire-san` , `azure-netapp-files` , 그리고 `gcp-cvs` 운전자.  이 기능은 기존 애플리케이션을 Kubernetes로 이식할 때나 재해 복구 시나리오에서 유용합니다.
+
+ONTAP 사용할 때 `solidfire-san` 드라이버는 명령을 사용하세요 `tridentctl import volume <backend-name> <volume-name> -f /path/pvc.yaml` Trident 에서 관리할 수 있도록 기존 볼륨을 Kubernetes로 가져옵니다.  import volume 명령에 사용된 PVC YAML 또는 JSON 파일은 Trident 프로비저너로 식별하는 스토리지 클래스를 가리킵니다.  NetApp HCI/ SolidFire 백엔드를 사용하는 경우 볼륨 이름이 고유한지 확인하세요.  볼륨 이름이 중복된 경우 볼륨을 고유한 이름으로 복제하여 볼륨 가져오기 기능에서 구별할 수 있도록 합니다.
+
+만약 `azure-netapp-files` 또는 `gcp-cvs` 드라이버가 사용되면 명령을 사용하세요 `tridentctl import volume <backend-name> <volume path> -f /path/pvc.yaml` 볼륨을 Kubernetes로 가져와서 Trident 에서 관리하도록 합니다.  이를 통해 고유한 볼륨 참조가 보장됩니다.
+
+위 명령을 실행하면 Trident 백엔드에서 볼륨을 찾아 크기를 읽습니다.  구성된 PVC의 볼륨 크기를 자동으로 추가하고 필요한 경우 덮어씁니다.  그런 다음 Trident 새로운 PV를 만들고 Kubernetes가 PVC를 PV에 바인딩합니다.
+
+컨테이너가 특정 수입 PVC를 필요로 하도록 배치된 경우 PVC/PV 쌍이 볼륨 수입 프로세스를 통해 바인딩될 때까지 보류 상태로 유지됩니다.  PVC/PV 쌍이 결합된 후 다른 문제가 없다면 컨테이너가 올라와야 합니다.
+
+
+
+=== 등록 서비스
+
+레지스트리에 대한 저장소 배포 및 관리가 문서화되었습니다.link:https://netapp.io/["넷앱.io"^] 에서link:https://netapp.io/2017/08/24/deploying-the-openshift-registry-using-netapp-storage/["블로그"^] .
+
+
+
+=== 로깅 서비스
+
+다른 OpenShift 서비스와 마찬가지로 로깅 서비스는 플레이북에 제공된 인벤토리 파일(호스트)에서 제공하는 구성 매개변수를 사용하여 Ansible을 사용하여 배포됩니다.  두 가지 설치 방법에 대해 설명합니다. OpenShift를 처음 설치할 때 로깅을 배포하는 방법과 OpenShift를 설치한 후에 로깅을 배포하는 방법입니다.
+
+
+CAUTION: Red Hat OpenShift 버전 3.9부터 공식 문서에서는 데이터 손상에 대한 우려로 인해 로깅 서비스에 NFS를 사용하지 않는 것이 좋습니다.  이는 Red Hat에서 자사 제품을 테스트한 결과를 기반으로 합니다.  ONTAP NFS 서버는 이러한 문제가 없으며 로깅 배포를 쉽게 지원할 수 있습니다.  궁극적으로 로깅 서비스에 대한 프로토콜을 선택하는 것은 사용자의 몫입니다. NetApp 플랫폼을 사용할 경우 두 프로토콜 모두 잘 작동하며, NFS를 선호한다면 NFS를 피할 이유가 없습니다.
+
+로깅 서비스와 함께 NFS를 사용하도록 선택하는 경우 Ansible 변수를 설정해야 합니다. `openshift_enable_unsupported_configurations` 에게 `true` 설치 프로그램이 실패하는 것을 방지합니다.
+
+
+
+==== 시작하기
+
+로깅 서비스는 선택적으로 애플리케이션과 OpenShift 클러스터 자체의 핵심 작업에 모두 배포될 수 있습니다.  변수를 지정하여 작업 로깅을 배포하도록 선택하는 경우 `openshift_logging_use_ops` ~처럼 `true` , 서비스의 인스턴스가 두 개 생성됩니다.  작업에 대한 로깅 인스턴스를 제어하는 변수에는 "ops"가 포함되지만, 애플리케이션에 대한 인스턴스에는 포함되지 않습니다.
+
+기본 서비스에서 올바른 스토리지를 활용하려면 배포 방법에 따라 Ansible 변수를 구성하는 것이 중요합니다.  각 배포 방법에 대한 옵션을 살펴보겠습니다.
+
+
+NOTE: 아래 표에는 로깅 서비스와 관련된 저장소 구성에 관련된 변수만 포함되어 있습니다.  다른 옵션은 다음에서 찾을 수 있습니다.link:https://docs.openshift.com/container-platform/3.11/install_config/aggregate_logging.html["Red Hat OpenShift 로깅 문서"^] 배포에 맞게 검토, 구성 및 사용해야 합니다.
+
+아래 표의 변수를 사용하면 Ansible 플레이북이 제공된 세부 정보를 사용하여 로깅 서비스에 대한 PV 및 PVC를 생성합니다.  이 방법은 OpenShift를 설치한 후 구성 요소 설치 플레이북을 사용하는 것보다 유연성이 상당히 떨어지지만, 기존 볼륨을 사용할 수 있는 경우에는 한 가지 옵션입니다.
+
+[cols="40,40"]
+|===
+| 변하기 쉬운 | 세부 
+
+
+| `openshift_logging_storage_kind` | 로 설정 `nfs` 설치 프로그램이 로깅 서비스에 대한 NFS PV를 생성하도록 합니다. 
+
+
+| `openshift_logging_storage_host` | NFS 호스트의 호스트 이름 또는 IP 주소입니다.  이는 가상 머신의 dataLIF로 설정되어야 합니다. 
+
+
+| `openshift_logging_storage_nfs_directory` | NFS 내보내기에 대한 마운트 경로입니다.  예를 들어, 볼륨이 다음과 같이 접합된 경우 `/openshift_logging` , 이 변수에 대해 해당 경로를 사용하게 됩니다. 
+
+
+| `openshift_logging_storage_volume_name` | 이름, 예를 들어 `pv_ose_logs` PV를 생성하려면. 
+
+
+| `openshift_logging_storage_volume_size` | 예를 들어 NFS 내보내기의 크기 `100Gi` . 
+|===
+OpenShift 클러스터가 이미 실행 중이고 Trident 배포 및 구성된 경우 설치 프로그램은 동적 프로비저닝을 사용하여 볼륨을 생성할 수 있습니다.  다음 변수를 구성해야 합니다.
+
+[cols="40,40"]
+|===
+| 변하기 쉬운 | 세부 
+
+
+| `openshift_logging_es_pvc_dynamic` | 동적으로 프로비저닝된 볼륨을 사용하려면 true로 설정합니다. 
+
+
+| `openshift_logging_es_pvc_storage_class_name` | PVC에서 사용될 스토리지 클래스의 이름입니다. 
+
+
+| `openshift_logging_es_pvc_size` | PVC에서 요청된 볼륨의 크기입니다. 
+
+
+| `openshift_logging_es_pvc_prefix` | 로깅 서비스에서 사용하는 PVC에 대한 접두사입니다. 
+
+
+| `openshift_logging_es_ops_pvc_dynamic` | 로 설정 `true` ops 로깅 인스턴스에 동적으로 프로비저닝된 볼륨을 사용합니다. 
+
+
+| `openshift_logging_es_ops_pvc_storage_class_name` | ops 로깅 인스턴스의 스토리지 클래스 이름입니다. 
+
+
+| `openshift_logging_es_ops_pvc_size` | ops 인스턴스에 대한 볼륨 요청의 크기입니다. 
+
+
+| `openshift_logging_es_ops_pvc_prefix` | ops 인스턴스 PVC에 대한 접두사입니다. 
+|===
+
+
+==== 로깅 스택 배포
+
+초기 OpenShift 설치 프로세스의 일부로 로깅을 배포하는 경우 표준 배포 프로세스만 따르면 됩니다.  Ansible은 필요한 서비스와 OpenShift 객체를 구성하고 배포하므로 Ansible이 완료되는 즉시 서비스를 사용할 수 있습니다.
+
+하지만 초기 설치 후에 배포하는 경우 Ansible에서 구성 요소 플레이북을 사용해야 합니다.  이 프로세스는 OpenShift의 다른 버전에 따라 약간씩 변경될 수 있으므로 반드시 읽고 따르십시오.link:https://docs.openshift.com/container-platform/3.11/welcome/index.html["Red Hat OpenShift Container Platform 3.11 설명서"^] 귀하의 버전에 맞게.
+
+
+
+== 메트릭 서비스
+
+메트릭 서비스는 관리자에게 OpenShift 클러스터의 상태, 리소스 활용도, 가용성에 대한 귀중한 정보를 제공합니다.  또한 포드 자동 확장 기능에도 필요하며, 많은 조직에서 요금 청구 및/또는 쇼백 애플리케이션에 메트릭 서비스의 데이터를 사용합니다.
+
+로깅 서비스와 OpenShift 전체와 마찬가지로 Ansible은 메트릭 서비스를 배포하는 데 사용됩니다.  또한 로깅 서비스와 마찬가지로 메트릭 서비스는 클러스터의 초기 설정 중이나 구성 요소 설치 방법을 사용하여 운영이 완료된 후에 배포할 수 있습니다.  다음 표에는 메트릭 서비스에 대한 영구 저장소를 구성할 때 중요한 변수가 포함되어 있습니다.
+
+
+NOTE: 아래 표에는 메트릭 서비스와 관련된 스토리지 구성에 관련된 변수만 포함되어 있습니다.  배포에 맞게 검토, 구성 및 사용해야 하는 다른 옵션도 설명서에 많이 나와 있습니다.
+
+[cols="40,40"]
+|===
+| 변하기 쉬운 | 세부 
+
+
+| `openshift_metrics_storage_kind` | 로 설정 `nfs` 설치 프로그램이 로깅 서비스에 대한 NFS PV를 생성하도록 합니다. 
+
+
+| `openshift_metrics_storage_host` | NFS 호스트의 호스트 이름 또는 IP 주소입니다.  이는 SVM의 dataLIF로 설정되어야 합니다. 
+
+
+| `openshift_metrics_storage_nfs_directory` | NFS 내보내기에 대한 마운트 경로입니다.  예를 들어, 볼륨이 다음과 같이 접합된 경우 `/openshift_metrics` , 이 변수에 대해 해당 경로를 사용하게 됩니다. 
+
+
+| `openshift_metrics_storage_volume_name` | 이름, 예를 들어 `pv_ose_metrics` PV를 생성하려면. 
+
+
+| `openshift_metrics_storage_volume_size` | 예를 들어 NFS 내보내기의 크기 `100Gi` . 
+|===
+OpenShift 클러스터가 이미 실행 중이고 Trident 배포 및 구성된 경우 설치 프로그램은 동적 프로비저닝을 사용하여 볼륨을 생성할 수 있습니다.  다음 변수를 구성해야 합니다.
+
+[cols="40,40"]
+|===
+| 변하기 쉬운 | 세부 
+
+
+| `openshift_metrics_cassandra_pvc_prefix` | PVC 지표에 사용할 접두사입니다. 
+
+
+| `openshift_metrics_cassandra_pvc_size` | 요청할 볼륨의 크기입니다. 
+
+
+| `openshift_metrics_cassandra_storage_type` | 메트릭에 사용할 저장소 유형입니다. Ansible이 적절한 저장소 클래스로 PVC를 생성하려면 이 값을 동적으로 설정해야 합니다. 
+
+
+| `openshift_metrics_cassanda_pvc_storage_class_name` | 사용할 저장 클래스의 이름입니다. 
+|===
+
+
+=== 메트릭 서비스 배포
+
+hosts/inventory 파일에 적절한 Ansible 변수를 정의한 후 Ansible을 사용하여 서비스를 배포합니다.  OpenShift 설치 시점에 배포하는 경우 PV가 자동으로 생성되어 사용됩니다.  구성 요소 플레이북을 사용하여 배포하는 경우 OpenShift를 설치한 후 Ansible이 필요한 PVC를 생성하고 Trident 해당 PVC에 대한 스토리지를 프로비저닝한 후 서비스를 배포합니다.
+
+위의 변수와 배포 프로세스는 OpenShift 버전마다 변경될 수 있습니다.  검토하고 따르세요link:https://docs.openshift.com/container-platform/3.11/install_config/cluster_metrics.html["Red Hat의 OpenShift 배포 가이드"^] 귀하의 환경에 맞게 구성되도록 귀하의 버전에 맞게 구성하세요.

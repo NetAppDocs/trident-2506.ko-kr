@@ -1,0 +1,106 @@
+---
+sidebar: sidebar 
+permalink: trident-use/backend_ops_tridentctl.html 
+keywords: backends, storage system, anf, cvs for aws, cvs for gcp, element, hci, solidfire, ontap, aff, fas, ontap select, configure backends, tridentctl, create backends, delete backends, view backends, update backends 
+summary: '다음을 사용하여 백엔드 관리 작업을 수행하는 방법에 대해 알아보세요. `tridentctl` .' 
+---
+= tridentctl로 백엔드 관리 수행
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+다음을 사용하여 백엔드 관리 작업을 수행하는 방법에 대해 알아보세요. `tridentctl` .
+
+
+
+== 백엔드 만들기
+
+생성한 후link:backends.html["백엔드 구성 파일"^] 다음 명령을 실행합니다.
+
+[listing]
+----
+tridentctl create backend -f <backend-file> -n trident
+----
+백엔드 생성에 실패하면 백엔드 구성에 문제가 있는 것입니다.  다음 명령을 실행하면 로그를 보고 원인을 파악할 수 있습니다.
+
+[listing]
+----
+tridentctl logs -n trident
+----
+구성 파일의 문제를 식별하고 수정한 후에는 간단히 다음을 실행할 수 있습니다. `create` 다시 명령을 내리세요.
+
+
+
+== 백엔드 삭제
+
+Trident 에서 백엔드를 삭제하려면 다음을 수행하세요.
+
+. 백엔드 이름을 검색합니다.
++
+[listing]
+----
+tridentctl get backend -n trident
+----
+. 백엔드를 삭제합니다.
++
+[listing]
+----
+tridentctl delete backend <backend-name> -n trident
+----
+
+
+
+NOTE: Trident 이 백엔드에서 여전히 존재하는 볼륨과 스냅샷을 프로비저닝한 경우 백엔드를 삭제하면 새 볼륨을 프로비저닝할 수 없습니다.  백엔드는 "삭제 중" 상태로 계속 존재합니다.
+
+
+
+== 기존 백엔드 보기
+
+Trident 알고 있는 백엔드를 보려면 다음을 수행하세요.
+
+* 요약을 보려면 다음 명령을 실행하세요.
++
+[listing]
+----
+tridentctl get backend -n trident
+----
+* 모든 세부 정보를 보려면 다음 명령을 실행하세요.
++
+[listing]
+----
+tridentctl get backend -o json -n trident
+----
+
+
+
+
+== 백엔드 업데이트
+
+새로운 백엔드 구성 파일을 만든 후 다음 명령을 실행합니다.
+
+[listing]
+----
+tridentctl update backend <backend-name> -f <backend-file> -n trident
+----
+백엔드 업데이트가 실패한 경우 백엔드 구성에 문제가 있거나 잘못된 업데이트를 시도한 것입니다.  다음 명령을 실행하면 로그를 보고 원인을 파악할 수 있습니다.
+
+[listing]
+----
+tridentctl logs -n trident
+----
+구성 파일의 문제를 식별하고 수정한 후에는 간단히 다음을 실행할 수 있습니다. `update` 다시 명령을 내리세요.
+
+
+
+== 백엔드를 사용하는 스토리지 클래스를 식별합니다.
+
+이는 JSON으로 답할 수 있는 질문 종류의 예입니다. `tridentctl` 백엔드 객체에 대한 출력.  이것은 다음을 사용합니다 `jq` 설치해야 하는 유틸리티입니다.
+
+[listing]
+----
+tridentctl get backend -o json | jq '[.items[] | {backend: .name, storageClasses: [.storage[].storageClasses]|unique}]'
+----
+이는 다음을 사용하여 생성된 백엔드에도 적용됩니다. `TridentBackendConfig` .

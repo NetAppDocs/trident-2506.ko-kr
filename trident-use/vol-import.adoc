@@ -1,0 +1,296 @@
+---
+sidebar: sidebar 
+permalink: trident-use/vol-import.html 
+keywords: volumes, import volumes, drivers, tridentctl import, pv, persistent volumes, pvc, disaster recovery, dr, clone, reuse, managed volume, unmanaged volume, managed 
+summary: '기존 스토리지 볼륨을 Kubernetes PV로 가져올 수 있습니다. `tridentctl import` .' 
+---
+= 수입량
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+기존 스토리지 볼륨을 Kubernetes PV로 가져올 수 있습니다. `tridentctl import` .
+
+
+
+== 개요 및 고려 사항
+
+볼륨을 Trident 로 가져와서 다음을 수행할 수 있습니다.
+
+* 애플리케이션을 컨테이너화하고 기존 데이터 세트를 재사용합니다.
+* 임시 애플리케이션에 데이터 세트 복제본 사용
+* 실패한 Kubernetes 클러스터 재구축
+* 재해 복구 중 애플리케이션 데이터 마이그레이션
+
+
+.고려 사항
+볼륨을 가져오기 전에 다음 고려 사항을 검토하세요.
+
+* Trident RW(읽기-쓰기) 유형의 ONTAP 볼륨만 가져올 수 있습니다.  DP(데이터 보호) 유형 볼륨은 SnapMirror 대상 볼륨입니다.  볼륨을 Trident 로 가져오기 전에 미러 관계를 해제해야 합니다.
+* 활성 연결이 없는 볼륨을 가져오는 것이 좋습니다.  현재 사용되는 볼륨을 가져오려면 볼륨을 복제한 다음 가져오기를 수행합니다.
++
+
+WARNING: 이는 블록 볼륨의 경우 특히 중요합니다. Kubernetes는 이전 연결을 인식하지 못하고 활성 볼륨을 Pod에 쉽게 연결할 수 있기 때문입니다.  이로 인해 데이터가 손상될 수 있습니다.
+
+* 그렇지만 `StorageClass` PVC에서는 이 매개변수를 지정해야 하지만, Trident 가져오기 중에 이 매개변수를 사용하지 않습니다.  스토리지 클래스는 볼륨을 생성하는 동안 스토리지 특성에 따라 사용 가능한 풀을 선택하는 데 사용됩니다.  볼륨이 이미 존재하므로 가져오는 동안 풀을 선택할 필요가 없습니다.  따라서 PVC에 지정된 스토리지 클래스와 일치하지 않는 백엔드나 풀에 볼륨이 존재하더라도 가져오기가 실패하지 않습니다.
+* 기존 볼륨 크기가 결정되어 PVC에 설정됩니다.  볼륨이 스토리지 드라이버에 의해 가져온 후, PV는 PVC에 대한 ClaimRef와 함께 생성됩니다.
++
+** 회수 정책은 처음에 다음과 같이 설정됩니다. `retain` PV에서.  Kubernetes가 PVC와 PV를 성공적으로 바인딩한 후, 회수 정책이 스토리지 클래스의 회수 정책과 일치하도록 업데이트됩니다.
+** 스토리지 클래스의 회수 정책이 있는 경우 `delete` PV가 삭제되면 저장 볼륨도 삭제됩니다.
+
+
+* 기본적으로 Trident PVC를 관리하고 백엔드에서 FlexVol volume 과 LUN의 이름을 변경합니다.  당신은 통과 할 수 있습니다 `--no-manage` 관리되지 않는 볼륨을 가져오기 위한 플래그입니다.  당신이 사용하는 경우 `--no-manage` Trident 객체의 수명 주기 동안 PVC 또는 PV에 대한 추가 작업을 수행하지 않습니다.  PV가 삭제되어도 저장 볼륨은 삭제되지 않으며 볼륨 복제 및 볼륨 크기 조정과 같은 다른 작업도 무시됩니다.
++
+
+TIP: 이 옵션은 컨테이너화된 워크로드에 Kubernetes를 사용하지만 그렇지 않은 경우 Kubernetes 외부에서 스토리지 볼륨의 수명 주기를 관리하려는 경우에 유용합니다.
+
+* PVC와 PV에 주석이 추가되어 볼륨이 가져왔는지, PVC와 PV가 관리되는지 여부를 나타내는 두 가지 목적을 갖습니다.  이 주석은 수정하거나 제거해서는 안 됩니다.
+
+
+
+
+== 볼륨 가져오기
+
+사용할 수 있습니다 `tridentctl import` 볼륨을 가져오려면.
+
+.단계
+. 영구 볼륨 클레임(PVC) 파일을 만듭니다(예: `pvc.yaml` ) PVC를 만드는 데 사용됩니다.  PVC 파일에는 다음이 포함되어야 합니다. `name` , `namespace` , `accessModes` , 그리고 `storageClassName` .  선택적으로 지정할 수 있습니다. `unixPermissions` PVC 정의에서.
++
+다음은 최소 사양의 예입니다.
+
++
+[source, yaml]
+----
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: my_claim
+  namespace: my_namespace
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: my_storage_class
+----
++
+
+WARNING: PV 이름이나 볼륨 크기와 같은 추가 매개변수를 포함하지 마세요.  이로 인해 가져오기 명령이 실패할 수 있습니다.
+
+. 사용하다 `tridentctl import` 볼륨을 포함하는 Trident 백엔드의 이름과 스토리지에서 볼륨을 고유하게 식별하는 이름(예: ONTAP FlexVol, Element Volume, Cloud Volumes Service 경로)을 지정하는 명령입니다.  그만큼 `-f` PVC 파일의 경로를 지정하려면 인수가 필요합니다.
++
+[listing]
+----
+tridentctl import volume <backendName> <volumeName> -f <path-to-pvc-file>
+----
+
+
+
+
+== 예시
+
+지원되는 드라이버에 대한 다음 볼륨 가져오기 예를 검토하세요.
+
+
+
+=== ONTAP NAS 및 ONTAP NAS FlexGroup
+
+Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `ontap-nas` 그리고 `ontap-nas-flexgroup` 운전자.
+
+[NOTE]
+====
+* Trident 다음을 사용하여 볼륨 가져오기를 지원하지 않습니다. `ontap-nas-economy` 운전사.
+* 그만큼 `ontap-nas` 그리고 `ontap-nas-flexgroup` 드라이버는 중복된 볼륨 이름을 허용하지 않습니다.
+
+
+====
+각 볼륨은 다음과 같이 생성됩니다. `ontap-nas` 드라이버는 ONTAP 클러스터의 FlexVol volume 입니다.  FlexVol 볼륨을 가져오는 방법 `ontap-nas` 드라이버도 동일하게 작동합니다.  ONTAP 클러스터에 이미 존재하는 FlexVol 볼륨은 다음과 같이 가져올 수 있습니다. `ontap-nas` PVC.  마찬가지로 FlexGroup 볼륨은 다음과 같이 가져올 수 있습니다. `ontap-nas-flexgroup` PVC.
+
+.ONTAP NAS 예시
+다음은 관리되는 볼륨과 관리되지 않는 볼륨 가져오기의 예를 보여줍니다.
+
+[role="tabbed-block"]
+====
+.관리되는 볼륨
+--
+다음 예제에서는 이름이 지정된 볼륨을 가져옵니다. `managed_volume` 백엔드에 이름이 지정됨 `ontap_nas` :
+
+[listing]
+----
+tridentctl import volume ontap_nas managed_volume -f <path-to-pvc-file>
+
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+| pvc-bf5ad463-afbb-11e9-8d9f-5254004dfdb7 | 1.0 GiB | standard      | file     | c5a6f6a4-b052-423b-80d4-8fb491a14a22 | online | true    |
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+----
+--
+.관리되지 않는 볼륨
+--
+사용 시 `--no-manage` 인수에 따라 Trident 볼륨의 이름을 바꾸지 않습니다.
+
+다음 예제에서는 다음을 가져옵니다. `unmanaged_volume` 에 `ontap_nas` 백엔드:
+
+[listing]
+----
+tridentctl import volume nas_blog unmanaged_volume -f <path-to-pvc-file> --no-manage
+
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+| pvc-df07d542-afbc-11e9-8d9f-5254004dfdb7 | 1.0 GiB | standard      | file     | c5a6f6a4-b052-423b-80d4-8fb491a14a22 | online | false   |
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+----
+--
+====
+
+
+=== ONTAP 산
+
+Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `ontap-san` (iSCSI, NVMe/TCP 및 FC) 및 `ontap-san-economy` 운전자.
+
+Trident 단일 LUN을 포함하는 ONTAP SAN FlexVol 볼륨을 가져올 수 있습니다. 이는 다음과 일치합니다. `ontap-san` 각 PVC에 대한 FlexVol volume 과 FlexVol volume 내의 LUN을 생성하는 드라이버입니다. Trident FlexVol volume 가져와 PVC 정의와 연결합니다. Trident 수입이 가능합니다 `ontap-san-economy` 여러 LUN을 포함하는 볼륨.
+
+.ONTAP SAN 예시
+다음은 관리되는 볼륨과 관리되지 않는 볼륨 가져오기의 예를 보여줍니다.
+
+[role="tabbed-block"]
+====
+.관리되는 볼륨
+--
+관리되는 볼륨의 경우 Trident FlexVol volume 이름을 다음과 같이 변경합니다. `pvc-<uuid>` FlexVol volume 내의 LUN과 포맷 `lun0` .
+
+다음 예제에서는 다음을 가져옵니다. `ontap-san-managed` FlexVol volume 이 존재합니다. `ontap_san_default` 백엔드:
+
+[listing]
+----
+tridentctl import volume ontapsan_san_default ontap-san-managed -f pvc-basic-import.yaml -n trident -d
+
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE  | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+| pvc-d6ee4f54-4e40-4454-92fd-d00fc228d74a | 20 MiB | basic         | block    | cd394786-ddd5-4470-adc3-10c5ce4ca757 | online | true    |
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+----
+--
+.관리되지 않는 볼륨
+--
+다음 예제에서는 다음을 가져옵니다. `unmanaged_example_volume` 에 `ontap_san` 백엔드:
+
+[listing]
+----
+tridentctl import volume -n trident san_blog unmanaged_example_volume -f pvc-import.yaml --no-manage
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+| pvc-1fc999c9-ce8c-459c-82e4-ed4380a4b228 | 1.0 GiB | san-blog      | block    | e3275890-7d80-4af6-90cc-c7a0759f555a | online | false   |
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+----
+[WARNING]
+====
+다음 예와 같이 Kubernetes 노드 IQN과 IQN을 공유하는 igroup에 LUN이 매핑된 경우 오류가 발생합니다. `LUN already mapped to initiator(s) in this group` .  볼륨을 가져오려면 초기자를 제거하거나 LUN의 매핑을 해제해야 합니다.
+
+image:./san-import-igroup.png["iqn 및 클러스터 iqn에 매핑된 LUN 이미지입니다."]
+
+====
+--
+====
+
+
+=== 요소
+
+Trident 다음을 사용하여 NetApp Element 소프트웨어 및 NetApp HCI 볼륨 가져오기를 지원합니다. `solidfire-san` 운전사.
+
+
+NOTE: Element 드라이버는 중복된 볼륨 이름을 지원합니다.  그러나 볼륨 이름이 중복되면 Trident 오류를 반환합니다.  해결 방법으로 볼륨을 복제하고 고유한 볼륨 이름을 제공한 다음 복제된 볼륨을 가져옵니다.
+
+.요소 예
+다음 예제에서는 다음을 가져옵니다. `element-managed` 백엔드의 볼륨 `element_default` .
+
+[listing]
+----
+tridentctl import volume element_default element-managed -f pvc-basic-import.yaml -n trident -d
+
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE  | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+| pvc-970ce1ca-2096-4ecd-8545-ac7edc24a8fe | 10 GiB | basic-element | block    | d3ba047a-ea0b-43f9-9c42-e38e58301c49 | online | true    |
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+----
+
+
+=== 구글 클라우드 플랫폼
+
+Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `gcp-cvs` 운전사.
+
+
+NOTE: Google Cloud Platform에서 NetApp Cloud Volumes Service 지원하는 볼륨을 가져오려면 볼륨 경로로 볼륨을 식별합니다.  볼륨 경로는 볼륨 내보내기 경로의 일부입니다. `:/` .  예를 들어, 내보내기 경로가 `10.0.0.1:/adroit-jolly-swift` , 볼륨 경로는 `adroit-jolly-swift` .
+
+.Google Cloud Platform 예시
+다음 예제에서는 다음을 가져옵니다. `gcp-cvs` 백엔드의 볼륨 `gcpcvs_YEppr` 볼륨 경로와 함께 `adroit-jolly-swift` .
+
+[listing]
+----
+tridentctl import volume gcpcvs_YEppr adroit-jolly-swift -f <path-to-pvc-file> -n trident
+
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE  | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+| pvc-a46ccab7-44aa-4433-94b1-e47fc8c0fa55 | 93 GiB | gcp-storage   | file     | e1a6e65b-299e-4568-ad05-4f0a105c888f | online | true    |
++------------------------------------------+--------+---------------+----------+--------------------------------------+--------+---------+
+----
+
+
+=== Azure NetApp Files
+
+Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `azure-netapp-files` 운전사.
+
+
+NOTE: Azure NetApp Files 볼륨을 가져오려면 볼륨 경로로 볼륨을 식별합니다.  볼륨 경로는 볼륨 내보내기 경로의 일부입니다. `:/` .  예를 들어, 마운트 경로가 `10.0.0.2:/importvol1` , 볼륨 경로는 `importvol1` .
+
+.Azure NetApp Files 예제
+다음 예제에서는 다음을 가져옵니다. `azure-netapp-files` 백엔드의 볼륨 `azurenetappfiles_40517` 볼륨 경로로 `importvol1` .
+
+[listing]
+----
+tridentctl import volume azurenetappfiles_40517 importvol1 -f <path-to-pvc-file> -n trident
+
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE   | STORAGE CLASS | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+| pvc-0ee95d60-fd5c-448d-b505-b72901b3a4ab | 100 GiB | anf-storage   | file     | 1c01274f-d94b-44a3-98a3-04c953c9a51e | online | true    |
++------------------------------------------+---------+---------------+----------+--------------------------------------+--------+---------+
+----
+
+
+=== Google Cloud NetApp Volumes
+
+Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `google-cloud-netapp-volumes` 운전사.
+
+.Google Cloud NetApp Volumes 예시
+다음 예제에서는 다음을 가져옵니다. `google-cloud-netapp-volumes` 백엔드의 볼륨 `backend-tbc-gcnv1` 볼륨과 함께 `testvoleasiaeast1` .
+
+[listing]
+----
+tridentctl import volume backend-tbc-gcnv1 "testvoleasiaeast1" -f < path-to-pvc> -n trident
+
++------------------------------------------+---------+----------------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE   | STORAGE CLASS        | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+---------+----------------------+----------+--------------------------------------+--------+---------+
+| pvc-a69cda19-218c-4ca9-a941-aea05dd13dc0 |  10 GiB | gcnv-nfs-sc-identity | file     | 8c18cdf1-0770-4bc0-bcc5-c6295fe6d837 | online | true    |
++------------------------------------------+---------+----------------------+----------+--------------------------------------+--------+---------+
+----
+다음 예제에서는 다음을 가져옵니다. `google-cloud-netapp-volumes` 동일한 영역에 두 개의 볼륨이 존재할 때의 볼륨:
+
+[listing]
+----
+tridentctl import volume backend-tbc-gcnv1 "projects/123456789100/locations/asia-east1-a/volumes/testvoleasiaeast1" -f <path-to-pvc> -n trident
+
++------------------------------------------+---------+----------------------+----------+--------------------------------------+--------+---------+
+|                   NAME                   |  SIZE   | STORAGE CLASS        | PROTOCOL |             BACKEND UUID             | STATE  | MANAGED |
++------------------------------------------+---------+----------------------+----------+--------------------------------------+--------+---------+
+| pvc-a69cda19-218c-4ca9-a941-aea05dd13dc0 |  10 GiB | gcnv-nfs-sc-identity | file     | 8c18cdf1-0770-4bc0-bcc5-c6295fe6d837 | online | true    |
++------------------------------------------+---------+----------------------+----------+--------------------------------------+--------+---------+
+----

@@ -1,0 +1,79 @@
+---
+sidebar: sidebar 
+permalink: trident-use/backend_ops_kubectl.html 
+keywords: backends, storage system, anf, cvs for aws, cvs for gcp, element, hci, solidfire, ontap, aff, fas, ontap select, configure backends, kubectl, create backends, delete backends, update backends, view backends 
+summary: '다음을 사용하여 백엔드 관리 작업을 수행하는 방법에 대해 알아보세요. `kubectl` .' 
+---
+= kubectl을 사용하여 백엔드 관리 수행
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+다음을 사용하여 백엔드 관리 작업을 수행하는 방법에 대해 알아보세요. `kubectl` .
+
+
+
+== 백엔드 삭제
+
+삭제하여 `TridentBackendConfig` , Trident 백엔드를 삭제/보관하도록 지시합니다(기반 `deletionPolicy` ).  백엔드를 삭제하려면 다음을 확인하세요. `deletionPolicy` 삭제되도록 설정되어 있습니다.  삭제하려면 `TridentBackendConfig` , 확인하십시오 `deletionPolicy` 유지되도록 설정되어 있습니다.  이렇게 하면 백엔드가 여전히 존재하고 다음을 사용하여 관리할 수 있습니다. `tridentctl` .
+
+다음 명령을 실행하세요.
+
+[listing]
+----
+kubectl delete tbc <tbc-name> -n trident
+----
+Trident 사용 중이던 Kubernetes Secret을 삭제하지 않습니다. `TridentBackendConfig` .  Kubernetes 사용자는 비밀을 정리할 책임이 있습니다.  비밀을 삭제할 때는 주의해야 합니다.  백엔드에서 사용하지 않는 비밀만 삭제해야 합니다.
+
+
+
+== 기존 백엔드 보기
+
+다음 명령을 실행하세요.
+
+[listing]
+----
+kubectl get tbc -n trident
+----
+또한 실행할 수도 있습니다 `tridentctl get backend -n trident` 또는 `tridentctl get backend -o yaml -n trident` 존재하는 모든 백엔드 목록을 얻습니다.  이 목록에는 또한 생성된 백엔드가 포함됩니다. `tridentctl` .
+
+
+
+== 백엔드 업데이트
+
+백엔드를 업데이트하는 데에는 여러 가지 이유가 있을 수 있습니다.
+
+* 저장 시스템의 자격 증명이 변경되었습니다.  자격 증명을 업데이트하려면 Kubernetes Secret이 사용됩니다. `TridentBackendConfig` 객체를 업데이트해야 합니다.  Trident 제공된 최신 자격 증명으로 백엔드를 자동으로 업데이트합니다.  다음 명령을 실행하여 Kubernetes Secret을 업데이트합니다.
++
+[listing]
+----
+kubectl apply -f <updated-secret-file.yaml> -n trident
+----
+* 매개변수(사용 중인 ONTAP SVM의 이름 등)를 업데이트해야 합니다.
++
+** 업데이트할 수 있습니다 `TridentBackendConfig` 다음 명령을 사용하여 Kubernetes를 통해 직접 객체를 가져올 수 있습니다.
++
+[listing]
+----
+kubectl apply -f <updated-backend-file.yaml>
+----
+** 또는 기존 내용을 변경할 수 있습니다. `TridentBackendConfig` 다음 명령을 사용하여 CR을 실행합니다.
++
+[listing]
+----
+kubectl edit tbc <tbc-name> -n trident
+----
+
+
+
+
+[NOTE]
+====
+* 백엔드 업데이트가 실패하면 백엔드는 마지막으로 알려진 구성을 그대로 유지합니다.  원인을 확인하려면 다음을 실행하여 로그를 볼 수 있습니다. `kubectl get tbc <tbc-name> -o yaml -n trident` 또는 `kubectl describe tbc <tbc-name> -n trident` .
+* 구성 파일의 문제를 파악하고 수정한 후 업데이트 명령을 다시 실행할 수 있습니다.
+
+
+====

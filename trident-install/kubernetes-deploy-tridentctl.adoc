@@ -1,0 +1,210 @@
+---
+sidebar: sidebar 
+permalink: trident-get-started/kubernetes-deploy-tridentctl.html 
+keywords: deploy, Trident, methods, tridentctl, windows 
+summary: 'Trident 사용하여 설치할 수 있습니다. `tridentctl` .  이 프로세스는 Trident 에 필요한 컨테이너 이미지가 개인 레지스트리에 저장되어 있든 없든 설치에 적용됩니다.' 
+---
+= tridentctl을 사용하여 설치
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+[role="lead"]
+Trident 사용하여 설치할 수 있습니다. `tridentctl` .  이 프로세스는 Trident 에 필요한 컨테이너 이미지가 개인 레지스트리에 저장되어 있든 없든 설치에 적용됩니다.  사용자 정의하려면 `tridentctl` 배포, 참조link:kubernetes-customize-deploy-tridentctl.html["tridentctl 배포 사용자 정의"] .
+
+
+
+== Trident 25.06에 대한 중요 정보
+
+* Trident 에 대한 다음의 중요 정보를 꼭 읽어보세요.*
+
+.<strong> Trident 에 대한 중요 정보</strong>
+[%collapsible%open]
+====
+* Kubernetes 1.27가 이제 Trident 에서 지원됩니다. Kubernetes를 업그레이드하기 전에 Trident 업그레이드하세요.
+* Trident SAN 환경에서 다중 경로 구성 사용을 엄격하게 시행하며 권장 값은 다음과 같습니다. `find_multipaths: no` multipath.conf 파일에서.
++
+비다중경로 구성 사용 또는 사용 `find_multipaths: yes` 또는 `find_multipaths: smart` multipath.conf 파일의 값으로 인해 마운트가 실패합니다.  Trident 다음을 사용할 것을 권장했습니다. `find_multipaths: no` 21.07 릴리스 이후.
+
+
+
+====
+
+
+== Trident 사용하여 설치하세요 `tridentctl`
+
+검토link:../trident-get-started/kubernetes-deploy.html["설치 개요"] 설치 전제 조건을 충족했는지, 그리고 사용자 환경에 맞는 올바른 설치 옵션을 선택했는지 확인하세요.
+
+.시작하기 전에
+설치를 시작하기 전에 Linux 호스트에 로그인하여 작동 중인지 확인하십시오.link:requirements.html["지원되는 Kubernetes 클러스터"^] 그리고 당신에게 필요한 특권이 있다는 것을 알려주세요.
+
+
+NOTE: OpenShift를 사용하면 `oc` 대신에 `kubectl` 다음 모든 예에서 먼저 *system:admin*으로 로그인하여 다음을 실행합니다. `oc login -u system:admin` 또는 `oc login -u kube-admin` .
+
+[%collapsible%open]
+====
+. Kubernetes 버전을 확인하세요.
++
+[listing]
+----
+kubectl version
+----
+. 클러스터 관리자 권한 확인:
++
+[listing]
+----
+kubectl auth can-i '*' '*' --all-namespaces
+----
+. Docker Hub의 이미지를 사용하여 Pod를 시작하고 Pod 네트워크를 통해 스토리지 시스템에 접속할 수 있는지 확인하세요.
++
+[listing]
+----
+kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \
+  ping <management IP>
+----
+
+
+====
+
+
+== 1단계: Trident 설치 프로그램 패키지 다운로드
+
+Trident 설치 패키지는 Trident Pod를 생성하고, 상태를 유지하는 데 사용되는 CRD 객체를 구성하고, 클러스터 호스트에 볼륨을 프로비저닝하고 연결하는 등의 작업을 수행하기 위해 CSI 사이드카를 초기화합니다.  Trident 설치 프로그램의 최신 버전을 다운로드하고 추출하세요.link:https://github.com/NetApp/trident/releases/latest["GitHub의 _Assets_ 섹션"^] .  선택한 Trident 버전으로 예제의 _<trident-installer-XX.XX.X.tar.gz>_를 업데이트합니다.
+
+[listing]
+----
+wget https://github.com/NetApp/trident/releases/download/v25.06.0/trident-installer-25.06.0.tar.gz
+tar -xf trident-installer-25.06.0.tar.gz
+cd trident-installer
+----
+
+
+== 2단계: Trident 설치
+
+원하는 네임스페이스에 Trident 설치하려면 다음을 실행하세요. `tridentctl install` 명령.  추가 인수를 추가하여 이미지 레지스트리 위치를 지정할 수 있습니다.
+
+[role="tabbed-block"]
+====
+.표준 모드
+--
+[listing]
+----
+./tridentctl install -n trident
+----
+--
+.하나의 레지스트리에 있는 이미지
+--
+[listing]
+----
+./tridentctl install -n trident --image-registry <your-registry> --autosupport-image <your-registry>/trident-autosupport:25.06 --trident-image <your-registry>/trident:25.06.0
+----
+--
+.다른 레지스트리의 이미지
+--
+[listing]
+----
+./tridentctl install -n trident --image-registry <your-registry> --autosupport-image <your-registry>/trident-autosupport:25.06 --trident-image <your-registry>/trident:25.06.0
+----
+--
+====
+설치 상태는 다음과 같습니다.
+
+[listing]
+----
+....
+INFO Starting Trident installation.                namespace=trident
+INFO Created service account.
+INFO Created cluster role.
+INFO Created cluster role binding.
+INFO Added finalizers to custom resource definitions.
+INFO Created Trident service.
+INFO Created Trident secret.
+INFO Created Trident deployment.
+INFO Created Trident daemonset.
+INFO Waiting for Trident pod to start.
+INFO Trident pod started.                          namespace=trident pod=trident-controller-679648bd45-cv2mx
+INFO Waiting for Trident REST interface.
+INFO Trident REST interface is up.                 version=25.06.0
+INFO Trident installation succeeded.
+....
+----
+
+
+== 설치를 확인하세요
+
+포드 생성 상태를 사용하여 설치를 확인할 수 있습니다. `tridentctl` .
+
+
+
+=== 포드 생성 상태 사용
+
+생성된 포드의 상태를 검토하여 Trident 설치가 완료되었는지 확인할 수 있습니다.
+
+[listing]
+----
+kubectl get pods -n trident
+
+NAME                                  READY   STATUS    RESTARTS   AGE
+trident-controller-679648bd45-cv2mx   6/6     Running   0          5m29s
+trident-node-linux-vgc8n              2/2     Running   0          5m29s
+----
+
+NOTE: 설치 프로그램이 성공적으로 완료되지 않거나 `trident-controller-<generated id>` (`trident-csi-<generated id>` 23.01 이전 버전에서는 *실행 중* 상태가 아니므로 플랫폼이 설치되지 않았습니다.  사용 `-d` 에게link:../troubleshooting.html#troubleshooting-an-unsuccessful-trident-deployment-using-tridentctl["디버그 모드를 켜다"] 문제를 해결하세요.
+
+
+
+=== 사용 중 `tridentctl`
+
+사용할 수 있습니다 `tridentctl` 설치된 Trident 버전을 확인하세요.
+
+[listing]
+----
+./tridentctl -n trident version
+
++----------------+----------------+
+| SERVER VERSION | CLIENT VERSION |
++----------------+----------------+
+| 25.06.0        | 25.06.0        |
++----------------+----------------+
+----
+
+
+== 샘플 구성
+
+다음 예제에서는 Trident 설치하기 위한 샘플 구성을 제공합니다. `tridentctl` .
+
+.Windows 노드
+[%collapsible]
+====
+Windows 노드에서 Trident 실행하려면 다음을 수행합니다.
+
+[listing]
+----
+tridentctl install --windows -n trident
+----
+====
+.강제 분리
+[%collapsible]
+====
+강제 분리에 대한 자세한 내용은 다음을 참조하세요.link:..trident-get-started/kubernetes-customize-deploy.html["Trident 운영자 설치 사용자 정의"] .
+
+[listing]
+----
+tridentctl install --enable-force-detach=true -n trident
+----
+====
+.동시 Trident 컨트롤러 작업 활성화
+[%collapsible]
+====
+향상된 처리량을 위해 동시 Trident 컨트롤러 작업을 활성화하려면 다음을 추가하세요. `--enable-concurrency` 이 예에서 보여지는 것처럼 설치 중에 옵션을 사용할 수 있습니다.
+
+
+NOTE: *기술 미리보기*: 이 기능은 NetApp Trident 25.06에서 실험적이며 현재 ONTAP-SAN 드라이버(iSCSI 및 FCP 프로토콜)를 사용하여 제한된 병렬 워크플로를 지원합니다.
+
+[listing]
+----
+tridentctl install --enable-concurrency -n trident
+----
+====
