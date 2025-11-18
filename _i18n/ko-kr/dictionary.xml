@@ -2445,23 +2445,19 @@
   <block id="948be8a05d305f0b3dece0e8dcaf4546" category="list-text">다음을 채운 후<block ref="3e2c6ff026eba99761434b4f79aaa782" prefix=" " category="inline-code"></block> 올바른 값으로 파일을 만들고 CR을 적용하세요.</block>
   <block id="677aa747b5e08444532c7cc040384124" category="open-title">CLI를 사용하여 소스 애플리케이션 만들기</block>
   <block id="feaddb5b204f8f8f1226cc6f02275f5c" category="list-text">소스 애플리케이션을 생성합니다. 예를 들어:</block>
-  <block id="f815c45e5a618fe75ef3a716b30b711d" category="list-text">선택적으로 소스 클러스터에서 소스 애플리케이션의 스냅샷을 만듭니다.  이 스냅샷은 대상 클러스터의 애플리케이션의 기반으로 사용됩니다.  이 단계를 건너뛰면 다음 예약된 스냅샷이 실행될 때까지 기다려야 최신 스냅샷을 얻을 수 있습니다.</block>
   <block id="9399bd959f53d5a7d8671b597df92df2" category="paragraph">아래에 제공된 일정과 함께, 피어링된 ONTAP 클러스터 간에 공통 스냅샷을 유지하려면 7일의 보존 기간을 갖는 별도의 일일 스냅샷 일정을 만드는 것이 좋습니다.  이를 통해 스냅샷을 최대 7일 동안 사용할 수 있지만, 보존 기간은 사용자 요구 사항에 따라 사용자 정의할 수 있습니다.</block>
   <block id="bd8250ba3a5ac73f1ca0ba8c92937c5a" category="paragraph">장애 조치가 발생하면 시스템은 이러한 스냅샷을 최대 7일 동안 역방향 작업에 사용할 수 있습니다.  이 접근 방식을 사용하면 마지막 스냅샷 이후에 변경된 내용만 전송되고 모든 데이터는 전송되지 않으므로 역방향 프로세스가 더 빠르고 효율적입니다.</block>
   <block id="af22b57fbc1d302d6a0b83cb06ce9e6a" category="paragraph">해당 애플리케이션의 기존 일정이 이미 원하는 보존 요구 사항을 충족하는 경우 추가 일정은 필요하지 않습니다.</block>
-  <block id="84caf200e79d5962bc7f3516e9ad328c" category="open-title">CR을 사용하여 스냅샷을 찍습니다.</block>
   <block id="929d5ad53cad5d51ead7578004e2d5e5" category="list-text">소스 애플리케이션에 대한 복제 일정을 만듭니다.</block>
   <block id="57cc31c4785dfe52bb22cc8d375a3b67" category="list-text">사용자 정의 리소스(CR) 파일을 만들고 이름을 지정합니다(예:<block ref="8898becea7c9a79dd32acb9c34818b46" prefix=" " category="inline-code"></block> ).</block>
   <block id="87918fdbe5607aeceec3ec53bc40a2f8" category="list-text">*metadata.name*: (_필수_) 일정 사용자 정의 리소스의 이름입니다.</block>
   <block id="3e23380d121194d4ed43d5587e33eeba" category="list-text">*spec.AppVaultRef*: (_필수_) 이 값은 소스 애플리케이션의 AppVault의 metadata.name 필드와 일치해야 합니다.</block>
-  <block id="a7ac547d97c63ad78926b420081cf36d" category="list-text">*spec.ApplicationRef*: (_필수_) 이 값은 소스 애플리케이션 CR의 metadata.name 필드와 일치해야 합니다.</block>
   <block id="565c53b27f6972afc514c3431a7fb733" category="list-text">*spec.backupRetention*: (_필수_) 이 필드는 필수이며, 값은 0으로 설정해야 합니다.</block>
   <block id="e00228f2eaa851d908b74fd6e1cbb1ab" category="list-text">*spec.enabled*: true로 설정해야 합니다.</block>
   <block id="b8e08f9f53492c0cf7c4c918c8c27185" category="list-text">*spec.granularity*: 설정해야 함<block ref="90589c47f06eb971d548591f23c285af" prefix=" " category="inline-code"></block> .</block>
   <block id="8c33ed4b89c2cd001ffad0203fe3c3b6" category="list-text">*spec.recurrenceRule*: UTC 시간으로 시작 날짜와 반복 간격을 정의합니다.</block>
   <block id="35ef995e5b9fe2ba99491ff849d63302" category="list-text">*spec.snapshotRetention*: 2로 설정해야 합니다.</block>
   <block id="7c6d1c687b69c90909ec8375ac84883e" category="list-text">다음을 채운 후<block ref="8898becea7c9a79dd32acb9c34818b46" prefix=" " category="inline-code"></block> 올바른 값으로 파일을 만들고 CR을 적용합니다.</block>
-  <block id="3feb4a62c8b59cd52ae22845d363c901" category="open-title">CLI를 사용하여 스냅샷을 찍습니다.</block>
   <block id="85d88f09b637997959adc6d50a42d56f" category="list-text">대상 클러스터에서 소스 클러스터에 적용한 AppVault CR과 동일한 소스 애플리케이션 AppVault CR을 만들고 이름을 지정합니다(예:<block ref="3ad9e8b652d0a9a977e2534bf143ea29" prefix=" " category="inline-code"></block> ).</block>
   <block id="04a53b4d2f7e20d9df207bfb6beb6ee7" category="list-text">CR을 적용하세요:</block>
   <block id="8af8219e9797756f7e348dd40e365632" category="list-text">대상 클러스터의 대상 애플리케이션에 대한 대상 AppVault CR을 만듭니다.  저장소 공급자에 따라 다음 예제를 수정하세요.<block ref="789b31b0a5cabea5de04107e65439f53" category="inline-link-macro-rx"></block> 귀하의 환경에 맞게:</block>
@@ -2476,10 +2472,8 @@
   <block id="ad47c31cec730ddef75893f6207a8350" category="list-text">*spec.namespaceMapping*: (_필수_) 대상 및 소스 네임스페이스는 해당 애플리케이션 CR에 정의된 애플리케이션 네임스페이스와 일치해야 합니다.</block>
   <block id="0d2f17f43053f85c97752c575bb2af3e" category="list-text">*spec.sourceAppVaultRef*: (_필수_) 이 값은 소스 애플리케이션의 AppVault 이름과 일치해야 합니다.</block>
   <block id="5c0044cad9c27e4f4742c4a031edd6eb" category="list-text">*spec.sourceApplicationName*: (_필수_) 이 값은 소스 애플리케이션 CR에 정의한 소스 애플리케이션의 이름과 일치해야 합니다.</block>
-  <block id="5e77ee724e7a9c6f34c1fd6a65b3f3b5" category="list-text">*spec.storageClassName*: (_필수_) 클러스터에서 유효한 스토리지 클래스의 이름을 선택하세요.  스토리지 클래스는 소스 환경과 피어링된 ONTAP 스토리지 VM에 연결되어야 합니다.</block>
   <block id="e1e70c108ffb369c9c05ac65820562c3" category="list-text">다음을 채운 후<block ref="e4fba3915616865173fe7feee130a30f" prefix=" " category="inline-code"></block> 올바른 값으로 파일을 만들고 CR을 적용하세요.</block>
   <block id="d4c94febe4f13411fa761de57ad6cce6" category="open-title">CLI를 사용하여 AppMirrorRelationship을 만듭니다.</block>
-  <block id="1d29e9d9da5d097b90cc18a976fa591c" category="list-text">AppMirrorRelationship 객체를 만들고 적용하고, 괄호 안의 값을 사용자 환경의 정보로 바꿉니다. 예를 들어:</block>
   <block id="3d9dc864aeb5b914422a6a665c53ceeb" category="list-text">(_선택 사항_) 대상 클러스터에서 복제 관계의 상태를 확인합니다.</block>
   <block id="70cc2bec279e168711b67e789468c45c" category="section-title">대상 클러스터로 장애 조치</block>
   <block id="196c4df78e5add7c9590d6a1c18367ec" category="paragraph">Trident Protect를 사용하면 복제된 애플리케이션을 대상 클러스터로 장애 조치할 수 있습니다.  이 절차는 복제 관계를 중지하고 대상 클러스터에서 앱을 온라인으로 전환합니다.  Trident Protect는 소스 클러스터에서 앱이 작동 중이면 앱을 중지하지 않습니다.</block>
@@ -5838,4 +5832,14 @@
   <block id="e8ce47501426b8525633fc30daf17d7a" category="sidebar">볼륨 이름 사용자 정의</block>
   <block id="f18a50f02f48551895d57b81dd288142" category="sidebar">네임스페이스 전체에서 NFS 볼륨 공유</block>
   <block id="62486fa65fc31c383ace8989549632ad" category="sidebar">스냅샷을 사용하세요</block>
+  <block id="30e52f4e46178e20ec0172d136f6e964" category="list-text">선택적으로 소스 클러스터에서 소스 애플리케이션의 스냅샷을 만듭니다. 이 스냅샷은 대상 클러스터의 애플리케이션의 기반으로 사용됩니다. 이 단계를 건너뛰면 다음 예약된 스냅샷이 실행될 때까지 기다려야 최신 스냅샷을 얻을 수 있습니다. 주문형 스냅샷을 생성하려면 다음을 참조하세요. <block ref="359fb751a7b652662d6f4f859ab7278e" category="inline-link-macro-rx"></block>.</block>
+  <block id="5c24c4abf654732ea864deb8dfd27900" category="list-text">소스 클러스터에서 복제 일정 CR을 만듭니다.</block>
+  <block id="7f3cf5a508f65aafe24cfcbde532a846" category="open-title">CR을 사용하여 복제 일정을 만듭니다.</block>
+  <block id="7228f7e08042915e251a683bfff18231" category="list-text">*spec.appVaultRef*: (_필수_) 이 값은 소스 애플리케이션의 AppVault의 metadata.name 필드와 일치해야 합니다.</block>
+  <block id="2845cbe42176f1140d5d897aaf3abea8" category="list-text">*spec.applicationRef*: (_필수_) 이 값은 소스 애플리케이션 CR의 metadata.name 필드와 일치해야 합니다.</block>
+  <block id="4cd94b75213793150ad247d75cd897e9" category="open-title">CLI를 사용하여 복제 일정을 만듭니다.</block>
+  <block id="3de5f07029546bc00c37d9c9edf9cc20" category="list-text">괄호 안의 값을 사용자 환경의 정보로 바꿔 복제 일정을 만듭니다.</block>
+  <block id="7749c9ae56691a1f3a933f4d23d038e3" category="list-text">*spec.sourceApplicationUID*: (필수) 이 값은 소스 애플리케이션 CR에서 정의한 소스 애플리케이션의 UID와 일치해야 합니다.</block>
+  <block id="3d684c1e0271c67148a368e61c2e954e" category="list-text">*spec.storageClassName*: (_선택 사항_) 클러스터에서 유효한 스토리지 클래스의 이름을 선택합니다. 스토리지 클래스는 소스 환경과 피어링된 ONTAP 스토리지 VM에 연결되어야 합니다. 스토리지 클래스가 제공되지 않으면 기본적으로 클러스터의 기본 스토리지 클래스가 사용됩니다.</block>
+  <block id="c97418e1743694adcebfb4447351b629" category="list-text">AppMirrorRelationship 객체를 만들고 적용하며, 괄호 안의 값을 사용자 환경의 정보로 바꿉니다.</block>
 </blocks>
