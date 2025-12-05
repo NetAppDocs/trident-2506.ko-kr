@@ -14,7 +14,7 @@ summary: 사용자 환경이 요구 사항을 충족하는 경우 다음 단계�
 
 
 [role="lead"]
-사용자 환경이 Trident Protect에 대한 요구 사항을 충족하는 경우 다음 단계에 따라 클러스터에 Trident Protect를 설치할 수 있습니다.  NetApp 에서 Trident Protect를 구입하거나 개인 레지스트리에서 설치할 수 있습니다.  클러스터가 인터넷에 액세스할 수 없는 경우 개인 레지스트리에서 설치하는 것이 도움이 됩니다.
+사용자 환경이 Trident Protect에 대한 요구 사항을 충족하는 경우 다음 단계에 따라 클러스터에 Trident Protect를 설치할 수 있습니다. NetApp 에서 Trident Protect를 구입하거나 개인 레지스트리에서 설치할 수 있습니다. 클러스터가 인터넷에 액세스할 수 없는 경우 개인 레지스트리에서 설치하는 것이 도움이 됩니다.
 
 
 
@@ -31,7 +31,7 @@ summary: 사용자 환경이 요구 사항을 충족하는 경우 다음 단계�
 ----
 helm repo add netapp-trident-protect https://netapp.github.io/trident-protect-helm-chart
 ----
-. Helm을 사용하여 Trident Protect를 설치하세요.  바꾸다 `<name-of-cluster>` 클러스터에 할당되고 클러스터의 백업과 스냅샷을 식별하는 데 사용되는 클러스터 이름이 포함됩니다.
+. Helm을 사용하여 Trident Protect를 설치하세요. 바꾸다 `<name-of-cluster>` 클러스터에 할당되고 클러스터의 백업과 스냅샷을 식별하는 데 사용되는 클러스터 이름이 포함됩니다.
 +
 [source, console]
 ----
@@ -42,7 +42,7 @@ helm install trident-protect netapp-trident-protect/trident-protect --set cluste
 --
 .개인 레지스트리에서 Trident Protect 설치
 --
-Kubernetes 클러스터가 인터넷에 액세스할 수 없는 경우 개인 이미지 레지스트리에서 Trident Protect를 설치할 수 있습니다.  다음 예에서 괄호 안의 값을 사용자 환경의 정보로 바꾸세요.
+Kubernetes 클러스터가 인터넷에 액세스할 수 없는 경우 개인 이미지 레지스트리에서 Trident Protect를 설치할 수 있습니다. 다음 예에서 괄호 안의 값을 사용자 환경의 정보로 바꾸세요.
 
 .단계
 . 다음 이미지를 로컬 머신으로 가져와서 태그를 업데이트한 다음 개인 레지스트리에 푸시합니다.
@@ -78,7 +78,7 @@ docker tag netapp/controller:25.06.0 <private-registry-url>/controller:25.06.0
 ----
 docker push <private-registry-url>/controller:25.06.0
 ----
-. Trident protect 시스템 네임스페이스를 만듭니다.
+. Trident Protect 시스템 네임스페이스를 만듭니다.
 +
 [source, console]
 ----
@@ -102,7 +102,7 @@ kubectl create secret docker-registry regcred --docker-username=<registry-userna
 ----
 helm repo add netapp-trident-protect https://netapp.github.io/trident-protect-helm-chart
 ----
-. 라는 이름의 파일을 만듭니다. `protectValues.yaml` .  다음 Trident 보호 설정이 포함되어 있는지 확인하세요.
+. 라는 이름의 파일을 만듭니다. `protectValues.yaml` . 다음 Trident Protect 설정이 포함되어 있는지 확인하세요.
 +
 [source, yaml]
 ----
@@ -124,7 +124,7 @@ webhooksCleanup:
   imagePullSecrets:
     - name: regcred
 ----
-. Helm을 사용하여 Trident Protect를 설치하세요.  바꾸다 `<name_of_cluster>` 클러스터에 할당되고 클러스터의 백업과 스냅샷을 식별하는 데 사용되는 클러스터 이름이 포함됩니다.
+. Helm을 사용하여 Trident Protect를 설치하세요. 바꾸다 `<name_of_cluster>` 클러스터에 할당되고 클러스터의 백업과 스냅샷을 식별하는 데 사용되는 클러스터 이름이 포함됩니다.
 +
 [source, console]
 ----

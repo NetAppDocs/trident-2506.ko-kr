@@ -21,7 +21,7 @@ WARNING: 그만큼 `tridentctl` 설치 프로그램 zip 파일에 제공된 Linu
 
 == 25.06.2의 새로운 기능
 
-새로운 기능 요약에서는 Trident 와 Trident Protect 릴리스에 대한 향상된 기능, 수정 사항 및 사용 중단에 대한 세부 정보를 제공합니다.
+새로운 기능 요약에서는 Trident 와 Trident Protect 릴리스에 대한 개선 사항, 수정 사항 및 사용 중단에 대한 세부 정보를 제공합니다.
 
 
 
@@ -251,7 +251,7 @@ NetApp Trident Protect는 NetApp ONTAP 스토리지 시스템과 NetApp Trident 
 
 ==== 개선 사항
 
-* volumeMode: File 및 volumeMode: Block(원시 장치) 스토리지 모두에 대해 KubeVirt/OpenShift 가상화 VM에 대한 백업 및 복원 지원이 추가되었습니다.  이 지원은 모든 Trident 드라이버와 호환되며, Trident Protect가 포함된 NetApp SnapMirror 사용하여 스토리지를 복제할 때 기존 보호 기능을 향상시킵니다.
+* volumeMode: File 및 volumeMode: Block(원시 장치) 스토리지 모두에 대해 KubeVirt/OpenShift 가상화 VM에 대한 백업 및 복원 지원이 추가되었습니다. 이 지원은 모든 Trident 드라이버와 호환되며, Trident Protect와 함께 NetApp SnapMirror 사용하여 스토리지를 복제할 때 기존 보호 기능을 향상시킵니다.
 * Kubevirt 환경에서 애플리케이션 수준에서 동결 동작을 제어하는 기능이 추가되었습니다.
 * AutoSupport 프록시 연결 구성에 대한 지원이 추가되었습니다.
 * 데이터 이동자 암호화(Kopia/Restic)에 대한 비밀을 정의하는 기능이 추가되었습니다.

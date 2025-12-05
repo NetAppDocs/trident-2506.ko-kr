@@ -11,7 +11,7 @@ summary: 'Trident Protect는 역할 기반 액세스 제어(RBAC)의 Kubernetes 
 
 
 [role="lead"]
-Trident Protect는 역할 기반 액세스 제어(RBAC)의 Kubernetes 모델을 사용합니다. 기본적으로 Trident Protect는 단일 시스템 네임스페이스와 연관된 기본 서비스 계정을 제공합니다. 사용자나 특정 보안 요구 사항이 많은 조직이 있는 경우 Trident Protect의 RBAC 기능을 사용하여 리소스와 네임스페이스에 대한 액세스를 보다 세부적으로 제어할 수 있습니다.
+Trident Protect는 역할 기반 액세스 제어(RBAC)의 Kubernetes 모델을 사용합니다. 기본적으로 Trident Protect는 단일 시스템 네임스페이스와 연관된 기본 서비스 계정을 제공합니다. 사용자 수가 많거나 특정 보안 요구 사항이 있는 조직인 경우 Trident Protect의 RBAC 기능을 사용하여 리소스와 네임스페이스에 대한 액세스를 보다 세부적으로 제어할 수 있습니다.
 
 클러스터 관리자는 항상 기본 리소스에 액세스할 수 있습니다. `trident-protect` 네임스페이스에 액세스할 수 있으며 다른 모든 네임스페이스의 리소스에도 액세스할 수 있습니다.  리소스와 애플리케이션에 대한 액세스를 제어하려면 추가 네임스페이스를 만들고 해당 네임스페이스에 리소스와 애플리케이션을 추가해야 합니다.
 
@@ -22,7 +22,7 @@ Trident Protect는 역할 기반 액세스 제어(RBAC)의 Kubernetes 모델을 
 다음을 포함하는 권한이 있는 Trident Protect 사용자 정의 리소스 개체에 대한 액세스 권한은 관리자에게만 부여됩니다.
 
 * *AppVault*: 버킷 자격 증명 데이터가 필요합니다.
-* *AutoSupportBundle*: 메트릭, 로그 및 기타 중요한 Trident 보호 데이터를 수집합니다.
+* *AutoSupportBundle*: 메트릭, 로그 및 기타 중요한 Trident Protect 데이터를 수집합니다.
 * *AutoSupportBundleSchedule*: 로그 수집 일정을 관리합니다.
 
 
@@ -128,7 +128,7 @@ type: kubernetes.io/service-account-token
 
 === 4단계: ClusterRole 객체를 각각의 새 서비스 계정에 바인딩하기 위해 RoleBinding 객체를 만듭니다.
 
-Trident Protect를 설치하면 기본 ClusterRole 개체가 생성됩니다.  RoleBinding 객체를 생성하고 적용하여 이 ClusterRole을 서비스 계정에 바인딩할 수 있습니다.
+Trident Protect를 설치하면 기본 ClusterRole 개체가 생성됩니다. RoleBinding 객체를 생성하고 적용하여 이 ClusterRole을 서비스 계정에 바인딩할 수 있습니다.
 
 .단계
 . 엔지니어링 서비스 계정에 ClusterRole을 바인딩합니다.
@@ -215,7 +215,7 @@ apiVersion: protect.trident.netapp.io/v1
 kind: AppVault
 metadata:
   name: appvault-for-eng-user-only
-  namespace: trident-protect # Trident protect system namespace
+  namespace: trident-protect # Trident Protect system namespace
 spec:
   providerConfig:
     azure:

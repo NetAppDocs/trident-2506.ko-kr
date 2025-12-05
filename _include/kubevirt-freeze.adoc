@@ -2,22 +2,22 @@
 :allow-uri-read: 
 
 
-Trident protect 24.10 및 24.10.1 이상 버전은 KubeVirt VM에서 실행되는 애플리케이션을 보호할 때 동작이 다릅니다.  두 버전 모두 데이터 보호 작업 중에 파일 시스템 동결 및 동결 해제를 활성화하거나 비활성화할 수 있습니다.
+Trident Protect 24.10 및 24.10.1 이상 버전은 KubeVirt VM에서 실행되는 애플리케이션을 보호할 때 동작이 다릅니다. 두 버전 모두 데이터 보호 작업 중에 파일 시스템 동결 및 동결 해제를 활성화하거나 비활성화할 수 있습니다.
 
 
 NOTE: 복원 작업 중에 `VirtualMachineSnapshots` 가상 머신(VM)에 대해 생성된 항목은 복원되지 않습니다.
 
 .Trident 프로텍트 24.10
-Trident protect 24.10은 데이터 보호 작업 중에 KubeVirt VM 파일 시스템의 일관된 상태를 자동으로 보장하지 않습니다.  Trident protect 24.10을 사용하여 KubeVirt VM 데이터를 보호하려면 데이터 보호 작업을 시작하기 전에 파일 시스템의 동결/동결 해제 기능을 수동으로 활성화해야 합니다.  이렇게 하면 파일 시스템이 일관된 상태를 유지하게 됩니다.
+Trident Protect 24.10은 데이터 보호 작업 중에 KubeVirt VM 파일 시스템의 일관된 상태를 자동으로 보장하지 않습니다. Trident Protect 24.10을 사용하여 KubeVirt VM 데이터를 보호하려면 데이터 보호 작업을 시작하기 전에 파일 시스템의 동결/동결 해제 기능을 수동으로 활성화해야 합니다. 이렇게 하면 파일 시스템이 일관된 상태를 유지하게 됩니다.
 
-데이터 보호 작업 중 VM 파일 시스템의 동결 및 동결 해제를 관리하도록 Trident protect 24.10을 구성할 수 있습니다.link:https://docs.openshift.com/container-platform/4.16/virt/install/installing-virt.html["가상화 구성"^] 그리고 다음 명령을 사용합니다.
+데이터 보호 작업 중 VM 파일 시스템의 동결 및 동결 해제를 관리하도록 Trident Protect 24.10을 구성할 수 있습니다.link:https://docs.openshift.com/container-platform/4.16/virt/install/installing-virt.html["가상화 구성"^] 그리고 다음 명령을 사용합니다.
 
 [source, console]
 ----
 kubectl set env deployment/trident-protect-controller-manager NEPTUNE_VM_FREEZE=true -n trident-protect
 ----
 .Trident Protect 24.10.1 이상
-Trident protect 24.10.1부터 Trident protect는 데이터 보호 작업 중에 KubeVirt 파일 시스템을 자동으로 동결 및 동결 해제합니다.  선택적으로 다음 명령을 사용하여 이 자동 동작을 비활성화할 수 있습니다.
+Trident Protect 24.10.1부터 Trident Protect는 데이터 보호 작업 중에 KubeVirt 파일 시스템을 자동으로 동결 및 동결 해제합니다. 선택적으로 다음 명령을 사용하여 이 자동 동작을 비활성화할 수 있습니다.
 
 [source, console]
 ----

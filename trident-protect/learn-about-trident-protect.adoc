@@ -19,7 +19,7 @@ Trident Protect를 사용하면 사용자 정의 리소스(CR)를 생성하거�
 
 == 다음은 무엇인가요?
 
-Trident Protect를 설치하기 전에 해당 요구 사항에 대해 알아볼 수 있습니다.
+Trident Protect를 설치하기 전에 요구 사항에 대해 알아볼 수 있습니다.
 
-* link:trident-protect-requirements.html["Trident 보호 요구 사항"]
+* link:trident-protect-requirements.html["Trident 프로텍트 요구 사항"]
 

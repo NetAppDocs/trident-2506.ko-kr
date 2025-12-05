@@ -14,7 +14,7 @@ summary: protectctl 명령을 사용하면 Trident Protect 사용자 정의 리�
 
 
 [role="lead"]
-Trident 의 확장 기능인 Trident protect 명령줄 플러그인을 사용할 수 있습니다. `tridentctl` 유틸리티를 사용하여 Trident 보호 사용자 정의 리소스(CR)를 만들고 상호 작용합니다.
+Trident Protect 명령줄 플러그인을 사용할 수 있습니다. 이 플러그인은 Trident 의 확장 기능입니다. `tridentctl` Trident Protect 사용자 정의 리소스(CR)를 생성하고 상호 작용할 수 있는 유틸리티입니다.
 
 
 
@@ -27,7 +27,7 @@ Trident 의 확장 기능인 Trident protect 명령줄 플러그인을 사용할
 .Linux AMD64 CPU용 플러그인 다운로드
 --
 .단계
-. Trident protect CLI 플러그인을 다운로드하세요:
+. Trident Protect CLI 플러그인을 다운로드하세요:
 +
 [source, console]
 ----
@@ -39,7 +39,7 @@ curl -L -o tridentctl-protect https://github.com/NetApp/tridentctl-protect/relea
 .Linux ARM64 CPU용 플러그인 다운로드
 --
 .단계
-. Trident protect CLI 플러그인을 다운로드하세요:
+. Trident Protect CLI 플러그인을 다운로드하세요:
 +
 [source, console]
 ----
@@ -51,7 +51,7 @@ curl -L -o tridentctl-protect https://github.com/NetApp/tridentctl-protect/relea
 .Mac AMD64 CPU용 플러그인 다운로드
 --
 .단계
-. Trident protect CLI 플러그인을 다운로드하세요:
+. Trident Protect CLI 플러그인을 다운로드하세요:
 +
 [source, console]
 ----
@@ -63,7 +63,7 @@ curl -L -o tridentctl-protect https://github.com/NetApp/tridentctl-protect/relea
 .Mac ARM64 CPU용 플러그인 다운로드
 --
 .단계
-. Trident protect CLI 플러그인을 다운로드하세요:
+. Trident Protect CLI 플러그인을 다운로드하세요:
 +
 [source, console]
 ----
@@ -115,7 +115,7 @@ tridentctl-protect help
 
 == 명령 자동 완성 활성화
 
-Trident protect CLI 플러그인을 설치한 후 특정 명령에 대한 자동 완성을 활성화할 수 있습니다.
+Trident Protect CLI 플러그인을 설치한 후 특정 명령에 대한 자동 완성을 활성화할 수 있습니다.
 
 [role="tabbed-block"]
 ====

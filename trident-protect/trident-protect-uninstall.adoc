@@ -29,13 +29,13 @@ NOTE: 이 단계는 25.06 이상 버전에서는 필요하지 않습니다.
 ----
 helm uninstall -n trident-protect trident-protect-crds
 ----
-. Trident 보호 제거:
+. Trident Protect 제거:
 +
 [source, console]
 ----
 helm uninstall -n trident-protect trident-protect
 ----
-. Trident protect 네임스페이스를 제거합니다.
+. Trident Protect 네임스페이스를 제거합니다.
 +
 [source, console]
 ----

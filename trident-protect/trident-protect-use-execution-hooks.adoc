@@ -2,7 +2,7 @@
 sidebar: sidebar 
 permalink: trident-protect/trident-protect-use-execution-hooks.html 
 keywords: trident, protect, execution hooks 
-summary: Trident protect를 사용하여 앱에 대한 사용자 정의 실행 후크를 만들 수 있습니다.  실행 후크를 생성하려면 소유자, 관리자 또는 멤버 권한이 필요합니다. 
+summary: Trident Protect를 사용하여 앱에 대한 사용자 정의 실행 후크를 만들 수 있습니다. 실행 후크를 생성하려면 소유자, 관리자 또는 멤버 권한이 필요합니다. 
 ---
 = Trident Protect 실행 후크 관리
 :hardbreaks:
@@ -81,7 +81,7 @@ NOTE: 실행 후크는 종종 실행 중인 애플리케이션의 기능을 감�
 
 애플리케이션에 대한 실행 후크를 추가하거나 편집할 때 실행 후크에 필터를 추가하여 후크가 일치할 컨테이너를 관리할 수 있습니다. 필터는 모든 컨테이너에서 동일한 컨테이너 이미지를 사용하지만 각 이미지를 다른 목적으로 사용할 수 있는 애플리케이션(예: Elasticsearch)에 유용합니다. 필터를 사용하면 실행 후크가 일부 컨테이너에서만 실행되는 시나리오를 만들 수 있지만 반드시 모든 컨테이너에서 실행되는 것은 아닙니다. 단일 실행 후크에 대해 여러 필터를 만드는 경우 논리적 AND 연산자를 사용하여 결합됩니다. 실행 후크당 최대 10개의 활성 필터를 가질 수 있습니다.
 
-실행 후크에 추가하는 각 필터는 정규 표현식을 사용하여 클러스터의 컨테이너와 일치시킵니다. 후크가 컨테이너와 일치하면 후크는 해당 컨테이너에서 연관된 스크립트를 실행합니다. 필터에 대한 정규 표현식은 RE2(Regular Expression 2) 구문을 사용하는데, 이 구문은 일치 항목 목록에서 컨테이너를 제외하는 필터를 만드는 것을 지원하지 않습니다. Trident protect가 실행 후크 필터의 정규 표현식에 대해 지원하는 구문에 대한 정보는 다음을 참조하세요. https://github.com/google/re2/wiki/Syntax["정규 표현식 2(RE2) 구문 지원"^] .
+실행 후크에 추가하는 각 필터는 정규 표현식을 사용하여 클러스터의 컨테이너와 일치시킵니다. 후크가 컨테이너와 일치하면 후크는 해당 컨테이너에서 연관된 스크립트를 실행합니다. 필터에 대한 정규 표현식은 RE2(Regular Expression 2) 구문을 사용하는데, 이 구문은 일치 항목 목록에서 컨테이너를 제외하는 필터를 만드는 것을 지원하지 않습니다. Trident Protect가 실행 후크 필터의 정규 표현식에 대해 지원하는 구문에 대한 정보는 다음을 참조하세요. https://github.com/google/re2/wiki/Syntax["정규 표현식 2(RE2) 구문 지원"^] .
 
 
 NOTE: 복원 또는 복제 작업 후에 실행되는 실행 후크에 네임스페이스 필터를 추가하고 복원 또는 복제 소스와 대상이 다른 네임스페이스에 있는 경우, 네임스페이스 필터는 대상 네임스페이스에만 적용됩니다.
@@ -96,7 +96,7 @@ NOTE: 복원 또는 복제 작업 후에 실행되는 실행 후크에 네임스
 
 == 실행 후크 만들기
 
-Trident protect를 사용하여 앱에 대한 사용자 정의 실행 후크를 만들 수 있습니다.  실행 후크를 생성하려면 소유자, 관리자 또는 멤버 권한이 필요합니다.
+.을 사용하여 앱에 대한 사용자 정의 실행 후크를 만들 수 있습니다. 실행 후크를 생성하려면 소유자, 관리자 또는 멤버 권한이 필요합니다.
 
 [role="tabbed-block"]
 ====
@@ -104,7 +104,7 @@ Trident protect를 사용하여 앱에 대한 사용자 정의 실행 후크를 
 --
 .단계
 . 사용자 정의 리소스(CR) 파일을 만들고 이름을 지정합니다. `trident-protect-hook.yaml` .
-. Trident Protect 환경 및 클러스터 구성과 일치하도록 다음 속성을 구성하세요.
+. Trident Protect 환경 및 클러스터 구성에 맞게 다음 속성을 구성하세요.
 +
 ** *metadata.name*: (_필수_) 이 사용자 지정 리소스의 이름입니다. 사용자 환경에 맞게 고유하고 적절한 이름을 선택하세요.
 ** *spec.applicationRef*: (_필수_) 실행 후크를 실행할 애플리케이션의 Kubernetes 이름입니다.
@@ -221,7 +221,7 @@ tridentctl-protect create exechook <my_exec_hook_name> --action <action_type> --
 --
 .단계
 . 사용자 정의 리소스(CR) 파일을 만들고 이름을 지정합니다. `trident-protect-resource-backup.yaml` .
-. Trident Protect 환경 및 클러스터 구성과 일치하도록 다음 속성을 구성하세요.
+. Trident Protect 환경 및 클러스터 구성에 맞게 다음 속성을 구성하세요.
 +
 ** *metadata.name*: (_필수_) 이 사용자 지정 리소스의 이름입니다. 사용자 환경에 맞게 고유하고 적절한 이름을 선택하세요.
 ** *spec.applicationRef*: (_필수_) 리소스 백업을 생성할 애플리케이션의 Kubernetes 이름입니다.
@@ -294,7 +294,7 @@ kubectl describe resourcebackup <my_backup_name>
 --
 .단계
 . 사용자 정의 리소스(CR) 파일을 만들고 이름을 지정합니다. `trident-protect-hook-run.yaml` .
-. Trident Protect 환경 및 클러스터 구성과 일치하도록 다음 속성을 구성하세요.
+. Trident Protect 환경 및 클러스터 구성에 맞게 다음 속성을 구성하세요.
 +
 ** *metadata.name*: (_필수_) 이 사용자 지정 리소스의 이름입니다. 사용자 환경에 맞게 고유하고 적절한 이름을 선택하세요.
 ** *spec.applicationRef*: (_필수_) 이 값이 1단계에서 만든 ResourceBackup CR의 애플리케이션 이름과 일치하는지 확인하세요.

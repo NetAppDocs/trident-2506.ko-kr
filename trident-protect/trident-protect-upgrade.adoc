@@ -56,7 +56,7 @@ kubectl delete secret -n trident-protect -l name=trident-protect-crds,owner=helm
 ----
 
 
-. Trident 보호 업그레이드:
+. Trident 프로텍트 업그레이드:
 +
 [source, console]
 ----

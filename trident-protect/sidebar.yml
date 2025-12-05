@@ -6,7 +6,7 @@ entries:
   url: "/trident-protect/learn-about-trident-protect.html"
 - title: Trident Protect 설치
   entries:
-  - title: Trident 보호 요구 사항
+  - title: Trident 프로텍트 요구 사항
     url: "/trident-protect/trident-protect-requirements.html"
   - title: Trident Protect 설치
     url: "/trident-protect/trident-protect-installation.html"
@@ -14,13 +14,13 @@ entries:
     url: "/trident-protect/trident-protect-cli.html"
   - title: Trident Protect 설치 사용자 정의
     url: "/trident-protect/trident-protect-customize-installation.html"
-- title: Trident 관리
+- title: Trident Protect 관리
   entries:
   - title: 권한 부여 및 액세스 제어 관리
     url: "/trident-protect/manage-authorization-access-control.html"
-  - title: 모니터 Trident 자원을 보호하세요
+  - title: Trident Protect 리소스 모니터링
     url: "/trident-protect/monitor-trident-protect-resources.html"
-  - title: Trident 보호 지원 번들 생성
+  - title: Trident Protect 지원 번들 생성
     url: "/trident-protect/trident-protect-generate-support-bundle.html"
   - title: Trident 프로텍트 업그레이드
     url: "/trident-protect/trident-protect-upgrade.html"
