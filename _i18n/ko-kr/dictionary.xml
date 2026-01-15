@@ -978,10 +978,7 @@
   <block id="443432948b68bb63d707ce7ecc4a021a" category="cell">CSI 토폴로지</block>
   <block id="af7c8216a3289efe1a298a19c00b8b8c" category="section-title">테스트된 호스트 운영 체제</block>
   <block id="29fce9ae0f476afd36cf3ebf4de1d2a8" category="paragraph">Trident 공식적으로 특정 운영 체제를 지원하지 않지만, 다음은 작동하는 것으로 알려져 있습니다.</block>
-  <block id="daa6a182f8035711e9635994f572c7bc" category="list-text">OpenShift Container Platform(AMD64 및 ARM64)에서 지원하는 Red Hat Enterprise Linux CoreOS(RHCOS) 버전</block>
-  <block id="a3460163c4a2854c79a419dda57ac917" category="list-text">RHEL 8+(AMD64 및 ARM64)</block>
   <block id="8554748be67b956e550de942edae807d" category="admonition">NVMe/TCP에는 RHEL 9 이상이 필요합니다.</block>
-  <block id="f51a58a0cffb9f9953edce6411578b53" category="list-text">Ubuntu 22.04 이상(AMD64 및 ARM64)</block>
   <block id="de547bcab0e20f54ec4d5e95ba44b0b1" category="list-text">윈도우 서버 2022</block>
   <block id="779639a0216e7a8fd164ee8a7266d8b8" category="paragraph">기본적으로 Trident 컨테이너에서 실행되므로 모든 Linux 워커에서 실행됩니다.  하지만 해당 작업자는 사용하는 백엔드에 따라 표준 NFS 클라이언트나 iSCSI 이니시에이터를 사용하여 Trident 제공하는 볼륨을 마운트할 수 있어야 합니다.</block>
   <block id="11ea58814ce429c3e3254a63f8cde7a4" category="paragraph">그만큼<block ref="c67fd1b99934afa248dfeb285a9a4191" prefix=" " category="inline-code"></block> 이 유틸리티는 모든 Linux 배포판에서도 실행됩니다.</block>
@@ -5843,4 +5840,8 @@
   <block id="70568f333da28442c152ac2e1f71e1a0" category="sidebar">Trident Protect로 애플리케이션을 보호하세요</block>
   <block id="8545a0d7cdafff8da2dece1a851630dc" category="sidebar">Trident Protect 관리</block>
   <block id="83ff2dd2ff6a9ee85daa1b0fefef4019" category="sidebar">Trident Protect로 실행 후크 관리</block>
+  <block id="01a2f6f3fc3712c00aaaff540b7187f3" category="list-text">AMD64 및 ARM64 환경에서 OpenShift 컨테이너 플랫폼이 지원하는 Red Hat Enterprise Linux CoreOS(RHCOS) 버전</block>
+  <block id="1c93bd59e1abbbe543685399acba3c3b" category="list-text">AMD64 및 ARM64 기반 Red Hat Enterprise Linux(RHEL) 8 이상</block>
+  <block id="d79b838675f4d040c12110c1c22fcf32" category="list-text">AMD64 및 ARM64에서 Ubuntu 22.04 LTS 이상 버전</block>
+  <block id="02869471b3c4ac5c57fb8c2e1d4355dd" category="list-text">SUSE Linux Enterprise Server (SLES) 15 이상</block>
 </blocks>
