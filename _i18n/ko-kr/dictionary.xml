@@ -5835,7 +5835,6 @@
   <block id="d79b838675f4d040c12110c1c22fcf32" category="list-text">AMD64 및 ARM64에서 Ubuntu 22.04 LTS 이상 버전</block>
   <block id="02869471b3c4ac5c57fb8c2e1d4355dd" category="list-text">SUSE Linux Enterprise Server (SLES) 15 이상</block>
   <block id="60aaccb9d5284a26ba3fa0ce52289c0e" category="list-text">NetApp 전체 또는 제한적 지원을 받는 ONTAP 버전을 실행하는 온프레미스 FAS, AFF 또는 ASA r2(iSCSI, NVMe/TCP 및 FC). <block ref="50931d770a2149cdd08c9f8b08c33f00" category="inline-link-macro-rx"></block>을(를) 참조하십시오.</block>
-  <block id="f45ace2e96672a5ca55ea6bac48b9865" category="admonition">##애플리케이션에서 여러 네임스페이스를 사용하고 이러한 네임스페이스에 동일한 이름의 PVC가 있는 경우 스냅샷 복원 작업(제자리 복원 및 새 네임스페이스로의 복원 모두)이 올바르게 작동하지 않습니다. 복원된 모든 볼륨에 각 네임스페이스에 맞는 올바른 데이터 대신 동일한 데이터가 저장됩니다. 스냅샷 복원 대신 백업 복원을 사용하거나 이 문제가 해결된 버전 26.02 이상으로 업그레이드하십시오.##</block>
   <block id="36a57158e28c15925c88aebde90472b6" category="admonition">이 명령을 실행하면 ONTAP에서 인증서 입력을 요청합니다. 1단계에서 생성된<block ref="0c7b1ee06b5fdaab7c83f24275255cf5" prefix=" " category="inline-code"></block> 파일의 내용을 붙여넣은 다음<block ref="b1a326c06d88bf042f73d70f50197905" prefix=" " category="inline-code"></block>를 입력하여 설치를 완료하십시오.</block>
   <block id="5b8e1e79bf81135afd29cee3f88e8b30" category="summary"><block ref="a768f5449e3a83ac56f2fb8ab4562339" prefix=" " category="inline-code"></block> 또는 PVC 어노테이션을 사용하여 기존 스토리지 볼륨을 Kubernetes PV로 가져올 수 있습니다.</block>
   <block id="397460c9fd506a22e7b4c34b8d0d4d7d" category="paragraph">기존 스토리지 볼륨을 Kubernetes PV로 가져오려면 <block ref="a768f5449e3a83ac56f2fb8ab4562339" prefix=" " category="inline-code"></block>를 사용하거나 Trident 가져오기 어노테이션을 사용하여 영구 볼륨 클레임(PVC)을 생성할 수 있습니다.</block>
@@ -5862,4 +5861,5 @@
   <block id="6aa655b386a1e31c420fd6553ed2b4fc" category="paragraph">다음 예제는 PVC 주석을 사용하여 RWO 액세스 모드가 설정된 백엔드<block ref="4bafc897a4f30b09156a60d3350c8819" prefix=" " category="inline-code"></block>에서 이름이<block ref="a8aa3f9da25a5d21fdd26c0a26592e1e" prefix=" " category="inline-code"></block>인 1Gi<block ref="8321592ce24c8a122ecf26a63cfca407" prefix=" " category="inline-code"></block> 볼륨을 가져옵니다.</block>
   <block id="3a175f8153aad5b64492df6eadb5a5af" category="paragraph">다음 예는 관리형 볼륨과 비관리형 볼륨을 가져오는 방법을 보여줍니다.</block>
   <block id="ae3918e109e702f2d03b5027de8a73eb" category="paragraph">다음 예제는 backend<block ref="c082d32d434314708cccf35dd974ac32" prefix=" " category="inline-code"></block>에서 volume<block ref="acdf8df0c694db089171ecaf51f80166" prefix=" " category="inline-code"></block>을 가져옵니다.</block>
+  <block id="13ad5ea7a7de5c042f384062c89a068e" category="admonition">애플리케이션에서 여러 네임스페이스를 사용하고 이러한 네임스페이스에 동일한 이름의 PVC가 있는 경우 스냅샷 복원 작업(제자리 복원 및 새 네임스페이스로의 복원 모두)이 올바르게 작동하지 않습니다. 복원된 모든 볼륨에 각 네임스페이스에 맞는 올바른 데이터가 아닌 동일한 데이터가 저장됩니다. 스냅샷 복원 대신 백업 복원을 사용하거나 이 문제가 해결된 버전 26.02 이상으로 업그레이드하십시오.</block>
 </blocks>
