@@ -21,7 +21,7 @@ Trident 운영자를 사용하여 수동으로 또는 Helm을 사용하여 Tride
 클러스터 범위 Trident Operator 설치에서 다른 클러스터 범위 Trident Operator 설치로 업그레이드할 수 있습니다. 모든 Trident 버전은 클러스터 범위 연산자를 사용합니다.
 
 
-NOTE: 네임스페이스 범위 연산자(버전 20.07~20.10)를 사용하여 설치된 Trident 에서 업그레이드하려면 다음 업그레이드 지침을 사용하세요.link:../earlier-versions.html["설치된 버전"] Trident 의.
+NOTE: 네임스페이스 범위 연산자를 사용하여 설치된 Trident(버전 20.07~20.10)에서 업그레이드하려면 설치된 Trident 버전에 대한 업그레이드 지침을 사용하십시오.
 
 .이 작업에 관하여
 Trident Kubernetes 버전에 대한 연산자를 설치하고 관련 객체를 생성하는 데 사용할 수 있는 번들 파일을 제공합니다.

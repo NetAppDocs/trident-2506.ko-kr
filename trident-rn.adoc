@@ -798,7 +798,7 @@ IMPORTANT: Kubernetes 1.27가 이제 Trident 에서 지원됩니다. Kubernetes�
 
 == 22.04의 변경 사항
 
-NetApp 제품과 서비스를 지속적으로 개선하고 향상시키고 있습니다. Trident 의 최신 기능은 다음과 같습니다.  이전 릴리스의 경우 다음을 참조하세요. https://docs.netapp.com/us-en/trident/earlier-versions.html["이전 버전의 문서"] .
+NetApp은 제품과 서비스를 지속적으로 개선하고 향상시키고 있습니다. 다음은 Trident의 최신 기능 중 일부입니다. 이전 릴리스에 대한 내용은 이전 버전의 설명서를 참조하십시오.
 
 
 IMPORTANT: 이전 Trident 릴리스에서 업그레이드하고 Azure NetApp Files 사용하는 경우``location`` config 매개변수는 이제 필수 싱글톤 필드입니다.
