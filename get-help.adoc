@@ -102,5 +102,5 @@ Trident 에 대한 도움이 필요하면 다음을 사용하여 지원 번들�
 == 더 많은 정보를 원하시면
 
 * link:https://github.com/NetApp/trident["Trident 리소스"^]
-* link:https://cloud.netapp.com/kubernetes-hub["쿠버네티스 허브"^]
+* link:https://www.netapp.com/console/["쿠버네티스 허브"^]
 

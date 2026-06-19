@@ -39,16 +39,16 @@ RWO, ROX, RWX, RWOP
 
 == Google Cloud용 Cloud Volumes Service 에 대한 Trident 지원에 대해 알아보세요.
 
-Trident 두 가지 중 하나에서 Cloud Volumes Service 볼륨을 생성할 수 있습니다.link:https://cloud.google.com/architecture/partners/netapp-cloud-volumes/service-types["서비스 유형"^] :
+Trident는 다음 두 가지 방법 중 하나로 Cloud Volumes Service 볼륨을 생성할 수 있습니다link:https://docs.cloud.google.com/netapp/volumes/docs/discover/overview["서비스 유형"^]:
 
-* *CVS-Performance*: 기본 Trident 서비스 유형입니다.  이러한 성능 최적화된 서비스 유형은 성능을 중시하는 프로덕션 워크로드에 가장 적합합니다.  CVS-Performance 서비스 유형은 최소 100GiB 크기의 볼륨을 지원하는 하드웨어 옵션입니다.  다음 중 하나를 선택할 수 있습니다.link:https://cloud.google.com/architecture/partners/netapp-cloud-volumes/service-levels#service_levels_for_the_cvs-performance_service_type["세 가지 서비스 수준"^] :
+* *CVS-Performance*: 기본 Trident 서비스 유형입니다. 이 성능 최적화 서비스 유형은 성능을 중시하는 프로덕션 워크로드에 가장 적합합니다. CVS-Performance 서비스 유형은 최소 100GiB 크기의 볼륨을 지원하는 하드웨어 옵션입니다. 다음 옵션 중 하나를 선택할 수 있습니다 link:https://docs.cloud.google.com/netapp/volumes/docs/discover/overview["세 가지 서비스 수준"^]:
 +
 ** `standard`
 ** `premium`
 ** `extreme`
 
 
-* *CVS*: CVS 서비스 유형은 제한적에서 중간 수준의 성능 수준으로 높은 지역적 가용성을 제공합니다.  CVS 서비스 유형은 스토리지 풀을 사용하여 최소 1GiB의 볼륨을 지원하는 소프트웨어 옵션입니다.  스토리지 풀은 최대 50개의 볼륨을 포함할 수 있으며, 모든 볼륨은 풀의 용량과 성능을 공유합니다.  다음 중 하나를 선택할 수 있습니다.link:https://cloud.google.com/architecture/partners/netapp-cloud-volumes/service-levels#service_levels_for_the_cvs_service_type["두 가지 서비스 수준"^] :
+* *CVS*: CVS 서비스 유형은 제한적이거나 중간 수준의 성능으로 높은 영역 가용성을 제공합니다. CVS 서비스 유형은 스토리지 풀을 사용하여 1GiB 크기의 볼륨도 지원하는 소프트웨어 옵션입니다. 스토리지 풀은 최대 50개의 볼륨을 포함할 수 있으며, 모든 볼륨은 풀의 용량과 성능을 공유합니다. 다음 중 하나를 선택할 수 있습니다 link:https://docs.cloud.google.com/netapp/volumes/docs/discover/overview["두 가지 서비스 수준"^]:
 +
 ** `standardsw`
 ** `zoneredundantstandardsw`
@@ -57,7 +57,7 @@ Trident 두 가지 중 하나에서 Cloud Volumes Service 볼륨을 생성할 �
 
 
 .필요한 것
-구성하고 사용하려면 https://cloud.netapp.com/cloud-volumes-service-for-gcp?utm_source=NetAppTrident_ReadTheDocs&utm_campaign=Trident["Google Cloud용 Cloud Volumes Service"^] 백엔드에는 다음이 필요합니다.
+ https://www.netapp.com/google-cloud/netapp-volumes/["Google Cloud용 Cloud Volumes Service"^] 백엔드를 구성하고 사용하려면 다음이 필요합니다.
 
 * NetApp Cloud Volumes Service 로 구성된 Google Cloud 계정
 * Google Cloud 계정의 프로젝트 번호

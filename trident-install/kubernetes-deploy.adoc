@@ -1,6 +1,6 @@
 ---
 sidebar: sidebar 
-permalink: trident-get-started/kubernetes-deploy.html 
+permalink: trident-install/kubernetes-deploy.html 
 keywords: deploy, Trident, methods, operator, tridentctl, helm, tanzu, vmware 
 summary: 'Trident 운영자(수동 또는 Helm 사용)를 사용하거나 다음을 사용하여 Trident 설치할 수 있습니다. `tridentctl` .  이 주제에서는 귀하에게 적합한 설치 프로세스를 선택하는 데 중요한 정보를 제공합니다.' 
 ---
@@ -40,7 +40,7 @@ NetApp Trident 다양한 환경과 조직에 설치할 수 있도록 여러 가�
 
 설치 경로에 관계없이 다음이 필요합니다.
 
-* 지원되는 Kubernetes 버전을 실행하고 기능 요구 사항이 활성화된 지원되는 Kubernetes 클러스터에 대한 모든 권한입니다.  검토하다link:requirements.html["요구 사항"] 자세한 내용은.
+* 지원되는 버전의 Kubernetes가 실행되고 기능 요구 사항이 활성화된 지원되는 Kubernetes 클러스터에 대한 모든 권한이 필요합니다. 자세한 내용은 link:../trident-get-started/requirements.html["요구 사항"]을(를) 참조하십시오.
 * 지원되는 NetApp 스토리지 시스템에 액세스합니다.
 * 모든 Kubernetes 워커 노드에서 볼륨을 마운트하는 기능.
 * Linux 호스트 `kubectl` (또는 `oc` (OpenShift를 사용하는 경우) 사용하려는 Kubernetes 클러스터를 관리하도록 설치 및 구성해야 합니다.
@@ -56,13 +56,13 @@ TIP: 만약 당신이 그것에 익숙하지 않다면link:../trident-get-starte
 
 == 설치 방법을 선택하세요
 
-귀하에게 적합한 설치 방법을 선택하세요.  또한 다음 고려 사항을 검토해야 합니다.link:kubernetes-deploy.html#move-between-installation-methods["방법 간 이동"] 결정을 내리기 전에.
+본인에게 맞는 설치 방법을 선택하세요. 결정하기 전에 link:../trident-install/kubernetes-deploy.html#moving-between-installation-methods["방법 간 이동"]에 대한 고려 사항도 검토해야 합니다.
 
 
 
 === Trident 연산자 사용
 
-수동으로 배포하든 Helm을 사용하든, Trident Operator는 설치를 간소화하고 Trident 리소스를 동적으로 관리하는 좋은 방법입니다.  당신은 심지어 할 수 있습니다link:../trident-get-started/kubernetes-customize-deploy.html["Trident 운영자 배포를 사용자 지정하세요"] 속성을 사용하여 `TridentOrchestrator` 사용자 정의 리소스(CR).
+수동으로 배포하든 Helm을 사용하든, Trident operator는 설치를 간소화하고 Trident 리소스를 동적으로 관리하는 훌륭한 방법입니다. 속성을 사용하여 link:../trident-install/kubernetes-customize-deploy.html["Trident 운영자 배포를 사용자 지정하세요"]도 할 수 있으며, 이는  `TridentOrchestrator` 커스텀 리소스(CR)에서 가능합니다.
 
 Trident 연산자를 사용하면 다음과 같은 이점이 있습니다.
 
@@ -123,9 +123,9 @@ NOTE: 클러스터가 지원되지 않는 버전으로 업그레이드되면 운
 
 === 사용 중 `tridentctl`
 
-업그레이드해야 하는 기존 배포가 있거나 배포를 고도로 사용자 지정하려는 경우 다음을 고려해야 합니다. .  이는 Trident 배치하는 기존 방법입니다.
+기존 배포 환경을 업그레이드해야 하거나 배포 환경을 고도로 맞춤 설정하려는 경우 를 고려해야 합니다. 이것은 Trident를 배포하는 기존 방법입니다.
 
-당신은 할 수 있습니다 Trident 리소스에 대한 매니페스트를 생성합니다.  여기에는 배포, 데몬셋, 서비스 계정, Trident 설치 과정에서 생성하는 클러스터 역할이 포함됩니다.
+를 사용하여 Trident 리소스에 대한 매니페스트를 생성할 수 있습니다. 여기에는 Trident가 설치의 일부로 생성하는 배포, 데몬셋, 서비스 계정 및 클러스터 역할이 포함됩니다.
 
 
 NOTE: 22.04 릴리스부터 Trident 설치할 때마다 AES 키가 다시 생성되지 않습니다.  이번 릴리스에서는 Trident 여러 설치 환경에서 유지되는 새로운 비밀 객체를 설치합니다.  이는 다음을 의미합니다. `tridentctl` 22.04에서는 이전 버전의 Trident 제거할 수 있지만, 이전 버전에서는 22.04 설치를 제거할 수 없습니다.  적절한 설치 방법을 선택하세요.

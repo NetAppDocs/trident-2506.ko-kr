@@ -154,7 +154,7 @@ NOTE: PVC가 하나 이상의 포드에 연결된 경우 새로운 dataLIF가 �
 | `encryption` | 새 볼륨에서 NetApp 볼륨 암호화(NVE)를 활성화합니다. 기본값은 다음과 같습니다. `false` .  이 옵션을 사용하려면 클러스터에서 NVE에 대한 라이선스를 받고 활성화해야 합니다.  백엔드에서 NAE가 활성화된 경우 Trident 에서 프로비저닝된 모든 볼륨은 NAE가 활성화됩니다.  자세한 내용은 다음을 참조하세요.link:../trident-reco/security-reco.html["Trident NVE 및 NAE와 함께 작동하는 방식"] . | `false` 
 
 
-| `luksEncryption` | LUKS 암호화를 활성화합니다. 참조하다link:../trident-reco/security-reco.html#Use-Linux-Unified-Key-Setup-(LUKS)["Linux Unified Key Setup(LUKS) 사용"] .  SAN만 해당. | "" 
+| `luksEncryption` | LUKS 암호화를 활성화합니다. link:../trident-reco/security-luks.html["Linux Unified Key Setup(LUKS) 사용"]을(를) 참조하십시오. SAN 전용입니다. | "" 
 
 
 | `tieringPolicy` | 사용할 계층화 정책	`none` |  

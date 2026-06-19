@@ -12,7 +12,7 @@ summary: Trident의 REST API와 상호 작용하려면 REST 엔드포인트를 �
 
 
 [role="lead"]
-하는 동안link:tridentctl.html["tridentctl 명령 및 옵션"] Trident REST API와 상호 작용하는 가장 쉬운 방법이며, 원하는 경우 REST 엔드포인트를 직접 사용할 수도 있습니다.
+link:../trident-managing-k8s/tridentctl.html["tridentctl 명령 및 옵션"]는 Trident REST API와 상호 작용하는 가장 쉬운 방법이지만, 원한다면 REST 엔드포인트를 직접 사용할 수도 있습니다.
 
 
 
