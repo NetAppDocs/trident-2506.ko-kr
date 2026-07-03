@@ -146,7 +146,7 @@ kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes * 100
 * Trident 또한 다음을 통해 NetApp 지원에 컨테이너 로그를 온디맨드로 보낼 수 있습니다. `tridentctl send autosupport` .  Trident 실행하여 로그를 업로드해야 합니다.  로그를 제출하기 전에 NetApp의https://www.netapp.com/company/legal/privacy-policy/["개인정보 보호정책"^] .
 * 특별히 지정하지 않으면 Trident 지난 24시간 동안의 로그를 가져옵니다.
 * 로그 보존 기간을 지정할 수 있습니다. `--since` 깃발.  예를 들어: `tridentctl send autosupport --since=1h` .  이 정보는 다음을 통해 수집 및 전송됩니다. `trident-autosupport` Trident 옆에 설치된 컨테이너입니다.  컨테이너 이미지는 다음에서 얻을 수 있습니다. https://hub.docker.com/r/netapp/trident-autosupport["Trident AutoSupport"^] .
-* Trident AutoSupport 개인 식별 정보(PII) 또는 개인정보를 수집하거나 전송하지 않습니다.  그것은 함께 제공됩니다 https://www.netapp.com/us/media/enduser-license-agreement-worldwide.pdf["최종 사용자 사용권 계약"^] 이는 Trident 컨테이너 이미지 자체에는 적용되지 않습니다.  NetApp의 데이터 보안 및 신뢰에 대한 노력에 대해 자세히 알아보세요. https://www.netapp.com/pdf.html?item=/media/14114-enduserlicenseagreementworldwidepdf.pdf["여기"^] .
+* Trident AutoSupport는 개인 식별 정보(PII) 또는 개인 정보를 수집하거나 전송하지 않습니다. Trident 컨테이너 이미지 자체에는 적용되지 않는 https://www.netapp.com/pdf.html?item=/media/14114-enduserlicenseagreementworldwide.pdf["최종 사용자 사용권 계약"^]와 함께 제공됩니다. NetApp의 데이터 보안 및 신뢰에 대한 노력에 대해 자세히 알아볼 수 있습니다 https://www.netapp.com/pdf.html?item=/media/14114-enduserlicenseagreementworldwide.pdf["여기"^].
 
 
 Trident 가 보낸 페이로드의 예는 다음과 같습니다.

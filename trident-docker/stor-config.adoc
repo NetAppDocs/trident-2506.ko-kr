@@ -289,7 +289,7 @@ NOTE: 그만큼 `ontap-nas-economy` Docker Swarm은 여러 노드에 걸쳐 볼�
 * FlexGroup 볼륨에서는 복제가 지원되지 않습니다.
 
 
-FlexGroups 및 FlexGroups에 적합한 워크로드에 대한 정보는 다음을 참조하세요. https://www.netapp.com/pdf.html?item=/media/12385-tr4571pdf.pdf["NetApp FlexGroup 볼륨 모범 사례 및 구현 가이드"^] .
+FlexGroups 및 FlexGroups에 적합한 워크로드에 대한 자세한 내용은 https://www.netapp.com/pdf.html?item=/media/12385-tr4571.pdf["NetApp FlexGroup 볼륨 모범 사례 및 구현 가이드"^]을 참조하십시오.
 
 동일한 환경에서 고급 기능과 대규모 기능을 얻으려면 Docker Volume Plugin의 여러 인스턴스를 실행할 수 있습니다. `ontap-nas` 그리고 또 다른 사용 `ontap-nas-economy` .
 
