@@ -16,6 +16,7 @@ ONTAP SAN 드라이버로 ONTAP 백엔드를 구성하기 위한 요구 사항�
 
 
 
+[[requirements]]
 == 요구 사항
 
 모든 ONTAP 백엔드의 경우 Trident 최소한 하나의 집계가 SVM에 할당되어야 합니다.
@@ -29,6 +30,7 @@ NOTE: link:https://docs.netapp.com/us-en/asa-r2/get-started/learn-about.html["AS
 
 
 
+[[authenticate-the-ontap-backend]]
 == ONTAP 백엔드 인증
 
 Trident ONTAP 백엔드를 인증하는 두 가지 모드를 제공합니다.
@@ -44,6 +46,7 @@ WARNING: *자격 증명과 인증서*를 모두 제공하려고 하면 구성 �
 
 
 
+[[enable-credential-based-authentication]]
 === 자격 증명 기반 인증 활성화
 
 Trident ONTAP 백엔드와 통신하기 위해 SVM 범위/클러스터 범위 관리자의 자격 증명이 필요합니다.  다음과 같은 표준 사전 정의된 역할을 활용하는 것이 좋습니다. `admin` 또는 `vsadmin` .  이를 통해 향후 Trident 릴리스에서 사용할 수 있는 기능 API를 공개할 수 있는 향후 ONTAP 릴리스와의 호환성이 보장됩니다.  Trident 사용하면 사용자 정의 보안 로그인 역할을 만들어 사용할 수 있지만 권장하지는 않습니다.
@@ -87,6 +90,7 @@ password: password
 
 
 
+[[enable-certificate-based-authentication]]
 === 인증서 기반 인증 활성화
 
 새로운 백엔드와 기존 백엔드는 인증서를 사용하고 ONTAP 백엔드와 통신할 수 있습니다.  백엔드 정의에는 세 개의 매개변수가 필요합니다.
@@ -172,6 +176,7 @@ tridentctl create backend -f cert-backend.json -n trident
 
 
 
+[[update-authentication-methods-or-rotate-credentials]]
 === 인증 방법 업데이트 또는 자격 증명 순환
 
 기존 백엔드를 업데이트하여 다른 인증 방법을 사용하거나 자격 증명을 순환할 수 있습니다.  이는 양방향으로 작동합니다. 사용자 이름/비밀번호를 사용하는 백엔드는 인증서를 사용하도록 업데이트할 수 있고, 인증서를 활용하는 백엔드는 사용자 이름/비밀번호 기반으로 업데이트할 수 있습니다.  이렇게 하려면 기존 인증 방법을 제거하고 새로운 인증 방법을 추가해야 합니다.  그런 다음 필요한 매개변수를 포함하는 업데이트된 backend.json 파일을 사용하여 실행합니다. `tridentctl backend update` .
@@ -205,6 +210,7 @@ NOTE: 비밀번호를 순환할 때 스토리지 관리자는 먼저 ONTAP 에�
 
 
 
+[[create-custom-ontap-role-for-trident]]
 === Trident 에 대한 사용자 정의 ONTAP 역할 생성
 
 Trident 에서 작업을 수행하기 위해 ONTAP 관리자 역할을 사용하지 않아도 되도록 최소한의 권한으로 ONTAP 클러스터 역할을 만들 수 있습니다.  Trident 백엔드 구성에 사용자 이름을 포함하면 Trident 사용자가 만든 ONTAP 클러스터 역할을 사용하여 작업을 수행합니다.
@@ -264,6 +270,7 @@ ONTAP 시스템 관리자에서 다음 단계를 수행합니다.
 
 
 
+[[authenticate-connections-with-bidirectional-chap]]
 == 양방향 CHAP를 사용하여 연결 인증
 
 Trident 양방향 CHAP를 사용하여 iSCSI 세션을 인증할 수 있습니다. `ontap-san` 그리고 `ontap-san-economy` 운전자.  이를 위해서는 다음을 활성화해야 합니다. `useCHAP` 백엔드 정의에 옵션을 추가하세요.  설정 시 `true` Trident SVM의 기본 이니시에이터 보안을 양방향 CHAP로 구성하고 백엔드 파일에서 사용자 이름과 비밀번호를 설정합니다.  NetApp 양방향 CHAP를 사용하여 연결을 인증할 것을 권장합니다.  다음 샘플 구성을 참조하세요.
@@ -291,6 +298,7 @@ WARNING: 그만큼 `useCHAP` 매개변수는 한 번만 구성할 수 있는 부
 
 
 
+[[how-it-works]]
 === 작동 원리
 
 설정하여 `useCHAP` true로 설정하면 스토리지 관리자가 Trident 스토리지 백엔드에서 CHAP를 구성하도록 지시합니다. 여기에는 다음이 포함됩니다.
@@ -308,6 +316,7 @@ WARNING: 그만큼 `useCHAP` 매개변수는 한 번만 구성할 수 있는 부
 
 
 
+[[rotate-credentials-and-update-backends]]
 === 자격 증명을 순환하고 백엔드를 업데이트합니다.
 
 CHAP 매개변수를 업데이트하여 CHAP 자격 증명을 업데이트할 수 있습니다. `backend.json` 파일.  이렇게 하려면 CHAP 비밀을 업데이트하고 다음을 사용해야 합니다. `tridentctl update` 이러한 변경 사항을 반영하기 위한 명령입니다.

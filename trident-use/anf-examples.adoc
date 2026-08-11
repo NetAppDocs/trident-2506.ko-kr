@@ -16,6 +16,7 @@ Azure NetApp Files 에 대한 NFS 및 SMB 백엔드 구성 옵션에 대해 알�
 
 
 
+[[backend-configuration-options]]
 == 백엔드 구성 옵션
 
 Trident 백엔드 구성(서브넷, 가상 네트워크, 서비스 수준 및 위치)을 사용하여 요청된 위치에서 사용 가능하고 요청된 서비스 수준 및 서브넷과 일치하는 용량 풀에 Azure NetApp Files 볼륨을 만듭니다.
@@ -100,6 +101,7 @@ NOTE: 네트워크 기능에 대한 자세한 내용은 다음을 참조하세�
 
 
 
+[[required-permissions-and-resources]]
 === 필요한 권한 및 리소스
 
 PVC를 생성할 때 "용량 풀을 찾을 수 없습니다" 오류가 발생하는 경우 앱 등록에 필요한 권한과 리소스(서브넷, 가상 네트워크, 용량 풀)가 연결되어 있지 않을 가능성이 높습니다.  디버그가 활성화된 경우 Trident 백엔드가 생성될 때 검색된 Azure 리소스를 기록합니다.  적절한 역할이 사용되고 있는지 확인하세요.
@@ -129,6 +131,7 @@ PVC를 생성할 때 "용량 풀을 찾을 수 없습니다" 오류가 발생하
 |===
 
 
+[[volume-provisioning]]
 === 볼륨 프로비저닝
 
 구성 파일의 특정 섹션에서 다음 옵션을 지정하여 기본 볼륨 프로비저닝을 제어할 수 있습니다. 참조하다 <<구성 예>> 자세한 내용은.
@@ -152,6 +155,7 @@ PVC를 생성할 때 "용량 풀을 찾을 수 없습니다" 오류가 발생하
 |===
 
 
+[[example-configurations]]
 == 구성 예
 
 다음 예에서는 대부분의 매개변수를 기본값으로 두는 기본 구성을 보여줍니다.  백엔드를 정의하는 가장 쉬운 방법입니다.
@@ -393,12 +397,14 @@ supportedTopologies:
 ====
 
 
+[[storage-class-definitions]]
 == 스토리지 클래스 정의
 
 다음 `StorageClass` 정의는 위의 저장 풀을 참조합니다.
 
 
 
+[[example-definitions-using-parameter-selector-field]]
 === 다음을 사용한 정의 예 `parameter.selector` 필드
 
 사용 중 `parameter.selector` 각각에 대해 지정할 수 있습니다 `StorageClass` 볼륨을 호스팅하는 데 사용되는 가상 풀입니다.  볼륨에는 선택된 풀에서 정의된 측면이 있습니다.
@@ -437,6 +443,7 @@ allowVolumeExpansion: true
 ----
 
 
+[[example-definitions-for-smb-volumes]]
 === SMB 볼륨에 대한 예제 정의
 
 사용 중 `nasType` , `node-stage-secret-name` , 그리고 `node-stage-secret-namespace` SMB 볼륨을 지정하고 필요한 Active Directory 자격 증명을 제공할 수 있습니다.
@@ -497,6 +504,7 @@ NOTE: `nasType: smb`SMB 볼륨을 지원하는 풀에 대한 필터입니다. `n
 
 
 
+[[create-the-backend]]
 == 백엔드 만들기
 
 백엔드 구성 파일을 만든 후 다음 명령을 실행합니다.

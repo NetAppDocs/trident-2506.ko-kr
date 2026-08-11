@@ -16,6 +16,7 @@ Trident Trident 성능을 모니터링하는 데 사용할 수 있는 일련의 
 
 
 
+[[overview]]
 == 개요
 
 Trident 가 제공하는 측정항목을 사용하면 다음 작업을 수행할 수 있습니다.
@@ -36,12 +37,14 @@ NOTE: 기본적으로 Trident의 메트릭은 대상 포트에 노출됩니다. 
 
 
 
+[[step-1-define-a-prometheus-target]]
 == 1단계: Prometheus 대상 정의
 
 Prometheus 대상을 정의하여 Trident 관리하는 백엔드, Trident가 생성하는 볼륨 등에 대한 메트릭과 정보를 수집해야 합니다.  이것 https://netapp.io/2020/02/20/prometheus-and-trident/["블로그"^] Prometheus와 Grafana를 Trident 와 함께 사용하여 지표를 검색하는 방법을 설명합니다.  이 블로그에서는 Kubernetes 클러스터에서 Prometheus를 운영자로 실행하는 방법과 Trident 메트릭을 얻기 위해 ServiceMonitor를 만드는 방법을 설명합니다.
 
 
 
+[[step-2-create-a-prometheus-servicemonitor]]
 == 2단계: Prometheus ServiceMonitor 만들기
 
 Trident 메트릭을 사용하려면 다음을 감시하는 Prometheus ServiceMonitor를 만들어야 합니다. `trident-csi` 서비스 및 청취 `metrics` 포트.  ServiceMonitor 샘플은 다음과 같습니다.
@@ -73,6 +76,7 @@ Trident 에서 직접 사용할 수 있는 메트릭 외에도 kubelet은 많은
 
 
 
+[[step-3-query-trident-metrics-with-promql]]
 == 3단계: PromQL을 사용하여 Trident 메트릭 쿼리
 
 PromQL은 시계열이나 표 형식의 데이터를 반환하는 표현식을 만드는 데 적합합니다.
@@ -81,6 +85,7 @@ PromQL은 시계열이나 표 형식의 데이터를 반환하는 표현식을 �
 
 
 
+[[get-trident-health-information]]
 === Trident 건강 정보 받기
 
 * ** Trident 의 HTTP 2XX 응답 비율**
@@ -106,6 +111,7 @@ sum by (operation) (trident_operation_duration_milliseconds_sum{success="true"})
 ----
 
 
+[[get-trident-usage-information]]
 === Trident 사용 정보 받기
 
 * **평균 볼륨 크기**
@@ -124,6 +130,7 @@ sum (trident_volume_allocated_bytes) by (backend_uuid)
 ----
 
 
+[[get-individual-volume-usage]]
 === 개별 볼륨 사용량 가져오기
 
 
@@ -138,6 +145,7 @@ kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes * 100
 ----
 
 
+[[learn-about-trident-autosupport-telemetry]]
 == Trident AutoSupport 원격 측정에 대해 알아보세요
 
 기본적으로 Trident Prometheus 지표와 기본 백엔드 정보를 매일 NetApp 에 ​​전송합니다.
@@ -175,6 +183,7 @@ items:
 
 
 
+[[disable-trident-metrics]]
 == Trident 메트릭 비활성화
 
 메트릭이 보고되지 않도록 **비활성화**하려면 사용자 정의 YAML을 생성해야 합니다(다음을 사용). `--generate-custom-yaml` 플래그)를 편집하여 제거하세요. `--metrics` 플래그가 호출되지 않도록 `trident-main` 컨테이너.

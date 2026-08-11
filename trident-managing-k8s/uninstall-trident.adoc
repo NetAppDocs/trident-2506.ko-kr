@@ -24,6 +24,7 @@ Kubernetes 클러스터를 해제하는 경우, 제거하기 전에 Trident 에�
 
 
 
+[[determine-the-original-installation-method]]
 == 원래 설치 방법을 확인하세요
 
 Trident 제거할 때는 설치에 사용했던 것과 동일한 방법을 사용해야 합니다.  제거하기 전에 Trident 처음 설치할 때 사용한 버전을 확인하세요.
@@ -44,12 +45,14 @@ Trident 제거할 때는 설치에 사용했던 것과 동일한 방법을 사�
 
 
 
+[[uninstall-a-trident-operator-installation]]
 == Trident 운영자 설치 제거
 
 Helm을 사용하거나 수동으로 Trident Operator 설치를 제거할 수 있습니다.
 
 
 
+[[uninstall-manual-installation]]
 === 수동 설치 제거
 
 운영자를 사용하여 Trident 설치한 경우 다음 중 하나를 수행하여 제거할 수 있습니다.
@@ -73,6 +76,7 @@ kubectl delete -f deploy/<bundle.yaml> -n <namespace>
 
 
 
+[[uninstall-helm-installation]]
 === Helm 설치 제거
 
 Helm을 사용하여 Trident 설치한 경우 다음을 사용하여 제거할 수 있습니다. `helm uninstall` .
@@ -90,6 +94,7 @@ release "trident" uninstalled
 ----
 
 
+[[uninstall-a-tridentctl-installation]]
 == 제거 `tridentctl` 설치
 
 사용하다 `uninstall` 명령하다 `tridentctl` CRD 및 관련 객체를 제외한 Trident 와 연관된 모든 리소스를 제거하려면 다음을 수행합니다.

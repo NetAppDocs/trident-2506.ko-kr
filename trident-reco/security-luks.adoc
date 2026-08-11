@@ -34,6 +34,7 @@ grep "aes" /proc/cpuinfo
 
 
 
+[[enable-luks-encryption]]
 == LUKS 암호화 활성화
 
 ONTAP SAN 및 ONTAP SAN ECONOMY 볼륨에 대해 Linux Unified Key Setup(LUKS)을 사용하여 볼륨별 호스트 측 암호화를 활성화할 수 있습니다.
@@ -97,12 +98,14 @@ stringData:
 
 
 
+[[limitations]]
 === 제한 사항
 
 LUKS 암호화 볼륨은 ONTAP 중복 제거 및 압축 기능을 활용할 수 없습니다.
 
 
 
+[[backend-configuration-for-importing-luks-volumes]]
 == LUKS 볼륨 가져오기를 위한 백엔드 구성
 
 LUKS 볼륨을 가져오려면 다음을 설정해야 합니다. `luksEncryption` 에게(`true` 백엔드에서.  그만큼 `luksEncryption` 옵션은 볼륨이 LUKS 규격인지 Trident 알려줍니다.(`true` ) 또는 LUKS 규격에 맞지 않음(`false` ) 다음 예와 같습니다.
@@ -124,6 +127,7 @@ defaults:
 ----
 
 
+[[pvc-configuration-for-importing-luks-volumes]]
 == LUKS 볼륨 가져오기를 위한 PVC 구성
 
 LUKS 볼륨을 동적으로 가져오려면 주석을 설정하세요. `trident.netapp.io/luksEncryption` 에게 `true` 이 예에서 보여지는 것처럼 PVC에 LUKS 지원 스토리지 클래스를 포함합니다.
@@ -147,6 +151,7 @@ spec:
 ----
 
 
+[[rotate-a-luks-passphrase]]
 == LUKS 암호 문구 회전
 
 LUKS 암호를 교체하고 교체를 확인할 수 있습니다.
@@ -241,6 +246,7 @@ NOTE: 예를 들어 두 개의 암호가 반환되는 경우 `luksPassphraseName
 
 
 
+[[enable-volume-expansion]]
 == 볼륨 확장 활성화
 
 LUKS로 암호화된 볼륨에서 볼륨 확장을 활성화할 수 있습니다.

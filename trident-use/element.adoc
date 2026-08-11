@@ -16,6 +16,7 @@ Trident 설치로 Element 백엔드를 만들고 사용하는 방법을 알아�
 
 
 
+[[element-driver-details]]
 == 요소 드라이버 세부 정보
 
 Trident 다음을 제공합니다. `solidfire-san` 클러스터와 통신하기 위한 저장 드라이버.  지원되는 액세스 모드는 다음과 같습니다: _ReadWriteOnce_ (RWO), _ReadOnlyMany_ (ROX), _ReadWriteMany_ (RWX), _ReadWriteOncePod_ (RWOP).
@@ -50,6 +51,7 @@ RWO, RWOP
 |===
 
 
+[[before-you-begin]]
 == 시작하기 전에
 
 Element 백엔드를 생성하려면 다음이 필요합니다.
@@ -61,6 +63,7 @@ Element 백엔드를 생성하려면 다음이 필요합니다.
 
 
 
+[[backend-configuration-options]]
 == 백엔드 구성 옵션
 
 백엔드 구성 옵션은 다음 표를 참조하세요.
@@ -113,6 +116,7 @@ WARNING: 사용하지 마십시오 `debugTraceFlags` 문제 해결을 위해 자
 
 
 
+[[example-1-backend-configuration-for-solidfire-san-driver-with-three-volume-types]]
 == 예 1: 백엔드 구성 `solidfire-san` 3가지 볼륨 유형을 갖춘 드라이버
 
 이 예제에서는 CHAP 인증을 사용하고 특정 QoS 보장을 갖춘 세 가지 볼륨 유형을 모델링하는 백엔드 파일을 보여줍니다.  그러면 각각을 사용하기 위해 저장소 클래스를 정의할 가능성이 가장 높습니다. `IOPS` 저장 클래스 매개변수.
@@ -148,6 +152,7 @@ Types:
 ----
 
 
+[[example-2-backend-and-storage-class-configuration-for-solidfire-san-driver-with-virtual-pools]]
 == 예 2: 백엔드 및 스토리지 클래스 구성 `solidfire-san` 가상 풀이 있는 드라이버
 
 이 예에서는 가상 풀과 이를 참조하는 StorageClass로 구성된 백엔드 정의 파일을 보여줍니다.
@@ -266,6 +271,7 @@ parameters:
 ----
 
 
+[[find-more-information]]
 == 더 많은 정보를 찾아보세요
 
 * link:../trident-concepts/vol-access-groups.html["볼륨 액세스 그룹"^]

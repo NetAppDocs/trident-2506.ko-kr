@@ -19,6 +19,7 @@ NOTE: Trident 에 대한 도움이 필요하면 다음을 사용하여 지원 �
 
 
 
+[[general-troubleshooting]]
 == 일반적인 문제 해결
 
 * Trident 포드가 제대로 올라오지 않는 경우(예: Trident 포드가 끼어 있는 경우) `ContainerCreating` 2개 미만의 준비된 컨테이너가 있는 단계) 실행 중 `kubectl -n trident describe deployment trident` 그리고 `kubectl -n trident describe pod trident-********-****` 추가적인 통찰력을 제공할 수 있습니다.  kubelet 로그 얻기(예: `journalctl -xeu kubelet` )도 도움이 될 수 있습니다.
@@ -71,6 +72,7 @@ tridentctl로 설치됨::
 
 
 
+[[unsuccessful-trident-deployment-using-the-operator]]
 == 운영자를 사용하여 Trident 배포가 실패했습니다.
 
 운영자를 사용하여 Trident 배포하는 경우 상태 `TridentOrchestrator` 변경 사항 `Installing` 에게 `Installed` .  당신이 관찰한다면 `Failed` 상태가 좋지 않고 운영자가 스스로 복구할 수 없는 경우 다음 명령을 실행하여 운영자의 로그를 확인해야 합니다.
@@ -138,6 +140,7 @@ trident-operator-766f7b8658-ldzsv   1/1     Running            0          8m17s
 
 
 
+[[unsuccessful-trident-deployment-using-tridentctl]]
 == Trident 배포 실패 `tridentctl`
 
 무엇이 잘못되었는지 알아내려면 다음을 사용하여 설치 프로그램을 다시 실행할 수 있습니다.``-d`` 디버그 모드를 켜고 문제가 무엇인지 이해하는 데 도움이 되는 인수:
@@ -160,6 +163,7 @@ INFO Trident uninstallation succeeded.
 ----
 
 
+[[completely-remove-trident-and-crds]]
 == Trident 와 CRD를 완전히 제거하세요
 
 Trident 와 생성된 모든 CRD 및 관련 사용자 정의 리소스를 완전히 제거할 수 있습니다.
@@ -199,12 +203,14 @@ tridentctl obliviate crd
 ====
 
 
+[[nvme-node-unstaging-failure-with-rwx-raw-block-namespaces-o-kubernetes-1-26]]
 == Kubernetes 1.26에서 RWX 원시 블록 네임스페이스로 인한 NVMe 노드 언스테이징 실패
 
 Kubernetes 1.26을 실행하는 경우 RWX 원시 블록 네임스페이스와 함께 NVMe/TCP를 사용하면 노드 스테이징 취소가 실패할 수 있습니다.  다음 시나리오는 이러한 오류에 대한 해결 방법을 제공합니다.  또는 Kubernetes를 1.27로 업그레이드할 수 있습니다.
 
 
 
+[[deleted-the-namespace-and-pod]]
 === 네임스페이스와 포드를 삭제했습니다.
 
 Pod에 Trident 관리 네임스페이스(NVMe 영구 볼륨)가 연결된 시나리오를 생각해 보세요.  ONTAP 백엔드에서 네임스페이스를 직접 삭제하면 Pod를 삭제하려고 시도한 후에 스테이징 해제 프로세스가 중단됩니다.  이 시나리오는 Kubernetes 클러스터나 기타 기능에 영향을 미치지 않습니다.
@@ -214,6 +220,7 @@ Pod에 Trident 관리 네임스페이스(NVMe 영구 볼륨)가 연결된 시나
 
 
 
+[[blocked-datalifs]]
 === 차단된 데이터 LIF
 
  If you block (or bring down) all the dataLIFs of the NVMe Trident backend, the unstaging process gets stuck when you attempt to delete the pod. In this scenario, you cannot run any NVMe CLI commands on the Kubernetes node.
@@ -222,6 +229,7 @@ Pod에 Trident 관리 네임스페이스(NVMe 영구 볼륨)가 연결된 시나
 
 
 
+[[deleted-namespace-mapping]]
 === 삭제된 네임스페이스 매핑
 
  If you remove the `hostNQN` of the worker node from the corresponding subsystem, the unstaging process gets stuck when you attempt to delete the pod. In this scenario, you cannot run any NVMe CLI commands on the Kubernetes node.
@@ -230,6 +238,7 @@ Pod에 Trident 관리 네임스페이스(NVMe 영구 볼륨)가 연결된 시나
 
 
 
+[[nfsv4-2-clients-report-invalid-argument-after-upgrading-ontap-when-when-expecting-v4-2-xattrs-being-enabled]]
 == ONTAP 업그레이드 후 "v4.2-xattrs"가 활성화될 것으로 예상할 때 NFSv4.2 클라이언트가 "잘못된 인수"를 보고합니다.
 
 ONTAP 업그레이드한 후 NFSv4.2 클라이언트가 NFSv4.2 내보내기를 마운트하려고 할 때 "잘못된 인수" 오류를 보고할 수 있습니다. 이 문제는 다음과 같은 경우에 발생합니다. `v4.2-xattrs` SVM에서는 옵션이 활성화되어 있지 않습니다. .해결 방법 활성화 `v4.2-xattrs` SVM에서 옵션을 선택하거나 ONTAP 9.12.1 이상으로 업그레이드하면 이 옵션이 기본적으로 활성화됩니다.

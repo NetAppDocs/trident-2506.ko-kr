@@ -16,6 +16,7 @@ Trident 사용하여 설치할 수 있습니다. `tridentctl` .  이 프로세�
 
 
 
+[[critical-information-about-trident-25-06]]
 == Trident 25.06에 대한 중요 정보
 
 * Trident 에 대한 다음의 중요 정보를 꼭 읽어보세요.*
@@ -33,6 +34,7 @@ Trident 사용하여 설치할 수 있습니다. `tridentctl` .  이 프로세�
 ====
 
 
+[[install-trident-using-tridentctl]]
 == Trident 사용하여 설치하세요 `tridentctl`
 
 link:../trident-install/kubernetes-deploy.html["설치 개요"]을(를) 검토하여 설치 사전 요구 사항을 충족했는지, 그리고 사용 환경에 맞는 올바른 설치 옵션을 선택했는지 확인하십시오.
@@ -69,6 +71,7 @@ kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \
 ====
 
 
+[[step-1-download-the-trident-installer-package]]
 == 1단계: Trident 설치 프로그램 패키지 다운로드
 
 Trident 설치 패키지는 Trident Pod를 생성하고, 상태를 유지하는 데 사용되는 CRD 객체를 구성하고, 클러스터 호스트에 볼륨을 프로비저닝하고 연결하는 등의 작업을 수행하기 위해 CSI 사이드카를 초기화합니다.  Trident 설치 프로그램의 최신 버전을 다운로드하고 추출하세요.link:https://github.com/NetApp/trident/releases/latest["GitHub의 _Assets_ 섹션"^] .  선택한 Trident 버전으로 예제의 _<trident-installer-XX.XX.X.tar.gz>_를 업데이트합니다.
@@ -81,6 +84,7 @@ cd trident-installer
 ----
 
 
+[[step-2-install-trident]]
 == 2단계: Trident 설치
 
 원하는 네임스페이스에 Trident 설치하려면 다음을 실행하세요. `tridentctl install` 명령.  추가 인수를 추가하여 이미지 레지스트리 위치를 지정할 수 있습니다.
@@ -132,12 +136,14 @@ INFO Trident installation succeeded.
 ----
 
 
+[[verify-the-installation]]
 == 설치를 확인하세요
 
 포드 생성 상태를 사용하여 설치를 확인할 수 있습니다. `tridentctl` .
 
 
 
+[[using-pod-creation-status]]
 === 포드 생성 상태 사용
 
 생성된 포드의 상태를 검토하여 Trident 설치가 완료되었는지 확인할 수 있습니다.
@@ -155,6 +161,7 @@ NOTE: 설치 프로그램이 성공적으로 완료되지 않거나 `trident-con
 
 
 
+[[using-tridentctl]]
 === 사용 중 `tridentctl`
 
 사용할 수 있습니다 `tridentctl` 설치된 Trident 버전을 확인하세요.
@@ -171,6 +178,7 @@ NOTE: 설치 프로그램이 성공적으로 완료되지 않거나 `trident-con
 ----
 
 
+[[sample-configurations]]
 == 샘플 구성
 
 다음 예제에서는 Trident 설치하기 위한 샘플 구성을 제공합니다. `tridentctl` .

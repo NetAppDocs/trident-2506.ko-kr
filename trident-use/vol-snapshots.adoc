@@ -16,6 +16,7 @@ summary: '영구 볼륨(PV)의 Kubernetes 볼륨 스냅샷을 사용하면 볼�
 
 
 
+[[overview]]
 == 개요
 
 볼륨 스냅샷은 다음에서 지원됩니다. `ontap-nas` , `ontap-nas-flexgroup` , `ontap-san` , `ontap-san-economy` , `solidfire-san` , `gcp-cvs` , `azure-netapp-files` , 그리고 `google-cloud-netapp-volumes` 운전자.
@@ -30,6 +31,7 @@ NOTE: GKE 환경에서 주문형 볼륨 스냅샷을 생성하는 경우 스냅�
 
 
 
+[[create-a-volume-snapshot]]
 == 볼륨 스냅샷 생성
 
 .단계
@@ -114,6 +116,7 @@ Status:
 
 
 
+[[create-a-pvc-from-a-volume-snapshot]]
 == 볼륨 스냅샷에서 PVC 생성
 
 사용할 수 있습니다 `dataSource` VolumeSnapshot이라는 이름을 사용하여 PVC를 생성하려면 `<pvc-name>` 데이터의 출처로서.  PVC를 만든 후에는 포드에 부착하여 다른 PVC와 마찬가지로 사용할 수 있습니다.
@@ -147,6 +150,7 @@ spec:
 ----
 
 
+[[import-a-volume-snapshot]]
 == 볼륨 스냅샷 가져오기
 
 Trident 다음을 지원합니다.link:https://kubernetes.io/docs/concepts/storage/volume-snapshots/#static["Kubernetes 사전 프로비저닝 스냅샷 프로세스"^] 클러스터 관리자가 다음을 생성할 수 있도록 합니다. `VolumeSnapshotContent` Trident 외부에서 생성된 객체 및 가져오기 스냅샷.
@@ -238,6 +242,7 @@ spec:
 
 
 
+[[recover-volume-data-using-snapshots]]
 == 스냅샷을 사용하여 볼륨 데이터 복구
 
 스냅샷 디렉토리는 기본적으로 숨겨져 있어 볼륨 프로비저닝의 최대 호환성을 용이하게 합니다. `ontap-nas` 그리고 `ontap-nas-economy` 운전자.  활성화 `.snapshot` 스냅샷에서 직접 데이터를 복구할 수 있는 디렉토리입니다.
@@ -253,6 +258,7 @@ NOTE: 스냅샷 복사본을 복원하면 기존 볼륨 구성이 덮어쓰여�
 
 
 
+[[in-place-volume-restoration-from-a-snapshot]]
 == 스냅샷에서 제자리 볼륨 복원
 
 Trident 다음을 사용하여 스냅샷에서 빠르고 정확한 볼륨 복원을 제공합니다. `TridentActionSnapshotRestore` (TASR) CR.  이 CR은 필수 Kubernetes 작업으로 작동하며 작업이 완료된 후에는 유지되지 않습니다.
@@ -352,12 +358,14 @@ metadata:
 ====
 
 
+[[delete-a-pv-with-associated-snapshots]]
 == 연관된 스냅샷이 있는 PV 삭제
 
 연관된 스냅샷이 있는 영구 볼륨을 삭제하면 해당 Trident 볼륨이 "삭제 중 상태"로 업데이트됩니다.  볼륨 스냅샷을 제거하여 Trident 볼륨을 삭제합니다.
 
 
 
+[[deploy-a-volume-snapshot-controller]]
 == 볼륨 스냅샷 컨트롤러 배포
 
 Kubernetes 배포판에 스냅샷 컨트롤러와 CRD가 포함되어 있지 않으면 다음과 같이 배포할 수 있습니다.
@@ -397,6 +405,7 @@ NOTE: 필요한 경우 열어주세요 `deploy/kubernetes/snapshot-controller/rb
 
 
 
+[[related-links]]
 == 관련 링크
 
 * link:../trident-concepts/snapshots.html["볼륨 스냅샷"]

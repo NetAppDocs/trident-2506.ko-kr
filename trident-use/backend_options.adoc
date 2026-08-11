@@ -16,6 +16,7 @@ Trident 에서 백엔드를 관리하는 다양한 방법에 대해 알아보세
 
 
 
+[[options-for-managing-backends]]
 == 백엔드 관리를 위한 옵션
 
 의 도입으로 `TridentBackendConfig` 이제 관리자는 백엔드를 관리하는 두 가지 고유한 방법을 사용할 수 있습니다.  이는 다음과 같은 질문을 제기합니다.
@@ -26,6 +27,7 @@ Trident 에서 백엔드를 관리하는 다양한 방법에 대해 알아보세
 
 
 
+[[manage-tridentctl-backends-using-tridentbackendconfig]]
 == 관리하다 `tridentctl` 백엔드를 사용하여 `TridentBackendConfig`
 
 이 섹션에서는 다음을 사용하여 생성된 백엔드를 관리하는 데 필요한 단계를 다룹니다. `tridentctl` Kubernetes 인터페이스를 통해 직접 생성 `TridentBackendConfig` 사물.
@@ -50,6 +52,7 @@ Trident 에서 백엔드를 관리하는 다양한 방법에 대해 알아보세
 
 
 
+[[step-0-identify-the-backend]]
 === 0단계: 백엔드 식별
 
 생성하려면 `TridentBackendConfig` 기존 백엔드에 바인딩하려면 백엔드 구성을 얻어야 합니다.  이 예에서는 다음 JSON 정의를 사용하여 백엔드가 생성되었다고 가정해 보겠습니다.
@@ -116,6 +119,7 @@ cat ontap-nas-backend.json
 ----
 
 
+[[step-1-create-a-kubernetes-secret]]
 === 1단계: Kubernetes Secret 만들기
 
 다음 예와 같이 백엔드에 대한 자격 증명을 포함하는 비밀을 만듭니다.
@@ -142,6 +146,7 @@ secret/backend-tbc-ontap-san-secret created
 ----
 
 
+[[step-2-create-a-tridentbackendconfig-cr]]
 === 2단계: 만들기 `TridentBackendConfig` 씨.씨.
 
 다음 단계는 다음을 만드는 것입니다. `TridentBackendConfig` 기존에 자동으로 바인딩되는 CR `ontap-nas-backend` (이 예에서처럼).  다음 요구 사항이 충족되는지 확인하세요.
@@ -204,6 +209,7 @@ tridentbackendconfig.trident.netapp.io/tbc-ontap-nas-backend created
 ----
 
 
+[[step-3-verify-the-status-of-the-tridentbackendconfig-cr]]
 === 3단계: 상태 확인 `TridentBackendConfig` 씨.씨.
 
 후에 `TridentBackendConfig` 생성되었으므로 해당 단계는 다음과 같아야 합니다. `Bound` .  또한 기존 백엔드와 동일한 백엔드 이름과 UUID를 반영해야 합니다.
@@ -226,12 +232,14 @@ tridentctl get backend -n trident
 
 
 
+[[manage-tridentbackendconfig-backends-using-tridentctl]]
 == 관리하다 `TridentBackendConfig` 백엔드를 사용하여 `tridentctl`
 
  `tridentctl`를 사용하여 생성된 백엔드를 나열하는 데 사용할 수 있습니다. `TridentBackendConfig` .  또한 관리자는 다음을 통해 이러한 백엔드를 완전히 관리하도록 선택할 수도 있습니다. `tridentctl` 삭제하여 `TridentBackendConfig` 그리고 확인하다 `spec.deletionPolicy` 로 설정됩니다 `retain` .
 
 
 
+[[step-0-identify-the-backend]]
 === 0단계: 백엔드 식별
 
 예를 들어, 다음 백엔드가 다음을 사용하여 생성되었다고 가정해 보겠습니다. `TridentBackendConfig` :
@@ -253,6 +261,7 @@ tridentctl get backend ontap-san-backend -n trident
 
 
 
+[[step-1-confirm-deletionpolicy-is-set-to-retain]]
 === 1단계: 확인 `deletionPolicy` 로 설정됩니다 `retain`
 
 의 가치를 살펴보자 `deletionPolicy` .  이것은 설정되어야 합니다 `retain` .  이것은 다음을 보장합니다. `TridentBackendConfig` CR이 삭제되면 백엔드 정의는 여전히 존재하며 다음을 통해 관리할 수 있습니다. `tridentctl` .
@@ -277,6 +286,7 @@ NOTE: 다음 단계로 진행하지 마십시오. `deletionPolicy` 로 설정됩
 
 
 
+[[step-2-delete-the-tridentbackendconfig-cr]]
 === 2단계: 삭제 `TridentBackendConfig` 씨.씨.
 
 마지막 단계는 삭제하는 것입니다. `TridentBackendConfig` 크.알.  확인 후 `deletionPolicy` 로 설정됩니다 `retain` , 삭제를 진행할 수 있습니다.

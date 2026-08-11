@@ -20,6 +20,7 @@ Trident 재해 복구를 위한 데이터 복제를 위해 한 클러스터의 �
 
 
 
+[[replication-prerequisites]]
 == 복제 전제 조건
 
 시작하기 전에 다음 전제 조건이 충족되었는지 확인하세요.
@@ -53,6 +54,7 @@ NOTE: SnapMirror 사용한 볼륨 복제는 ASA r2 시스템에서는 지원되�
 
 
 
+[[create-a-mirrored-pvc]]
 == 거울 PVC 만들기
 
 다음 단계를 따르고 CRD 예제를 사용하여 기본 볼륨과 보조 볼륨 간의 미러 관계를 만듭니다.
@@ -197,6 +199,7 @@ Trident TridentMirrorRelationship CRD를 확인하고 해당 관계가 없으면
 
 
 
+[[volume-replication-states]]
 == 볼륨 복제 상태
 
 Trident 미러 관계(TMR)는 PVC 간 복제 관계의 한쪽 끝을 나타내는 CRD입니다.  목적지 TMR에는 상태가 있는데, 이 상태는 Trident 원하는 상태가 무엇인지 알려줍니다.  목적지 TMR의 상태는 다음과 같습니다.
@@ -213,6 +216,7 @@ Trident 미러 관계(TMR)는 PVC 간 복제 관계의 한쪽 끝을 나타내�
 
 
 
+[[promote-secondary-pvc-during-an-unplanned-failover]]
 == 계획되지 않은 장애 조치 중 2차 PVC 홍보
 
 보조 Kubernetes 클러스터에서 다음 단계를 수행합니다.
@@ -222,6 +226,7 @@ Trident 미러 관계(TMR)는 PVC 간 복제 관계의 한쪽 끝을 나타내�
 
 
 
+[[promote-secondary-pvc-during-a-planned-failover]]
 == 계획된 장애 조치 중 보조 PVC 홍보
 
 계획된 장애 조치(마이그레이션) 중에 다음 단계를 수행하여 보조 PVC를 승격합니다.
@@ -246,6 +251,7 @@ spec:
 
 
 
+[[restore-a-mirror-relationship-after-a-failover]]
 == 장애 조치 후 미러 관계 복원
 
 미러 관계를 복원하기 전에 새로운 기본 관계로 만들려는 측면을 선택하세요.
@@ -257,12 +263,14 @@ spec:
 
 
 
+[[additional-operations]]
 == 추가 작업
 
 Trident 기본 및 보조 볼륨에서 다음 작업을 지원합니다.
 
 
 
+[[replicate-primary-pvc-to-a-new-secondary-pvc]]
 === 1차 PVC를 새로운 2차 PVC로 복제합니다.
 
 기본 PVC와 보조 PVC가 이미 있는지 확인하세요.
@@ -275,12 +283,14 @@ Trident 기본 및 보조 볼륨에서 다음 작업을 지원합니다.
 
 
 
+[[resize-a-mirrored-primary-or-secondary-pvc]]
 === 미러링된 1차 또는 2차 PVC 크기 조정
 
 PVC는 일반적으로 크기를 조절할 수 있으며, 데이터 양이 현재 크기를 초과하면 ONTAP 모든 대상 flevxols를 자동으로 확장합니다.
 
 
 
+[[remove-replication-from-a-pvc]]
 === PVC에서 복제 제거
 
 복제를 제거하려면 현재 보조 볼륨에서 다음 작업 중 하나를 수행합니다.
@@ -291,24 +301,28 @@ PVC는 일반적으로 크기를 조절할 수 있으며, 데이터 양이 현�
 
 
 
+[[delete-a-pvc-that-was-previously-mirrored]]
 === PVC(이전에 미러링됨) 삭제
 
 Trident 복제된 PVC를 확인하고 볼륨을 삭제하기 전에 복제 관계를 해제합니다.
 
 
 
+[[delete-a-tmr]]
 === TMR 삭제
 
 미러링된 관계의 한쪽에서 TMR을 삭제하면 Trident 삭제를 완료하기 전에 나머지 TMR이 _승격_ 상태로 전환됩니다.  삭제를 위해 선택된 TMR이 이미 _promoted_ 상태인 경우 기존 미러 관계가 없으므로 TMR이 제거되고 Trident 로컬 PVC를 _ReadWrite_로 승격합니다.  이 삭제로 ONTAP 의 로컬 볼륨에 대한 SnapMirror 메타데이터가 해제됩니다.  이 볼륨이 나중에 미러 관계에서 사용되는 경우 새 미러 관계를 만들 때 _설정된_ 볼륨 복제 상태를 가진 새 TMR을 사용해야 합니다.
 
 
 
+[[update-mirror-relationships-when-ontap-is-online]]
 == ONTAP 이 온라인일 때 미러 관계 업데이트
 
 미러 관계는 설정된 후 언제든지 업데이트할 수 있습니다.  당신은 사용할 수 있습니다 `state: promoted` 또는 `state: reestablished` 관계를 업데이트하는 필드입니다.  대상 볼륨을 일반 ReadWrite 볼륨으로 승격할 때 _promotedSnapshotHandle_을 사용하여 현재 볼륨을 복원할 특정 스냅샷을 지정할 수 있습니다.
 
 
 
+[[update-mirror-relationships-when-ontap-is-offline]]
 == ONTAP 이 오프라인일 때 미러 관계 업데이트
 
 Trident ONTAP 클러스터에 직접 연결되지 않고도 CRD를 사용하여 SnapMirror 업데이트를 수행할 수 있습니다.  TridentActionMirrorUpdate의 다음 예제 형식을 참조하세요.

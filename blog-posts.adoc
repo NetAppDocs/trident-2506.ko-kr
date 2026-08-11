@@ -16,6 +16,7 @@ summary: 훌륭한 NetApp Trident 및 Trident Protect 블로그를 찾아볼 수
 
 
 
+[[trident-blogs]]
 == Trident 블로그
 
 * 2025년 5월 9일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/Automatic-Trident-backend-configuration-for-FSx-for-ONTAP-with-the-Amazon-EKS/ba-p/460586["Amazon EKS 애드온을 사용한 FSx for ONTAP 에 대한 자동 Trident 백엔드 구성"^]
@@ -28,7 +29,6 @@ summary: 훌륭한 NetApp Trident 및 Trident Protect 블로그를 찾아볼 수
 * 2025년 3월 5일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/Unlock-Seamless-iSCSI-Storage-Integration-A-Guide-to-FSxN-on-ROSA-Clusters-for/ba-p/459124["원활한 iSCSI 스토리지 통합 잠금 해제: AWS용 ROSA 클러스터에서 FSxN 가이드"^]
 * 2025년 2월 27일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/Deploying-cloud-identity-with-Trident-GKE-and-Google-Cloud-NetApp-Volumes/ba-p/458912["Trident, GKE 및 Google Cloud NetApp Volumes 사용하여 클라우드 ID 배포"^]
 * 2024년 12월 12일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/Introducing-Fibre-Channel-support-in-Trident/ba-p/457427["Trident 에서 파이버 채널 지원 소개"^]
-* 2024년 11월 26일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/Trident-25-01-Enhancing-the-Kubernetes-Storage-Experience-with-New-Features-and/ba-p/456885["Trident 25.01: 새로운 기능과 향상된 기능으로 Kubernetes 스토리지 환경 향상"^]
 * 2024년 11월 11일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/NetApp-Trident-with-Google-Cloud-NetApp-Volumes/ba-p/456484["Google Cloud NetApp Volumes 탑재한 NetApp Trident"^]
 * 2024년 10월 29일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/Amazon-FSx-for-NetApp-ONTAP-with-Red-Hat-OpenShift-Service-on-AWS-ROSA-using/ba-p/456167["Trident 사용하여 AWS(ROSA)에서 Red Hat OpenShift 서비스를 사용하는 Amazon FSx for NetApp ONTAP"^]
 * 2024년 10월 29일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/Live-Migration-of-VMs-with-OpenShift-Virtualization-on-ROSA-and-Amazon-FSx-for/ba-p/456213["ROSA 및 Amazon FSx for NetApp ONTAP 에서 OpenShift Virtualization을 사용한 VM 라이브 마이그레이션"^]
@@ -39,6 +39,7 @@ summary: 훌륭한 NetApp Trident 및 Trident Protect 블로그를 찾아볼 수
 
 
 
+[[trident-protect-blogs]]
 == Trident 프로텍트 블로그
 
 * 2025년 5월 16일:link:https://community.netapp.com/t5/Tech-ONTAP-Blogs/Automating-registry-failover-for-disaster-recovery-with-Trident-protect-post/ba-p/460777["Trident Protect 복원 후 후크를 사용하여 재해 복구를 위한 레지스트리 장애 조치 자동화"^]

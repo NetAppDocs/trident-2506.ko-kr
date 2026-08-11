@@ -16,6 +16,7 @@ summary: '사용 중인 볼륨에 영향을 주지 않고 Docker용 Trident 안�
 
 
 
+[[upgrade]]
 == 치받이
 
 Docker용 Trident 업그레이드하려면 아래 단계를 수행하세요.
@@ -77,6 +78,7 @@ IMPORTANT: Trident 의 이전 버전(20.10 이전)에서 Trident 20.10 이상으
 
 
 
+[[uninstall]]
 == 제거
 
 Docker용 Trident 제거하려면 아래 단계를 수행하세요.

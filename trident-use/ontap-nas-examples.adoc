@@ -16,6 +16,7 @@ Trident 설치로 ONTAP NAS 드라이버를 만들고 사용하는 방법을 알
 
 
 
+[[backend-configuration-options]]
 == 백엔드 구성 옵션
 
 백엔드 구성 옵션은 다음 표를 참조하세요.
@@ -127,6 +128,7 @@ NOTE: SVM에서 집계 목록이 업데이트되면 Trident Controller를 다시
 |===
 
 
+[[backend-configuration-options-for-provisioning-volumes]]
 == 볼륨 프로비저닝을 위한 백엔드 구성 옵션
 
 다음 옵션을 사용하여 기본 프로비저닝을 제어할 수 있습니다. `defaults` 구성 섹션.  예를 들어, 아래의 구성 예를 참조하세요.
@@ -182,6 +184,7 @@ NOTE: Trident 에서 QoS 정책 그룹을 사용하려면 ONTAP 9.8 이상이 �
 
 
 
+[[volume-provisioning-examples]]
 === 볼륨 프로비저닝 예시
 
 기본값이 정의된 예는 다음과 같습니다.
@@ -229,6 +232,7 @@ image::../media/volume-show-nas.png[볼륨 표시 명령의 출력을 보여줍�
 
 
 
+[[minimal-configuration-examples]]
 == 최소 구성 예
 
 다음 예에서는 대부분의 매개변수를 기본값으로 두는 기본 구성을 보여줍니다.  백엔드를 정의하는 가장 쉬운 방법입니다.
@@ -411,6 +415,7 @@ labels:
 ====
 
 
+[[examples-of-backends-with-virtual-pools]]
 == 가상 풀을 사용한 백엔드의 예
 
 아래에 표시된 샘플 백엔드 정의 파일에서는 모든 스토리지 풀에 대해 다음과 같은 특정 기본값이 설정됩니다. `spaceReserve` 없음, `spaceAllocation` 거짓이고, `encryption` 거짓.  가상 풀은 스토리지 섹션에 정의됩니다.
@@ -596,6 +601,7 @@ storage:
 ====
 
 
+[[map-backends-to-storageclasses]]
 == 백엔드를 StorageClass에 매핑
 
 다음 StorageClass 정의는 다음을 참조합니다.<<가상 풀을 사용한 백엔드의 예>> .  를 사용하여 `parameters.selector` 필드에서 각 StorageClass는 볼륨을 호스팅하는 데 사용할 수 있는 가상 풀을 호출합니다.  볼륨에는 선택한 가상 풀에 정의된 측면이 있습니다.
@@ -671,6 +677,7 @@ Trident 어떤 가상 풀을 선택할지 결정하고 저장 요구 사항이 �
 
 
 
+[[update-datalif-after-initial-configuration]]
 == 업데이트 `dataLIF` 초기 구성 후
 
 다음 명령을 실행하여 업데이트된 dataLIF로 새 백엔드 JSON 파일을 제공하면 초기 구성 후 dataLIF를 변경할 수 있습니다.
@@ -684,10 +691,12 @@ NOTE: PVC가 하나 이상의 포드에 연결된 경우 새로운 dataLIF가 �
 
 
 
+[[secure-smb-examples]]
 == 보안 SMB 사례
 
 
 
+[[backend-configuration-with-ontap-nas-driver]]
 === ontap-nas 드라이버를 사용한 백엔드 구성
 
 [source, yaml]
@@ -710,6 +719,7 @@ spec:
 ----
 
 
+[[backend-configuration-with-ontap-nas-economy-driver]]
 === ontap-nas-economy 드라이버를 사용한 백엔드 구성
 
 [source, yaml]
@@ -732,6 +742,7 @@ spec:
 ----
 
 
+[[backend-configuration-with-storage-pool]]
 === 스토리지 풀을 사용한 백엔드 구성
 
 [source, yaml]
@@ -759,6 +770,7 @@ spec:
 ----
 
 
+[[storage-class-example-with-ontap-nas-driver]]
 === ontap-nas 드라이버를 사용한 스토리지 클래스 예제
 
 [source, yaml]
@@ -784,6 +796,7 @@ NOTE: 추가했는지 확인하세요 `annotations` 안전한 SMB를 구현합�
 
 
 
+[[storage-class-example-with-ontap-nas-economy-driver]]
 === ontap-nas-economy 드라이버를 사용한 스토리지 클래스 예제
 
 [source, yaml]
@@ -806,6 +819,7 @@ volumeBindingMode: Immediate
 ----
 
 
+[[pvc-example-with-a-single-ad-user]]
 === 단일 AD 사용자가 있는 PVC 예
 
 [source, yaml]
@@ -831,6 +845,7 @@ spec:
 ----
 
 
+[[pvc-example-with-multiple-ad-users]]
 === 여러 AD 사용자가 있는 PVC 예
 
 [source, yaml]

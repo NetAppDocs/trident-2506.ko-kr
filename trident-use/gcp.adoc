@@ -16,6 +16,7 @@ summary: 제공된 샘플 구성을 사용하여 Trident 설치의 백엔드로 
 
 
 
+[[google-cloud-driver-details]]
 == Google Cloud 드라이버 세부 정보
 
 Trident 다음을 제공합니다. `gcp-cvs` 클러스터와 통신하는 드라이버.  지원되는 액세스 모드는 다음과 같습니다: _ReadWriteOnce_ (RWO), _ReadOnlyMany_ (ROX), _ReadWriteMany_ (RWX), _ReadWriteOncePod_ (RWOP).
@@ -37,6 +38,7 @@ RWO, ROX, RWX, RWOP
 |===
 
 
+[[learn-about-trident-support-for-cloud-volumes-service-for-google-cloud]]
 == Google Cloud용 Cloud Volumes Service 에 대한 Trident 지원에 대해 알아보세요.
 
 Trident는 다음 두 가지 방법 중 하나로 Cloud Volumes Service 볼륨을 생성할 수 있습니다link:https://docs.cloud.google.com/netapp/volumes/docs/discover/overview["서비스 유형"^]:
@@ -67,6 +69,7 @@ Trident는 다음 두 가지 방법 중 하나로 Cloud Volumes Service 볼륨�
 
 
 
+[[backend-configuration-options]]
 == 백엔드 구성 옵션
 
 각 백엔드는 단일 Google Cloud 지역에서 볼륨을 프로비저닝합니다.  다른 지역에 볼륨을 생성하려면 추가 백엔드를 정의할 수 있습니다.
@@ -129,6 +132,7 @@ Trident는 다음 두 가지 방법 중 하나로 Cloud Volumes Service 볼륨�
 |===
 
 
+[[volume-provisioning-options]]
 == 볼륨 프로비저닝 옵션
 
 기본 볼륨 프로비저닝을 제어할 수 있습니다. `defaults` 구성 파일의 섹션.
@@ -151,6 +155,7 @@ Trident는 다음 두 가지 방법 중 하나로 Cloud Volumes Service 볼륨�
 |===
 
 
+[[cvs-performance-service-type-examples]]
 == CVS-Performance 서비스 유형 예
 
 다음 예제에서는 CVS-Performance 서비스 유형에 대한 샘플 구성을 제공합니다.
@@ -287,6 +292,7 @@ storage:
 ====
 
 
+[[storage-class-definitions]]
 === 스토리지 클래스 정의
 
 다음 StorageClass 정의는 가상 풀 구성 예제에 적용됩니다.  사용 중 `parameters.selector` 각 StorageClass에 대해 볼륨을 호스팅하는 데 사용되는 가상 풀을 지정할 수 있습니다.  볼륨에는 선택된 풀에서 정의된 측면이 있습니다.
@@ -359,6 +365,7 @@ allowVolumeExpansion: true
 
 
 
+[[cvs-service-type-examples]]
 == CVS 서비스 유형 예시
 
 다음 예제에서는 CVS 서비스 유형에 대한 샘플 구성을 제공합니다.
@@ -431,6 +438,7 @@ serviceLevel: Standardsw
 ====
 
 
+[[whats-next]]
 == 다음은 무엇인가요?
 
 백엔드 구성 파일을 만든 후 다음 명령을 실행합니다.

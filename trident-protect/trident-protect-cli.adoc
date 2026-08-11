@@ -18,6 +18,7 @@ Trident Protect 명령줄 플러그인을 사용할 수 있습니다. 이 플러
 
 
 
+[[install-the-trident-protect-cli-plugin]]
 == Trident Protect CLI 플러그인을 설치하세요
 
 명령줄 유틸리티를 사용하려면 먼저 클러스터에 액세스하는 데 사용하는 컴퓨터에 유틸리티를 설치해야 합니다.  컴퓨터에서 x64 또는 ARM CPU를 사용하는지 여부에 따라 다음 단계를 따르세요.
@@ -98,6 +99,7 @@ NOTE: 플러그인을 PATH 변수의 위치에 복사하면 다음을 입력하�
 
 
 
+[[view-trident-cli-plugin-help]]
 == Trident CLI 플러그인 도움말 보기
 
 플러그인의 기능에 대한 자세한 도움말을 얻으려면 내장된 플러그인 도움말 기능을 사용할 수 있습니다.
@@ -113,6 +115,7 @@ tridentctl-protect help
 
 
 
+[[enable-command-auto-completion]]
 == 명령 자동 완성 활성화
 
 Trident Protect CLI 플러그인을 설치한 후 특정 명령에 대한 자동 완성을 활성화할 수 있습니다.

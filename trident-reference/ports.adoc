@@ -16,6 +16,7 @@ Trident 통신에 사용하는 포트에 대해 자세히 알아보세요.
 
 
 
+[[trident-ports]]
 == Trident 포트
 
 Trident Kubernetes 내부 통신에 다음 포트를 사용합니다.

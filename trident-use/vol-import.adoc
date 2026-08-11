@@ -16,6 +16,7 @@ summary: ' `tridentctl import` 또는 PVC 어노테이션을 사용하여 기존
 
 
 
+[[overview-and-considerations]]
 == 개요 및 고려 사항
 
 볼륨을 Trident 로 가져와서 다음을 수행할 수 있습니다.
@@ -52,6 +53,7 @@ TIP: 이 옵션은 컨테이너화된 워크로드에 Kubernetes를 사용하지
 
 
 
+[[import-a-volume]]
 == 볼륨 가져오기
 
  `tridentctl import`를 사용하거나 Trident 가져오기 주석이 포함된 PVC를 생성하여 볼륨을 가져올 수 있습니다.
@@ -147,12 +149,14 @@ Trident는 볼륨을 자동으로 가져와 PVC에 바인딩합니다.
 ====
 
 
+[[examples]]
 == 예시
 
 지원되는 드라이버에 대한 다음 볼륨 가져오기 예를 검토하세요.
 
 
 
+[[ontap-nas-and-ontap-nas-flexgroup]]
 === ONTAP NAS 및 ONTAP NAS FlexGroup
 
 Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `ontap-nas` 그리고 `ontap-nas-flexgroup` 운전자.
@@ -260,6 +264,7 @@ spec:
 ====
 
 
+[[ontap-san]]
 === ONTAP 산
 
 Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `ontap-san` (iSCSI, NVMe/TCP 및 FC) 및 `ontap-san-economy` 운전자.
@@ -312,6 +317,7 @@ image:./san-import-igroup.png["iqn 및 클러스터 iqn에 매핑된 LUN 이미�
 ====
 
 
+[[element]]
 === 요소
 
 Trident 다음을 사용하여 NetApp Element 소프트웨어 및 NetApp HCI 볼륨 가져오기를 지원합니다. `solidfire-san` 운전사.
@@ -333,6 +339,7 @@ tridentctl import volume element_default element-managed -f pvc-basic-import.yam
 ----
 
 
+[[google-cloud-platform]]
 === 구글 클라우드 플랫폼
 
 Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `gcp-cvs` 운전사.
@@ -355,6 +362,7 @@ tridentctl import volume gcpcvs_YEppr adroit-jolly-swift -f <path-to-pvc-file> -
 ----
 
 
+[[azure-netapp-files]]
 === Azure NetApp Files
 
 Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `azure-netapp-files` 운전사.
@@ -376,6 +384,7 @@ tridentctl import volume azurenetappfiles_40517 importvol1 -f <path-to-pvc-file>
 ----
 
 
+[[google-cloud-netapp-volumes]]
 === Google Cloud NetApp Volumes
 
 Trident 다음을 사용하여 볼륨 가져오기를 지원합니다. `google-cloud-netapp-volumes` 운전사.

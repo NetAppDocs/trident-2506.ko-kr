@@ -16,6 +16,7 @@ summary: Trident 볼륨을 관리하기 위한 다양한 기능을 제공합니�
 
 
 
+[[managing-volumes]]
 == 볼륨 관리
 
 Trident 사용하여 볼륨을 관리하는 방법에 대해 알아보려면 다음을 참조하세요.

@@ -16,6 +16,7 @@ Trident 구성에 사용할 수 있는 구성 옵션을 확인하세요.
 
 
 
+[[global-configuration-options]]
 == 글로벌 구성 옵션
 
 이러한 구성 옵션은 사용되는 스토리지 플랫폼에 관계없이 모든 Trident 구성에 적용됩니다.
@@ -71,6 +72,7 @@ TIP: 사용하지 마십시오 `storagePrefix` (기본값 포함) Element 백엔
 |===
 
 
+[[ontap-configuration]]
 == ONTAP 구성
 
 위의 글로벌 구성 값 외에도 ONTAP 사용할 때 다음과 같은 최상위 옵션을 사용할 수 있습니다.
@@ -267,6 +269,7 @@ NFS 지원 `mixed` 그리고 `unix` 보안 스타일.  기본값은 `unix` .
 |===
 
 
+[[scaling-options]]
 === 스케일링 옵션
 
 그만큼 `ontap-nas` 그리고 `ontap-san` 드라이버는 각 Docker 볼륨에 대해 ONTAP FlexVol 생성합니다.  ONTAP 클러스터 노드당 최대 1000개의 FlexVol을 지원하며 클러스터 최대 FlexVol 볼륨은 12,000개입니다. Docker 볼륨 요구 사항이 해당 제한 사항에 맞는 경우 `ontap-nas` FlexVols가 제공하는 Docker 볼륨 단위 스냅샷 및 복제와 같은 추가 기능으로 인해 드라이버가 선호되는 NAS 솔루션입니다.
@@ -295,6 +298,7 @@ FlexGroups 및 FlexGroups에 적합한 워크로드에 대한 자세한 내용�
 
 
 
+[[custom-ontap-role-for-trident]]
 === Trident 용 사용자 정의 ONTAP 역할
 
 Trident 에서 작업을 수행하기 위해 ONTAP 관리자 역할을 사용하지 않아도 되도록 최소한의 권한으로 ONTAP 클러스터 역할을 만들 수 있습니다.  Trident 백엔드 구성에 사용자 이름을 포함하면 Trident 사용자가 만든 ONTAP 클러스터 역할을 사용하여 작업을 수행합니다.
@@ -355,6 +359,7 @@ ONTAP 시스템 관리자에서 다음 단계를 수행합니다.
 
 
 
+[[example-ontap-configuration-files]]
 === ONTAP 구성 파일 예
 
 .<code>ontap-nas</code> 드라이버에 대한 NFS 예제
@@ -491,6 +496,7 @@ ONTAP 시스템 관리자에서 다음 단계를 수행합니다.
 ====
 
 
+[[element-software-configuration]]
 == 요소 소프트웨어 구성
 
 Element 소프트웨어(NetApp HCI/ SolidFire)를 사용하는 경우 글로벌 구성 값 외에도 다음 옵션을 사용할 수 있습니다.
@@ -545,6 +551,7 @@ QoS 사양
 
 
 
+[[example-element-software-configuration-file]]
 === Element 소프트웨어 구성 파일 예시
 
 [source, json]

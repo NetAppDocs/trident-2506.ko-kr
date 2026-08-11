@@ -16,6 +16,7 @@ Kubernetes 클러스터의 모든 워커 노드는 Pod에 대해 프로비저닝
 
 
 
+[[selecting-the-right-tools]]
 == 올바른 도구 선택
 
 여러 드라이버를 조합하여 사용하는 경우 드라이버에 필요한 모든 도구를 설치해야 합니다.  Red Hat Enterprise Linux CoreOS(RHCOS)의 최신 버전에는 기본적으로 도구가 설치되어 있습니다.
@@ -41,6 +42,7 @@ link:https://docs.netapp.com/us-en/trident/trident-use/worker-node-prep.html#ins
 
 
 
+[[node-service-discovery]]
 == 노드 서비스 검색
 
 Trident 노드가 iSCSI 또는 NFS 서비스를 실행할 수 있는지 자동으로 감지하려고 시도합니다.
@@ -64,6 +66,7 @@ tridentctl get node -o wide -n <Trident namespace>
 ----
 
 
+[[nfs-volumes]]
 == NFS 볼륨
 
 운영 체제에 맞는 명령을 사용하여 NFS 도구를 설치합니다.  부팅 시 NFS 서비스가 시작되었는지 확인하세요.
@@ -90,12 +93,14 @@ WARNING: 컨테이너에 볼륨을 연결할 때 오류가 발생하는 것을 �
 
 
 
+[[iscsi-volumes]]
 == iSCSI 볼륨
 
 Trident 자동으로 iSCSI 세션을 설정하고, LUN을 스캔하고, 다중 경로 장치를 검색하여 포맷하고, 포드에 마운트할 수 있습니다.
 
 
 
+[[iscsi-self-healing-capabilities]]
 === iSCSI 자체 복구 기능
 
 ONTAP 시스템의 경우 Trident 다음을 위해 5분마다 iSCSI 자체 복구를 실행합니다.
@@ -128,6 +133,7 @@ NOTE: 예를 들어, CHAP 비밀번호가 스토리지 컨트롤러에서 순환
 
 
 
+[[install-the-iscsi-tools]]
 === iSCSI 도구 설치
 
 운영 체제에 맞는 명령을 사용하여 iSCSI 도구를 설치합니다.
@@ -246,6 +252,7 @@ NOTE: Ubuntu 18.04의 경우 대상 포트를 검색해야 합니다. `iscsiadm`
 ====
 
 
+[[configure-or-disable-iscsi-self-healing]]
 === iSCSI 자체 복구 구성 또는 비활성화
 
 다음의 Trident iSCSI 자체 복구 설정을 구성하여 오래된 세션을 수정할 수 있습니다.
@@ -288,6 +295,7 @@ tridentctl install --iscsi-self-healing-interval=3m0s --iscsi-self-healing-wait-
 ====
 
 
+[[nvmetcp-volumes]]
 == NVMe/TCP 볼륨
 
 운영 체제에 맞는 명령을 사용하여 NVMe 도구를 설치하세요.
@@ -322,6 +330,7 @@ sudo modprobe nvme-tcp
 ====
 
 
+[[verify-installation]]
 === 설치 확인
 
 설치 후 다음 명령을 사용하여 Kubernetes 클러스터의 각 노드에 고유한 NQN이 있는지 확인하세요.
@@ -335,12 +344,14 @@ WARNING: Trident 다음을 수정합니다. `ctrl_device_tmo` NVMe가 다운되�
 
 
 
+[[scsi-over-fc-volumes]]
 == FC 볼륨을 통한 SCSI
 
 이제 Trident 와 함께 Fibre Channel(FC) 프로토콜을 사용하여 ONTAP 시스템에서 스토리지 리소스를 프로비저닝하고 관리할 수 있습니다.
 
 
 
+[[prerequisites]]
 === 필수 조건
 
 FC에 필요한 네트워크 및 노드 설정을 구성합니다.
@@ -370,6 +381,7 @@ FC에 필요한 네트워크 및 노드 설정을 구성합니다.
 
 
 
+[[install-the-fc-tools]]
 === FC 도구 설치
 
 운영 체제에 맞는 명령을 사용하여 FC 도구를 설치하세요.

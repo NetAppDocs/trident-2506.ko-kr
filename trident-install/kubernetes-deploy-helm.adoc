@@ -16,6 +16,7 @@ Helm을 사용하여 Trident 운영자를 배포하고 Trident 설치할 수 있
 
 
 
+[[critical-information-about-trident-25-06]]
 == Trident 25.06에 대한 중요 정보
 
 * Trident 에 대한 다음의 중요 정보를 꼭 읽어보세요.*
@@ -36,6 +37,7 @@ Helm을 사용하여 Trident 운영자를 배포하고 Trident 설치할 수 있
 ====
 
 
+[[deploy-the-trident-operator-and-install-trident-using-helm]]
 == Trident 운영자를 배포하고 Helm을 사용하여 Trident 설치합니다.
 
 Trident 사용link:https://artifacthub.io/packages/helm/netapp-trident/trident-operator["헬름 차트"^] Trident 운영자를 배포하고 한 단계로 Trident 설치할 수 있습니다.
@@ -43,7 +45,7 @@ Trident 사용link:https://artifacthub.io/packages/helm/netapp-trident/trident-o
 link:../trident-install/kubernetes-deploy.html["설치 개요"]을(를) 검토하여 설치 사전 요구 사항을 충족했는지, 그리고 사용 환경에 맞는 올바른 설치 옵션을 선택했는지 확인하십시오.
 
 .시작하기 전에
-link:../trident-install/kubernetes-deploy.html#before-you-deploy["배포 전제 조건"] 외에도 link:https://v3.helm.sh/["헬름 버전 3"^]이(가) 필요합니다.
+link:kubernetes-deploy.html#before-you-begin["배포 전제 조건"] 외에도 link:https://v3.helm.sh/["헬름 버전 3"^]이(가) 필요합니다.
 
 .단계
 . Trident Helm 저장소를 추가합니다.
@@ -68,6 +70,7 @@ NOTE: 이미 Trident 에 대한 네임스페이스를 생성한 경우 `--create
 
 
 
+[[pass-configuration-data-during-install]]
 == 설치 중 구성 데이터 전달
 
 설치 중에 구성 데이터를 전달하는 방법에는 두 가지가 있습니다.
@@ -94,6 +97,7 @@ helm install <name> netapp-trident/trident-operator --version 100.2506.0  --crea
 ----
 
 
+[[configuration-options]]
 == 구성 옵션
 
 이 테이블과 `values.yaml` Helm 차트의 일부인 파일은 키와 해당 기본값 목록을 제공합니다.
@@ -257,6 +261,7 @@ Kubernetes API 서버와 통신하는 동안 컨트롤러가 사용하는 초당
 |===
 
 
+[[understanding-controller-pods-and-node-pods]]
 === 컨트롤러 포드와 노드 포드 이해
 
 Trident 단일 컨트롤러 포드로 실행되고, 클러스터의 각 워커 노드에는 노드 포드가 있습니다.  Trident 볼륨을 마운트하려는 모든 호스트에서 노드 포드를 실행해야 합니다.

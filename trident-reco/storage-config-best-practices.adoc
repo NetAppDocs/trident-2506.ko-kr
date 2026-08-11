@@ -16,6 +16,7 @@ NetApp 포트폴리오의 각 스토리지 플랫폼은 컨테이너화 여부�
 
 
 
+[[platform-overview]]
 == 플랫폼 개요
 
 Trident ONTAP 및 Element와 함께 작동합니다.  모든 애플리케이션과 시나리오에 더 적합한 플랫폼은 없습니다. 그러나 플랫폼을 선택할 때는 애플리케이션의 요구 사항과 장치를 관리하는 팀을 고려해야 합니다.
@@ -24,6 +25,7 @@ Trident ONTAP 및 Element와 함께 작동합니다.  모든 애플리케이션�
 
 
 
+[[ontap-and-cloud-volumes-ontap-best-practices]]
 == ONTAP 및 Cloud Volumes ONTAP 모범 사례
 
 Trident 위한 ONTAP 및 Cloud Volumes ONTAP 구성에 대한 모범 사례를 알아보세요.
@@ -32,6 +34,7 @@ Trident 위한 ONTAP 및 Cloud Volumes ONTAP 구성에 대한 모범 사례를 �
 
 
 
+[[use-svms-dedicated-to-trident]]
 === Trident 에 전용된 SVM을 사용하세요
 
 SVM(스토리지 가상 머신)은 ONTAP 시스템의 테넌트 간에 격리 및 관리적 분리를 제공합니다. SVM을 애플리케이션에 전용하면 권한을 위임하고 리소스 소비를 제한하는 모범 사례를 적용할 수 있습니다.
@@ -49,6 +52,7 @@ SVM에 대한 전용 관리 LIF와 공유 관리 LIF 중 어느 것을 선호하
 
 
 
+[[limit-the-maximum-volume-count]]
 === 최대 볼륨 수 제한
 
 ONTAP 스토리지 시스템에는 최대 볼륨 수가 있으며, 이는 소프트웨어 버전과 하드웨어 플랫폼에 따라 다릅니다.  참조하다 https://hwu.netapp.com/["NetApp Hardware Universe"^] 정확한 한도를 확인하려면 해당 플랫폼과 ONTAP 버전을 확인하세요.  볼륨 수가 소진되면 Trident 뿐만 아니라 모든 스토리지 요청에 대한 프로비저닝 작업이 실패합니다.
@@ -72,6 +76,7 @@ vserver modify -vserver <svm_name> -max-volumes <num_of_volumes>
 
 
 
+[[clone-a-volume]]
 === 볼륨 복제
 
 NetApp Trident 다음을 사용할 때 볼륨 복제를 지원합니다. `ontap-nas` , `ontap-san` , `solidfire-san` , 그리고 `gcp-cvs` 스토리지 드라이버.  사용 시 `ontap-nas-flexgroup` 또는 `ontap-nas-economy` 드라이버, 복제가 지원되지 않습니다.  기존 볼륨에서 새 볼륨을 생성하면 새로운 스냅샷이 생성됩니다.
@@ -81,6 +86,7 @@ WARNING: 다른 StorageClass와 연결된 PVC를 복제하지 마세요.  호환
 
 
 
+[[limit-the-maximum-size-of-volumes-created-by-trident]]
 === Trident 에서 생성된 볼륨의 최대 크기 제한
 
 Trident 에서 생성할 수 있는 볼륨의 최대 크기를 구성하려면 다음을 사용하십시오. `limitVolumeSize` 귀하의 매개변수 `backend.json` 정의.
@@ -89,18 +95,21 @@ Trident 에서 생성할 수 있는 볼륨의 최대 크기를 구성하려면 �
 
 
 
+[[limit-the-maximum-size-of-flexvols-created-by-trident]]
 === Trident 에서 생성된 FlexVol의 최대 크기 제한
 
 ontap-san-economy 및 ontap-nas-economy 드라이버의 풀로 사용되는 FlexVol의 최대 크기를 구성하려면 다음을 사용하세요. `limitVolumePoolSize` 귀하의 매개변수 `backend.json` 정의.
 
 
 
+[[configure-trident-to-use-bidirectional-chap]]
 === 양방향 CHAP를 사용하도록 Trident 구성
 
 백엔드 정의에서 CHAP 초기자 및 대상 사용자 이름과 비밀번호를 지정하고 Trident SVM에서 CHAP를 활성화하도록 할 수 있습니다.  를 사용하여 `useCHAP` 백엔드 구성의 매개변수를 통해 Trident CHAP를 사용하여 ONTAP 백엔드에 대한 iSCSI 연결을 인증합니다.
 
 
 
+[[create-and-use-an-svm-qos-policy]]
 === SVM QoS 정책 생성 및 사용
 
 SVM에 적용된 ONTAP QoS 정책을 활용하면 Trident 프로비저닝 볼륨에서 사용할 수 있는 IOPS 수가 제한됩니다.  이것은 도움이 됩니다 http://docs.netapp.com/ontap-9/topic/com.netapp.doc.pow-perf-mon/GUID-77DF9BAF-4ED7-43F6-AECE-95DFB0680D2F.html?cp=7_1_2_1_2["괴롭힘을 예방하다"^] 또는 Trident SVM 외부의 작업 부하에 영향을 미치는 제어 불가능한 컨테이너입니다.
@@ -131,6 +140,7 @@ IMPORTANT: ONTAP 버전이 9.8 이전인 경우에만 QoS 정책 그룹을 SVM�
 
 
 
+[[create-qos-policy-groups-for-trident]]
 === Trident 에 대한 QoS 정책 그룹 생성
 
 서비스 품질(QoS)은 중요한 작업 부하의 성능이 경쟁 작업 부하로 인해 저하되지 않도록 보장합니다.  ONTAP QoS 정책 그룹은 볼륨에 대한 QoS 옵션을 제공하고 사용자가 하나 이상의 작업 부하에 대한 처리량 상한을 정의할 수 있도록 합니다.  QoS에 대한 자세한 내용은 다음을 참조하세요. https://docs.netapp.com/ontap-9/topic/com.netapp.doc.pow-perf-mon/GUID-77DF9BAF-4ED7-43F6-AECE-95DFB0680D2F.html["QoS로 처리량 보장"^] .  백엔드나 스토리지 풀에서 QoS 정책 그룹을 지정할 수 있으며, 해당 정책 그룹은 해당 풀이나 백엔드에서 생성된 각 볼륨에 적용됩니다.
@@ -172,6 +182,7 @@ QoS 정책 그룹에 대한 자세한 내용은 다음을 참조하세요. https
 
 
 
+[[limit-storage-resource-access-to-kubernetes-cluster-members]]
 === Kubernetes 클러스터 멤버에 대한 스토리지 리소스 액세스 제한
 
 Trident 가 생성한 NFS 볼륨, iSCSI LUN 및 FC LUN에 대한 액세스를 제한하는 것은 Kubernetes 배포에 대한 보안 태세의 중요한 구성 요소입니다. 이렇게 하면 Kubernetes 클러스터에 속하지 않은 호스트가 볼륨에 액세스하여 예기치 않게 데이터를 수정할 가능성이 방지됩니다.
@@ -188,6 +199,7 @@ Kubernetes와 외부 호스트 모두에서 액세스가 필요한 볼륨의 경
 
 
 
+[[use-a-dedicated-export-policy]]
 === 전담 수출 정책을 사용하세요
 
 Kubernetes 클러스터에 있는 노드에만 액세스를 허용하는 각 백엔드에 대한 내보내기 정책이 있는지 확인해야 합니다. Trident 자동으로 수출 정책을 만들고 관리할 수 있습니다. 이런 방식으로 Trident Kubernetes 클러스터의 노드에 프로비저닝하는 볼륨에 대한 액세스를 제한하고 노드 추가/삭제를 간소화합니다.
@@ -202,6 +214,7 @@ Kubernetes 클러스터에 있는 노드에만 액세스를 허용하는 각 백
 
 
 
+[[disable-showmount-for-the-application-svm]]
 === 장애를 입히다 `showmount` SVM 응용 프로그램을 위해
 
 그만큼 `showmount` 이 기능을 사용하면 NFS 클라이언트가 SVM에 사용 가능한 NFS 내보내기 목록을 쿼리할 수 있습니다.  Kubernetes 클러스터에 배포된 Pod는 다음을 발행할 수 있습니다. `showmount -e` 명령을 내리고, 접근할 수 없는 탈것을 포함하여 사용 가능한 탈것의 목록을 받습니다.  이것 자체는 보안을 위협하는 것은 아니지만 불필요한 정보를 제공하여 권한이 없는 사용자가 NFS 내보내기에 연결하는 데 도움이 될 수 있습니다.
@@ -214,18 +227,21 @@ vserver nfs modify -vserver <svm_name> -showmount disabled
 ----
 
 
+[[solidfire-best-practices]]
 == SolidFire 모범 사례
 
 Trident 위한 SolidFire 스토리지 구성에 대한 모범 사례를 알아보세요.
 
 
 
+[[create-solidfire-account]]
 === Solidfire 계정 생성
 
 각 SolidFire 계정은 고유한 볼륨 소유자를 나타내며 고유한 CHAP(Challenge-Handshake 인증 프로토콜) 자격 증명 세트를 받습니다.  계정 이름과 관련 CHAP 자격 증명을 사용하거나 볼륨 액세스 그룹을 통해 계정에 할당된 볼륨에 액세스할 수 있습니다.  한 계정에는 최대 2,000개의 볼륨이 할당될 수 있지만, 볼륨은 한 계정에만 속할 수 있습니다.
 
 
 
+[[create-a-qos-policy]]
 === QoS 정책 생성
 
 여러 볼륨에 적용할 수 있는 표준화된 서비스 품질 설정을 만들고 저장하려면 SolidFire 서비스 품질(QoS) 정책을 사용하세요.
@@ -278,6 +294,7 @@ NOTE: 최대 IOPS와 버스트 IOPS는 최대 200,000까지 설정할 수 있지
 
 
 
+[[solidfire-authentication]]
 === SolidFire 인증
 
 Element는 CHAP 및 VAG(볼륨 액세스 그룹)라는 두 가지 인증 방법을 지원합니다.  CHAP는 CHAP 프로토콜을 사용하여 백엔드에 호스트를 인증합니다.  볼륨 액세스 그룹은 프로비저닝하는 볼륨에 대한 액세스를 제어합니다.  NetApp 인증에 CHAP를 사용할 것을 권장합니다. CHAP는 더 간단하고 확장 제한이 없기 때문입니다.
@@ -291,6 +308,7 @@ CHAP 인증(개시자가 의도된 볼륨 사용자인지 확인하는 것)은 �
 
 
 
+[[where-to-find-more-information]]
 == 더 많은 정보는 어디에서 찾을 수 있나요?
 
 다음은 모범 사례 문서 중 일부입니다.  검색 https://www.netapp.com/search/["NetApp 라이브러리"^] 최신 버전을 보려면 여기를 클릭하세요.

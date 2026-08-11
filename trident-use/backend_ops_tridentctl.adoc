@@ -16,6 +16,7 @@ summary: '다음을 사용하여 백엔드 관리 작업을 수행하는 방법�
 
 
 
+[[create-a-backend]]
 == 백엔드 만들기
 
 생성한 후link:backends.html["백엔드 구성 파일"^] 다음 명령을 실행합니다.
@@ -34,6 +35,7 @@ tridentctl logs -n trident
 
 
 
+[[delete-a-backend]]
 == 백엔드 삭제
 
 Trident 에서 백엔드를 삭제하려면 다음을 수행하세요.
@@ -57,6 +59,7 @@ NOTE: Trident 이 백엔드에서 여전히 존재하는 볼륨과 스냅샷을 
 
 
 
+[[view-the-existing-backends]]
 == 기존 백엔드 보기
 
 Trident 알고 있는 백엔드를 보려면 다음을 수행하세요.
@@ -77,6 +80,7 @@ tridentctl get backend -o json -n trident
 
 
 
+[[update-a-backend]]
 == 백엔드 업데이트
 
 새로운 백엔드 구성 파일을 만든 후 다음 명령을 실행합니다.
@@ -95,6 +99,7 @@ tridentctl logs -n trident
 
 
 
+[[identify-the-storage-classes-that-use-a-backend]]
 == 백엔드를 사용하는 스토리지 클래스를 식별합니다.
 
 이는 JSON으로 답할 수 있는 질문 종류의 예입니다. `tridentctl` 백엔드 객체에 대한 출력.  이것은 다음을 사용합니다 `jq` 설치해야 하는 유틸리티입니다.

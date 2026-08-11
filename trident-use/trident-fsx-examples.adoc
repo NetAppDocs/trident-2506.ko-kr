@@ -16,6 +16,7 @@ Amazon FSx for ONTAP 의 백엔드 구성 옵션에 대해 알아보세요.  이
 
 
 
+[[backend-configuration-options]]
 == 백엔드 구성 옵션
 
 백엔드 구성 옵션은 다음 표를 참조하세요.
@@ -108,6 +109,7 @@ Amazon FSx for ONTAP 의 백엔드 구성 옵션에 대해 알아보세요.  이
 |===
 
 
+[[update-datalif-after-initial-configuration]]
 === 업데이트 `dataLIF` 초기 구성 후
 
 다음 명령을 실행하여 업데이트된 dataLIF로 새 백엔드 JSON 파일을 제공하면 초기 구성 후 dataLIF를 변경할 수 있습니다.
@@ -121,6 +123,7 @@ NOTE: PVC가 하나 이상의 포드에 연결된 경우 새로운 dataLIF가 �
 
 
 
+[[backend-configuration-options-for-provisioning-volumes]]
 == 볼륨 프로비저닝을 위한 백엔드 구성 옵션
 
 다음 옵션을 사용하여 기본 프로비저닝을 제어할 수 있습니다. `defaults` 구성 섹션.  예를 들어, 아래의 구성 예를 참조하세요.
@@ -167,6 +170,7 @@ NOTE: PVC가 하나 이상의 포드에 연결된 경우 새로운 dataLIF가 �
 |===
 
 
+[[example-configurations]]
 == 구성 예
 
 .SMB 볼륨에 대한 스토리지 클래스 구성

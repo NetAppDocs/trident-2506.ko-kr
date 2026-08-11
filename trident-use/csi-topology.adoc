@@ -16,6 +16,7 @@ Trident Kubernetes 클러스터에 있는 노드에 볼륨을 선택적으로 �
 
 
 
+[[overview]]
 == 개요
 
 CSI 토폴로지 기능을 사용하면 지역 및 가용성 영역을 기반으로 볼륨에 대한 액세스를 노드 하위 집합으로 제한할 수 있습니다. 오늘날 클라우드 공급업체는 Kubernetes 관리자가 영역 기반 노드를 생성할 수 있도록 지원합니다. 노드는 한 지역 내의 여러 가용성 영역에 위치할 수도 있고, 여러 지역에 걸쳐 위치할 수도 있습니다. 다중 구역 아키텍처의 워크로드에 대한 볼륨 프로비저닝을 용이하게 하기 위해 Trident CSI 토폴로지를 사용합니다.
@@ -56,6 +57,7 @@ kubectl get nodes -o=jsonpath='{range .items[*]}[{.metadata.name}, {.metadata.la
 
 
 
+[[step-1-create-a-topology-aware-backend]]
 == 1단계: 토폴로지 인식 백엔드 만들기
 
 Trident 스토리지 백엔드는 가용성 영역에 따라 볼륨을 선택적으로 프로비저닝하도록 설계될 수 있습니다.  각 백엔드는 선택 사항을 수행할 수 있습니다. `supportedTopologies` 지원되는 영역 및 지역 목록을 나타내는 블록입니다. 이러한 백엔드를 사용하는 StorageClass의 경우, 지원되는 지역/영역에서 예약된 애플리케이션에서 요청하는 경우에만 볼륨이 생성됩니다.
@@ -146,6 +148,7 @@ storage:
 
 
 
+[[step-2-define-storageclasses-that-are-topology-aware]]
 == 2단계: 토폴로지를 인식하는 StorageClass 정의
 
 클러스터의 노드에 제공된 토폴로지 레이블을 기반으로 토폴로지 정보를 포함하도록 StorageClass를 정의할 수 있습니다.  이를 통해 PVC 요청에 대한 후보 역할을 하는 스토리지 풀과 Trident 에서 프로비저닝한 볼륨을 활용할 수 있는 노드 하위 집합이 결정됩니다.
@@ -176,6 +179,7 @@ parameters:
 
 
 
+[[step-3-create-and-use-a-pvc]]
 == 3단계: PVC 만들기 및 사용
 
 StorageClass를 생성하고 백엔드에 매핑했으므로 이제 PVC를 생성할 수 있습니다.
@@ -284,12 +288,14 @@ pvc-san   Bound    pvc-ecb1e1a0-840c-463b-8b65-b3d033e2e62b   300Mi      RWO    
 ----
 
 
+[[update-backends-to-include-supportedtopologies]]
 == 백엔드를 업데이트하여 포함합니다. `supportedTopologies`
 
 기존 백엔드를 업데이트하여 다음 목록을 포함할 수 있습니다. `supportedTopologies` 사용 중 `tridentctl backend update` .  이는 이미 프로비저닝된 볼륨에는 영향을 미치지 않으며, 후속 PVC에만 사용됩니다.
 
 
 
+[[find-more-information]]
 == 더 많은 정보를 찾아보세요
 
 * https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/["컨테이너 리소스 관리"^]

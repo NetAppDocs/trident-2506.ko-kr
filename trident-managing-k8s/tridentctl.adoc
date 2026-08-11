@@ -16,6 +16,7 @@ summary: Trident 에 간편하게 접근할 수 있는 명령줄 유틸리티인
 
 
 
+[[commands-and-global-flags]]
 == 명령 및 글로벌 플래그
 
 당신은 실행할 수 있습니다 `tridentctl help` 사용 가능한 명령 목록을 얻으려면 `tridentctl` 또는 추가 `--help` 특정 명령에 대한 옵션과 플래그 목록을 얻으려면 해당 명령에 플래그를 추가합니다.
@@ -70,10 +71,12 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 ====
 
 
+[[command-options-and-flags]]
 == 명령 옵션 및 플래그
 
 
 
+[[create]]
 === 만들다
 
 사용하다 `create` Trident 에 리소스를 추가하는 명령입니다.
@@ -85,6 +88,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[delete]]
 === 삭제
 
 사용하다 `delete` Trident 에서 하나 이상의 리소스를 제거하는 명령입니다.
@@ -99,6 +103,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[get]]
 === 얻다
 
 사용하다 `get` Trident 에서 하나 이상의 리소스를 가져오는 명령입니다.
@@ -116,6 +121,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[images]]
 === 이미지
 
 사용 `images` Trident 에 필요한 컨테이너 이미지 표를 인쇄하는 플래그입니다.
@@ -128,6 +134,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[import-volume]]
 === 수입량
 
 사용하다 `import volume` 기존 볼륨을 Trident 로 가져오는 명령입니다.
@@ -142,6 +149,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[install]]
 === 설치하다
 
 사용하다 `install` Trident 설치하기 위한 플래그입니다.
@@ -171,6 +179,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[logs]]
 === 통나무
 
 사용 `logs` Trident 에서 로그를 인쇄하기 위한 플래그입니다.
@@ -187,6 +196,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[send]]
 === 보내다
 
 사용하다 `send` Trident 에서 리소스를 보내는 명령입니다.
@@ -198,6 +208,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[uninstall]]
 === 제거
 
 사용 `uninstall` Trident 제거하기 위한 플래그입니다.
@@ -210,6 +221,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[update]]
 === 업데이트
 
 사용하다 `update` Trident 에서 리소스를 수정하는 명령입니다.
@@ -221,6 +233,7 @@ WARNING: Trident REST 인터페이스는 127.0.0.1(IPv4의 경우) 또는 [::1](
 
 
 
+[[update-backend-state]]
 === 백엔드 상태 업데이트
 
 사용하다 `update backend state` 백엔드 작업을 일시 중단하거나 재개하는 명령입니다.
@@ -297,6 +310,7 @@ spec:
 ====
 
 
+[[version]]
 === 버전
 
 사용 `version` 버전을 인쇄하기 위한 플래그 `tridentctl` 그리고 Trident 서비스를 운영하고 있습니다.
@@ -309,6 +323,7 @@ spec:
 
 
 
+[[plugin-support]]
 == 플러그인 지원
 
 Tridentctl은 kubectl과 유사한 플러그인을 지원합니다.  Tridentctl은 플러그인 바이너리 파일 이름이 "tridentctl-<플러그인>" 체계를 따르고 바이너리가 PATH 환경 변수에 나열된 폴더에 있는 경우 플러그인을 감지합니다.  감지된 모든 플러그인은 tridentctl 도움말의 플러그인 섹션에 나열되어 있습니다.  선택적으로 환경 변수 TRIDENTCTL_PLUGIN_PATH에 플러그인 폴더를 지정하여 검색을 제한할 수도 있습니다(예: `TRIDENTCTL_PLUGIN_PATH=~/tridentctl-plugins/` ).  변수를 사용하면 tridenctl은 지정된 폴더에서만 검색합니다.
