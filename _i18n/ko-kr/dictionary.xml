@@ -19,8 +19,6 @@
   <block id="20f40e0b9308901dac07ce8a8efb3350" category="inline-link">OpenShift 보안 컨텍스트 제약 조건 문서</block>
   <block id="2c9ccd5e8999c2c36f29069165f327c3" category="admonition">Red Hat OpenShift를 사용하는 경우 OpenShift 환경에서 네임스페이스 주석의 중요한 역할을 알아두는 것이 중요합니다. 네임스페이스 주석은 복원된 포드가 OpenShift 보안 컨텍스트 제약(SCC)에 의해 정의된 적절한 권한과 보안 구성을 준수하고 권한 문제 없이 볼륨에 액세스할 수 있도록 보장합니다. 자세한 내용은 다음을 참조하세요.<block ref="f3121e004cef0b92f500227025367589" category="inline-link-rx"></block> .</block>
   <block id="6c83555d4261acb08ebbc5f24823dc7b" category="paragraph">Kubernetes 환경 변수를 설정하여 대상 네임스페이스의 특정 주석이 덮어쓰여지는 것을 방지할 수 있습니다.<block ref="1580ff61f204e9d56cd5324c7e9221ba" prefix=" " category="inline-code"></block> 복원이나 장애 조치 작업을 수행하기 전에. 예를 들어:</block>
-  <block id="8238f7162d9219360737b28886d1e81e" category="inline-link-macro">AutoSupport 및 네임스페이스 필터링 옵션 구성</block>
-  <block id="f674ee7017be04f3990c16ce1e52c071" category="admonition">복원 또는 장애 조치 작업을 수행할 때 지정된 모든 네임스페이스 주석 및 레이블<block ref="22416353aff9ef4322e1ee858f418ae4" prefix=" " category="inline-code"></block> 그리고<block ref="8028cf835d9b72ff2d6f835934c25568" prefix=" " category="inline-code"></block> 복구 또는 장애 조치 작업에서 제외됩니다. 이러한 설정은 Helm을 처음 설치할 때 구성되어야 합니다. 자세한 내용은 다음을 참조하세요. <block ref="be04583f34cff5b6411cf18afbc58993" category="inline-link-macro-rx"></block>.</block>
   <block id="0a52730597fb4ffa01fc117d9e71e3a9" category="section-title">예</block>
   <block id="1280c48f074ec68fd2281266662c9a3f" category="paragraph">다음 예제에서는 각각 다른 주석과 레이블이 있는 소스 및 대상 네임스페이스를 보여줍니다.  작업 전후의 대상 네임스페이스 상태를 볼 수 있으며, 대상 네임스페이스에서 주석과 레이블이 어떻게 결합되거나 덮어쓰여지는지 확인할 수 있습니다.</block>
   <block id="2cfe257f724ed59a07ab01918c828fb5" category="section-title">복구 또는 장애 조치 작업 전</block>
@@ -5826,4 +5824,5 @@
   <block id="db7fc8df66e930e05282807a6ebd58f4" category="paragraph"><block ref="1feb3274d112f2cef694d133af384cac" category="inline-link-macro-rx"></block> 외에도 <block ref="fc0cdbd8defe0c7175199dd05a0f8e76" category="inline-link-macro-rx"></block>이(가) 필요합니다.</block>
   <block id="c82b4b0fab3872638ac3c7cebf4e6354" category="paragraph">기존 배포 환경을 업그레이드해야 하거나 배포 환경을 고도로 맞춤 설정하려는 경우 <block ref="e214bf159dbaf6573cfe15f1373b92db" category="inline-link-macro-rx"></block>를 고려해야 합니다. 이것은 Trident를 배포하는 기존 방법입니다.</block>
   <block id="cd133424a13afaa0badf4f13c4bf4c72" category="list-text">iSCSI 외에도 NVMe/TCP용 ONTAP ASA r2 지원이 추가되었습니다. <block ref="f2fd3fe662daf33e514604a72251389c" category="inline-link-macro-rx"></block>을 참조하십시오.</block>
+  <block id="98b806d92f2e28da541021a181de980f" category="admonition">복원 또는 페일오버 작업을 수행할 때<block ref="22416353aff9ef4322e1ee858f418ae4" prefix=" " category="inline-code"></block> 및<block ref="8028cf835d9b72ff2d6f835934c25568" prefix=" " category="inline-code"></block>에 지정된 네임스페이스 주석 및 레이블은 복원 또는 페일오버 작업에서 제외됩니다. 초기 Helm 설치 시 이러한 설정이 구성되어 있는지 확인하십시오. 자세한 내용은 <block ref="647ed99900e7ff1307ad7b7cec525a2c" category="inline-link-macro-rx"></block>을 참조하십시오.</block>
 </blocks>
